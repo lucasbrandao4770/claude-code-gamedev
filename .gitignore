@@ -28,3 +28,6 @@ export/
 
 # MCP (contains local paths)
 .mcp.json
+
+# Raw downloads (backup, not needed in repo)
+downloads/
