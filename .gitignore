@@ -1,9 +1,24 @@
-# Godot
+# Godot 4+ cache (fully regenerated on project open)
 .godot/
-*.import
-export_presets.cfg
+.nomedia
+
+# Godot 3.x cache directory (backward compat)
+.import/
+
+# Export credentials (NEVER commit secrets)
+export_credentials.cfg
+
+# Temporary files
 *.tmp
 *.log
+
+# Imported translations (auto-generated from CSV)
+*.translation
+
+# Mono/C# ignores
+.mono/
+data_*/
+mono_crash.*.json
 
 # OS
 .DS_Store
@@ -12,6 +27,7 @@ desktop.ini
 
 # IDE
 .vscode/
+*.code-workspace
 *.swp
 *.swo
 
@@ -19,14 +35,14 @@ desktop.ini
 .env
 *.key
 
-# Build
+# Build outputs
 builds/
 export/
 
-# Claude Code
+# Claude Code (local settings)
 .claude/settings.local.json
 
-# MCP (contains local paths)
+# MCP (contains local machine paths)
 .mcp.json
 
 # Raw downloads (backup, not needed in repo)

@@ -1,0 +1,42 @@
+# Normalize EOL for all text files (Godot official recommendation)
+* text=auto eol=lf
+
+# Godot text files — explicit text for correct diffing/merging
+*.gd text diff
+*.tscn text diff
+*.tres text diff
+*.cfg text diff
+*.gdshader text diff
+*.import text diff
+*.uid text diff
+project.godot text diff
+
+# Binary image formats
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.bmp binary
+*.tga binary
+*.webp binary
+*.svg binary
+*.exr binary
+*.hdr binary
+
+# Binary audio formats
+*.wav binary
+*.ogg binary
+*.mp3 binary
+
+# Binary font formats
+*.ttf binary
+*.otf binary
+
+# Binary 3D model formats
+*.glb binary
+*.fbx binary
+*.blend binary
+*.obj binary
+
+# Godot binary resource formats
+*.scn binary
+*.res binary
