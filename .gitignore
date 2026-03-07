@@ -1,0 +1,30 @@
+# Godot
+.godot/
+*.import
+export_presets.cfg
+*.tmp
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+*.swp
+*.swo
+
+# Secrets
+.env
+*.key
+
+# Build
+builds/
+export/
+
+# Claude Code
+.claude/settings.local.json
+
+# MCP (contains local paths)
+.mcp.json
