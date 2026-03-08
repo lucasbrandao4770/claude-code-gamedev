@@ -66,8 +66,11 @@ var blink_timer: float = 0.0
 
 
 func _ready() -> void:
-	hp = max_hp
-	sword_collision.disabled = true
+	GameManager.reset()
+	hp = GameManager.player_hp
+	add_to_group("player")
+	sword_hitbox.add_to_group("player_hitbox")
+	sword_collision.set_deferred("disabled", true)
 	hurt_box.area_entered.connect(_on_hurt_box_area_entered)
 	_switch_sprite_sheet(State.IDLE)
 	health_changed.emit(hp, max_hp)
@@ -141,9 +144,16 @@ func _process_attack(delta: float) -> void:
 	# Anima o ataque
 	_animate(delta, HFRAMES_ATTACK, attack_cycle)
 
+	# Ativa hitbox no meio do swing (30% do ciclo), desativa em 70%
+	var attack_progress: float = state_timer / attack_cycle
+	if attack_progress >= 0.3 and attack_progress < 0.7:
+		sword_collision.set_deferred("disabled", false)
+	else:
+		sword_collision.set_deferred("disabled", true)
+
 	# Finaliza quando o ciclo de ataque termina
 	if state_timer >= attack_cycle:
-		sword_collision.disabled = true
+		sword_collision.set_deferred("disabled", true)
 		_change_state(State.IDLE)
 
 
@@ -188,11 +198,11 @@ func _change_state(new_state: State) -> void:
 	match new_state:
 		State.ATTACK:
 			_position_sword_hitbox()
-			sword_collision.disabled = false
+			# Hitbox ativada em _process_attack no meio do swing (30-70%)
 		State.HURT:
-			sword_collision.disabled = true
+			sword_collision.set_deferred("disabled", true)
 		State.DEAD:
-			sword_collision.disabled = true
+			sword_collision.set_deferred("disabled", true)
 			sprite.modulate.a = 1.0
 
 
@@ -274,6 +284,8 @@ func take_damage(amount: int, from_position: Vector2) -> void:
 		return
 
 	hp -= amount
+	GameManager.player_hp = hp
+	GameManager.player_hp_changed.emit(hp, max_hp)
 	health_changed.emit(hp, max_hp)
 	damage_cooldown = invincibility_duration
 

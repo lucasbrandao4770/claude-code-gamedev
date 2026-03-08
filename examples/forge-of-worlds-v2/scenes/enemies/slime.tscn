@@ -1,0 +1,58 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/slime.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/Slime1_Idle_with_shadow.png" id="2_idle"]
+
+[sub_resource type="RectangleShape2D" id="shape_body"]
+size = Vector2(12, 10)
+
+[sub_resource type="CircleShape2D" id="shape_hit"]
+radius = 10.0
+
+[sub_resource type="RectangleShape2D" id="shape_hurt"]
+size = Vector2(12, 10)
+
+[sub_resource type="CircleShape2D" id="shape_detect"]
+radius = 80.0
+
+[node name="Slime" type="CharacterBody2D"]
+script = ExtResource("1_script")
+collision_layer = 4
+collision_mask = 1
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_idle")
+hframes = 6
+vframes = 4
+frame = 0
+
+[node name="BodyCollision" type="CollisionShape2D" parent="."]
+position = Vector2(0, 4)
+shape = SubResource("shape_body")
+
+[node name="HitBox" type="Area2D" parent="." groups=["enemy_hitbox"]]
+collision_layer = 64
+collision_mask = 8
+monitoring = true
+monitorable = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitBox"]
+shape = SubResource("shape_hit")
+
+[node name="HurtBox" type="Area2D" parent="."]
+collision_layer = 16
+collision_mask = 32
+monitoring = true
+monitorable = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HurtBox"]
+shape = SubResource("shape_hurt")
+
+[node name="DetectionZone" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+monitoring = true
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DetectionZone"]
+shape = SubResource("shape_detect")

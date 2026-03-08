@@ -1,6 +1,8 @@
 [gd_scene format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/slime.tscn" id="2_slime"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="3_hud"]
 
 [sub_resource type="RectangleShape2D" id="shape_top"]
 size = Vector2(1920, 10)
@@ -44,4 +46,17 @@ shape = SubResource("shape_left")
 position = Vector2(960, 0)
 shape = SubResource("shape_right")
 
+[node name="Enemies" type="Node2D" parent="."]
+
+[node name="Slime1" parent="Enemies" instance=ExtResource("2_slime")]
+position = Vector2(100, 80)
+
+[node name="Slime2" parent="Enemies" instance=ExtResource("2_slime")]
+position = Vector2(-120, 60)
+
+[node name="Slime3" parent="Enemies" instance=ExtResource("2_slime")]
+position = Vector2(50, -100)
+
 [node name="Player" parent="." instance=ExtResource("1_player")]
+
+[node name="HUD" parent="." instance=ExtResource("3_hud")]

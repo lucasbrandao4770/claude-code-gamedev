@@ -56,7 +56,7 @@
 | Hurt | 5 | 5 all | |
 | Death | 7 | 7 all | |
 
-### Slime1 (Slime1/With_shadow/) — 64x64, 4 rows: DOWN=0, LEFT=1, RIGHT=2, UP=3
+### Slime1 (Slime1/With_shadow/) — 64x64, 4 rows: DOWN=0, RIGHT=1, LEFT=2, UP=3 (NOT same as player!)
 | Sheet | Columns | Frames/row |
 |-------|---------|------------|
 | Idle | 6 | 6 all |
