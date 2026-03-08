@@ -47,35 +47,51 @@ When delegating, tell the subagent:
 
 ## The Game Creation Flow
 
-### Phase 1: Concept & Planning
+### Phase 1: Discovery & Design
 
-This phase is a conversation. Clear scope prevents wasted work later.
+This phase follows a structured interview process. DO NOT skip it. DO NOT proceed to Phase 2 without completing the quality gate. A well-defined game concept prevents hours of rework later.
 
-1. **Choose genre** — "What kind of game? Top-down RPG, platformer, tower defense, puzzle?"
-2. **Define core mechanic** — What is the ONE thing that must feel fun? Movement? Combat? Building? Validate this first in Phase 3 before adding anything else.
-3. **Define full scope** — Use three tiers:
-   - **MUST HAVE** (5-8 features) — the prototype is incomplete without these
-   - **SHOULD HAVE** — add if MUST HAVE is done and time permits
-   - **EXPLICITLY OUT OF SCOPE** — prevents creep; say "no" in advance
-4. **Define art style** — Pixel art size (16x16, 32x32, 64x64), perspective (top-down, side-scroll), color palette
-5. **Define collision layers** — Assign layers with both layer numbers AND bitmask values (e.g., "Layer 3 = Enemy bodies = bitmask 4"). Confusion between layer numbers and bitmask values is a common source of bugs.
-6. **Name the game** — Even a working title creates emotional investment and makes the session more fun.
+Read `references/discovery-interview.md` for the full interview script and quality gate checklist.
 
-**Outputs (two separate documents):**
+**Step 1: Discovery Interview**
 
-1. **One-pager GDD** (`GDD.md`) — The game design document: elevator pitch, core loop (e.g., "explore → fight → loot → upgrade → repeat"), 2-3 reference games, 3 design pillars (what makes this fun), scope tiers, and non-goals. Read `references/gdd-guide.md` for templates (one-pager and expanded), genre-specific sections, design pillar examples, and core loop documentation patterns. This is the *design* source of truth.
-2. **CLAUDE.md** — The technical architecture: file structure, collision layer table, coding conventions, MCP workflow, anti-patterns. This is the *implementation* source of truth for all subagents.
+Run the 20-question interview from `references/discovery-interview.md`. The questions cover five rounds: Vision, Mechanics, Content, Scope, and Feel. Ask conversationally — group related questions, skip what the user already answered, push for concrete numbers instead of vague descriptions. If the user says "you decide," offer 2-3 options with tradeoffs and let them choose.
 
 If the user is new to game dev, read `references/gamedev-for-engineers.md` first — it explains game loops, state machines, collision layers, and "juice" in terms a software engineer already understands.
 
-If a `templates/{genre}/` starter kit exists, use it — it includes pre-configured project.godot, input maps, and asset source lists.
+**Step 2: Draft the GDD**
+
+Using the interview answers, write a `GDD.md` following the templates in `references/gdd-guide.md`. Start with the one-pager. Expand to the prototype GDD template if the concept warrants it. Every mechanic must have concrete numbers — "speed: 150px/s", "HP: 6", "detection range: 128px" — not adjectives.
+
+**Step 3: User Review**
+
+Present the GDD to the user. Summarize the key decisions. Ask: "Does this capture what you want? Should I change anything?" Iterate until the user explicitly approves.
+
+**Step 4: Quality Gate**
+
+Run the three-gate checklist from `references/discovery-interview.md`:
+- **Gate 1: GDD Completeness** — elevator pitch, design pillars, core loop, player stats, enemy stats, win/lose conditions, scope tiers
+- **Gate 2: Implementation Readiness** — all values are numbers, collision layers assigned, no contradictions, CLAUDE.md drafted
+- **Gate 3: Asset Readiness** — asset requirements listed, sources identified, art style consistent
+
+**If any gate fails, go back and fill the gap with the user.** Do not proceed.
+
+**Step 5: Generate CLAUDE.md**
+
+Create the project's `CLAUDE.md` from the GDD: file structure, collision layer table with bitmask values, coding conventions, input map, anti-patterns. This is the implementation source of truth for all subagents.
+
+If a `templates/{genre}/` starter kit exists, use it as a starting point — it includes a pre-configured CLAUDE.md, asset source lists, and setup instructions.
+
+**Outputs (both required before proceeding):**
+1. `GDD.md` — The design source of truth (what game we're making and why)
+2. `CLAUDE.md` — The implementation source of truth (how we build it)
 
 ### Phase 2: Asset Pipeline
 
-Assets before code. You cannot write animation code without knowing sprite sheet layouts.
+Assets before code. You cannot write animation code without knowing sprite sheet layouts. The GDD's art direction and entity list drive the asset search.
 
-1. **Identify needed assets** — Characters, enemies, tilesets, UI elements, audio
-2. **Source assets** — Check ASSET-SOURCES.md if available; search itch.io, Kenney, OpenGameArt, CraftPix. For simple UI elements (hearts, icons), generate them with Python/Pillow instead of hunting for packs.
+1. **Extract asset requirements from GDD** — List every entity that needs sprites (player, each enemy type, NPCs, items), every environment element (tilesets, backgrounds), every UI element (hearts, bars, buttons), and every audio need (music tracks, SFX per action). The GDD section 8 (Audio) and section 9 (Art) define the requirements.
+2. **Search for free assets matching requirements** — Check ASSET-SOURCES.md if available for the genre. Search itch.io, Kenney, OpenGameArt, CraftPix. Present 2-3 options per category to the user with links and style previews. For simple UI elements (hearts, icons), generate them with Python/Pillow instead of hunting for packs. Ensure all assets match the GDD's art style (same pixel size, compatible palette).
 3. **Organize into project folders:**
    ```
    assets/sprites/player/    assets/audio/music/
