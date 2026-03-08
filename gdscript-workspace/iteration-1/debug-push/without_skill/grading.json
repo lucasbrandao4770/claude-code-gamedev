@@ -1,0 +1,12 @@
+{
+  "eval_id": 2,
+  "configuration": "without_skill",
+  "expectations": [
+    {"text": "Identifies body-to-body collision as root cause", "passed": true, "evidence": "States: 'CharacterBody2D collisions are designed for physics separation, not gameplay interactions like damage'"},
+    {"text": "Recommends removing enemy from player collision mask", "passed": true, "evidence": "Step 1 with collision layer table and code: collision_mask = 4 (environment only)"},
+    {"text": "Recommends Area2D hitbox/hurtbox pattern", "passed": true, "evidence": "Full Step 2-5 covering hitbox/hurtbox setup with node trees and code"},
+    {"text": "Mentions area_entered fires only once", "passed": true, "evidence": "Step 6: 'area_entered only fires once when two areas first overlap'"},
+    {"text": "Recommends get_overlapping_areas() for continuous damage", "passed": true, "evidence": "Step 6 shows periodic get_overlapping_areas() check with timer"},
+    {"text": "Shows correct collision layer/mask configuration", "passed": true, "evidence": "Layer/mask table with bit values, code examples, note on bitmask math"}
+  ]
+}

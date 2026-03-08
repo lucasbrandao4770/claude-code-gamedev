@@ -1,0 +1,37 @@
+{
+  "eval_name": "eval-1-create-chest",
+  "variant": "without_skill",
+  "expectations": [
+    {
+      "text": "Correct section ordering",
+      "passed": true,
+      "evidence": "ext@2 sub@5 node@8"
+    },
+    {
+      "text": "Script attached via ExtResource",
+      "passed": true,
+      "evidence": "Found script = ExtResource()"
+    },
+    {
+      "text": "CircleShape2D with radius 16",
+      "passed": true,
+      "evidence": "Found CircleShape2D + radius = 16"
+    },
+    {
+      "text": "No GDScript syntax in file",
+      "passed": true,
+      "evidence": "Clean"
+    },
+    {
+      "text": "Root node has no parent",
+      "passed": true,
+      "evidence": "[node name=\"Chest\" type=\"Area2D\"]"
+    },
+    {
+      "text": "No fabricated uid:// values",
+      "passed": false,
+      "evidence": "Found fabricated UIDs"
+    }
+  ],
+  "pass_rate": 0.8333333333333334
+}

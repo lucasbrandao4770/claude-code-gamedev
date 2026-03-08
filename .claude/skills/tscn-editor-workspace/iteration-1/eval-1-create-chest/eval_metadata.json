@@ -1,0 +1,13 @@
+{
+  "eval_id": 1,
+  "eval_name": "create-chest-scene",
+  "prompt": "Create a .tscn file for a treasure chest pickup in my Godot 4 RPG. It should be an Area2D root node named 'Chest', with a Sprite2D child for the chest visual (texture at res://assets/sprites/items/chest.png), a CollisionShape2D child with a CircleShape2D (radius 16) for player detection, and a script attached at res://scripts/pickups/chest.gd.",
+  "assertions": [
+    {"text": "Correct section ordering: header -> ext_resource -> sub_resource -> node", "type": "structural"},
+    {"text": "Script attached via ExtResource on root node", "type": "functional"},
+    {"text": "CircleShape2D sub_resource with radius 16", "type": "functional"},
+    {"text": "No GDScript syntax (preload, load, var, func) in file", "type": "safety"},
+    {"text": "Root node has no parent attribute", "type": "structural"},
+    {"text": "No fabricated uid:// values (Godot generates these)", "type": "safety"}
+  ]
+}

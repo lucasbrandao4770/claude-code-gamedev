@@ -1,0 +1,17 @@
+{
+  "eval_id": 0,
+  "eval_name": "player-script",
+  "prompt": "Create a player.gd script for a top-down 2D RPG in Godot 4. The player should move in 8 directions using WASD, have a sword attack on mouse click that creates a hitbox in the facing direction, and take damage from enemies with knockback and invincibility frames. Include health management with a max of 6 HP.",
+  "assertions": [
+    {"text": "Uses tabs for indentation (Godot convention)", "type": "style"},
+    {"text": "Type hints on ALL function signatures (params + return type)", "type": "correctness"},
+    {"text": "Correct code ordering: signals > enums > constants > exports > vars > onready > lifecycle > methods", "type": "style"},
+    {"text": "Uses @export with grouping (@export_group or @export_category)", "type": "quality"},
+    {"text": "Uses @onready for node references (not get_node in _ready)", "type": "quality"},
+    {"text": "Movement in _physics_process (not _process)", "type": "correctness"},
+    {"text": "Uses Input.get_vector() or Input.get_axis() (not raw key checks)", "type": "correctness"},
+    {"text": "No Godot 3.x syntax (no yield, no undecorated export, no KinematicBody2D)", "type": "correctness"},
+    {"text": "Incoming damage uses BOTH area_entered AND get_overlapping_areas() polling", "type": "correctness"},
+    {"text": "No await in _physics_process", "type": "correctness"}
+  ]
+}

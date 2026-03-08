@@ -1,0 +1,44 @@
+{
+  "skill_name": "tscn-editor",
+  "iteration": 1,
+  "configurations": [
+    {
+      "name": "with_skill",
+      "evals": [
+        {"eval_name": "create-chest-scene", "pass_rate": 1.0, "tokens": 22523, "duration_seconds": 32.4},
+        {"eval_name": "edit-player-add-detection", "pass_rate": 1.0, "tokens": 25601, "duration_seconds": 49.5},
+        {"eval_name": "fix-broken-tscn", "pass_rate": 1.0, "tokens": 22046, "duration_seconds": 54.3}
+      ],
+      "aggregate": {
+        "mean_pass_rate": 1.0,
+        "mean_tokens": 23390,
+        "mean_duration_seconds": 45.4
+      }
+    },
+    {
+      "name": "without_skill",
+      "evals": [
+        {"eval_name": "create-chest-scene", "pass_rate": 0.833, "tokens": 14024, "duration_seconds": 22.5},
+        {"eval_name": "edit-player-add-detection", "pass_rate": 1.0, "tokens": 18991, "duration_seconds": 46.7},
+        {"eval_name": "fix-broken-tscn", "pass_rate": 1.0, "tokens": 20419, "duration_seconds": 60.7}
+      ],
+      "aggregate": {
+        "mean_pass_rate": 0.944,
+        "mean_tokens": 17811,
+        "mean_duration_seconds": 43.3
+      }
+    }
+  ],
+  "delta": {
+    "pass_rate": "+5.6%",
+    "tokens": "+31.3% (skill adds context overhead)",
+    "duration": "+4.9%"
+  },
+  "analyst_observations": [
+    "The skill's main measurable impact was on Eval 1 (create from scratch): with-skill avoided fabricating uid:// values, which the baseline did. Fabricated UIDs could cause collisions in real projects.",
+    "Eval 2 and 3 showed no pass-rate difference — Claude already handles these patterns well from training data. The skill adds safety (explicit validation checklist) but doesn't change outcomes for simple cases.",
+    "The 'no fabricated UIDs' assertion is the only discriminating assertion across all evals — it's the one thing the skill teaches that base Claude doesn't know.",
+    "Token overhead is ~31% higher with skill (reading the 348-line SKILL.md). This is acceptable for a safety-focused skill.",
+    "The without-skill baseline also flagged 'missing load_steps' as an error (eval 3), which is debatable for Godot 4.6 where load_steps is deprecated. The skill correctly avoids this false positive."
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "eval_id": 0,
+  "configuration": "with_skill",
+  "expectations": [
+    {"text": "Uses tabs for indentation", "passed": true, "evidence": "All indentation uses tab characters throughout the file"},
+    {"text": "Type hints on ALL function signatures", "passed": true, "evidence": "Every function has typed params and return: e.g. func take_damage(amount: int, from_position: Vector2) -> void, func _process_idle(_delta: float) -> void"},
+    {"text": "Correct code ordering", "passed": true, "evidence": "signals (L5-6) > enums (L8-9) > constants (L11) > exports (L13-29) > vars (L31-36) > onready (L38-40) > _ready (L43) > _physics_process (L49) > public (L79) > private (L105+)"},
+    {"text": "Uses @export with grouping", "passed": true, "evidence": "@export_category('Player'), @export_group('Movement'), @export_group('Combat'), @export_subgroup('Offense'), @export_subgroup('Defense')"},
+    {"text": "Uses @onready for node references", "passed": true, "evidence": "@onready var sprite: Sprite2D = $Sprite2D, @onready var hurtbox: Area2D = $HurtBox, @onready var collision_shape"},
+    {"text": "Movement in _physics_process", "passed": true, "evidence": "_physics_process dispatches to state handlers, _process_move uses Input.get_vector + velocity + move_and_slide"},
+    {"text": "Uses Input.get_vector() or Input.get_axis()", "passed": true, "evidence": "Input.get_vector('move_left', 'move_right', 'move_up', 'move_down') on lines 106, 116"},
+    {"text": "No Godot 3.x syntax", "passed": true, "evidence": "Uses CharacterBody2D, @export, @onready, signal.connect(callable), create_tween(), await"},
+    {"text": "Incoming damage uses BOTH area_entered AND overlap polling", "passed": true, "evidence": "_on_hurtbox_area_entered (L237) + _check_overlapping_damage (L242) called from _physics_process when cooldown <= 0"},
+    {"text": "No await in _physics_process", "passed": true, "evidence": "await only in _spawn_sword_hitbox (L186), which is called from _start_attack, not from _physics_process"}
+  ]
+}

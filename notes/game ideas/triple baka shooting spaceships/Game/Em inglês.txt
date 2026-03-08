@@ -1,0 +1,78 @@
+Project Overview: Spaceship Shooter
+The game is a classic spaceship shooter where players control ships that fire continuously. Enemies enter the screen and fire back, and the goal is to destroy them, dodge incoming projectiles, and reach the end of the stage to defeat a final boss.
+
+1. Gameplay & Controls
+Multiplayer Support: The game supports up to 4 players in local co-op on the same stage.
+
+Collision: There is no collision between players, allowing ships to pass through one another to navigate complex bullet patterns without frustration.
+
+Screen Management: The camera uses a constant auto-scrolling mechanic. Players are confined to the visible area; the left and bottom edges of the screen act as solid barriers to prevent players from falling behind.
+
+2. HUD & Player Stats
+Each player's information is displayed at the bottom of the screen, including:
+
+Player Identification (P1, P2, etc.).
+
+Health Bar.
+
+Special Bar: Charges as the player kills enemies.
+
+Power-up Icons: Displays currently active upgrades.
+
+3. Combat System
+Standard Attacks: Each player starts with a unique default shot.
+
+Power-ups: Collecting items can change firing patterns (e.g., Fan/Spread shot, Homing missiles, or slow Explosive rounds). These are lost upon death.
+
+Hyper Mode (Special): Once the Special Bar is full, players can trigger a 5-second "Hyper Mode." This doubles the fire rate and grants immunity to small bullets for massive damage output.
+
+4. Health & Revive Mechanics
+Shared Lives: The team shares a pool of 2 reserve lives.
+
+Waiting State: If a player’s health reaches zero and no reserve lives remain, they enter a "Waiting" state.
+
+Resurrection: A downed player returns with 25% health if a teammate survives for 30 seconds or collects a specific "Rescue" item.
+
+Game Over: Triggered only if all active players are defeated simultaneously.
+
+5. Items & Drops
+Enemies occasionally drop items upon death. These include:
+
+Healing: Restores HP.
+
+Damage Boost: Increases attack power.
+
+Invincibility: Temporary protection from all damage.
+
+Screen Clear: Deals massive damage to all on-screen enemies and deletes all active enemy projectiles.
+
+6. Enemies & Bosses
+Enemy Spawns: Most enemies follow pre-determined positions and attack sequences.
+
+Bonus Monsters: Random enemies that do not follow standard patterns. Higher difficulty levels increase the spawn rate and drop chances of these monsters.
+
+Boss Encounters: Located at the end of the stage with three visible health bars. The boss shifts through three distinct phases/attack patterns as each bar is depleted (e.g., moving from simple projectiles to screen-wide lasers).
+
+Visual Feedback: Large enemies flash white or red when hit to indicate damage.
+
+7. Environment & Technicals
+Level Design: Stages are built using a tile-based system. While each stage has a unique layout, the environment is purely decorative (aerial view) and pre-generated before the mission starts.
+
+Parallax Scrolling: The background features at least two layers of depth. The bottom layer moves slower than the top layer (clouds/debris) to create a sense of altitude and speed.
+
+Checkpoints: Invisible save points are placed mid-stage. If the team wipes, they can restart from the last checkpoint instead of the beginning.
+
+8. UI & Scoring
+Main Menu Options:
+
+Start Mission: Difficulty selection.
+
+Garage: View and inspect ships.
+
+Settings: Audio and control remapping.
+
+Exit: Close the game.
+
+Score System: A collective team score is displayed at the top.
+
+Combo Multiplier: Destroying enemies in quick succession without taking damage grants multipliers (x2, x3, x5) to encourage high-skill play.

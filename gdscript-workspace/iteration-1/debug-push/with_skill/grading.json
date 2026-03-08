@@ -1,0 +1,12 @@
+{
+  "eval_id": 2,
+  "configuration": "with_skill",
+  "expectations": [
+    {"text": "Identifies body-to-body collision as root cause", "passed": true, "evidence": "Clearly explains CharacterBody2D move_and_slide() resolves overlap by pushing bodies apart"},
+    {"text": "Recommends removing enemy from player collision mask", "passed": true, "evidence": "Explicit code: set_collision_mask_value(2, false) for slime, set_collision_mask_value(3, false) for player"},
+    {"text": "Recommends Area2D hitbox/hurtbox pattern", "passed": true, "evidence": "Extensive coverage of ContactHitBox, HurtBox, SwordHitBox with layer/mask configs"},
+    {"text": "Mentions area_entered fires only once", "passed": true, "evidence": "References skill guide rule about area_entered only firing once on overlap start"},
+    {"text": "Recommends get_overlapping_areas() for continuous damage", "passed": true, "evidence": "Mentions dual detection pattern from the skill guide"},
+    {"text": "Shows correct collision layer/mask configuration", "passed": true, "evidence": "Complete layer/mask table, code with set_collision_layer_value(), .tscn fix option, and summary table"}
+  ]
+}

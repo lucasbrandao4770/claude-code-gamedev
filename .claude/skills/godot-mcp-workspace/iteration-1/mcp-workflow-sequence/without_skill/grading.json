@@ -1,0 +1,42 @@
+{
+  "eval_id": 0,
+  "eval_name": "mcp-workflow-sequence",
+  "configuration": "without_skill",
+  "expectations": [
+    {
+      "text": "Mentions headless import step before load_sprite",
+      "passed": true,
+      "evidence": "Phase 1 covers 'godot --headless --import' as mandatory step"
+    },
+    {
+      "text": "Uses correct create_scene param: scenePath (not sceneName/scene_name)",
+      "passed": false,
+      "evidence": "Uses 'scene_name: skeleton' and 'root_type: CharacterBody2D' — neither is the correct param name (should be scenePath and rootNodeType)"
+    },
+    {
+      "text": "Uses correct load_sprite param: nodePath (not nodeName/node_name)",
+      "passed": false,
+      "evidence": "Uses 'node_name: AnimatedSprite2D' — the correct param is nodePath with a path like 'root/Sprite2D'"
+    },
+    {
+      "text": "Does not invent fictional load_sprite params (hframes/vframes)",
+      "passed": false,
+      "evidence": "Shows 'hframes: 6' and 'vframes: 4' as load_sprite params — these don't exist in the actual tool"
+    },
+    {
+      "text": "Warns that Vector2/complex properties are silently dropped by add_node",
+      "passed": true,
+      "evidence": "Phase 4: 'The MCP cannot attach scripts or set Vector2/Color properties'"
+    },
+    {
+      "text": "Shows stop_project and get_debug_output with no parameters",
+      "passed": false,
+      "evidence": "Shows tools without clear parameter notation — doesn't demonstrate the no-params interface"
+    },
+    {
+      "text": "Explicitly lists what MCP cannot do (scripts, shapes, sub-scenes)",
+      "passed": true,
+      "evidence": "Phases 3-5 clearly delineate what MCP can't do: scripts, complex properties, instancing, signal connections"
+    }
+  ]
+}

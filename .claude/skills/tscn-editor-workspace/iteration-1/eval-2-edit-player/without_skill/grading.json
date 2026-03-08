@@ -1,0 +1,37 @@
+{
+  "eval_name": "eval-2-edit-player",
+  "variant": "without_skill",
+  "expectations": [
+    {
+      "text": "DetectionZone Area2D added with parent='.'",
+      "passed": true,
+      "evidence": "Found"
+    },
+    {
+      "text": "CircleShape2D with radius 80",
+      "passed": true,
+      "evidence": "Found"
+    },
+    {
+      "text": "collision_layer=0, collision_mask=4",
+      "passed": true,
+      "evidence": "layer=True, mask=True"
+    },
+    {
+      "text": "[connection] for body_entered",
+      "passed": true,
+      "evidence": "Found"
+    },
+    {
+      "text": "All original nodes preserved",
+      "passed": true,
+      "evidence": "All present"
+    },
+    {
+      "text": "Sub_resource before nodes",
+      "passed": true,
+      "evidence": "last_sub@14 first_node@17"
+    }
+  ],
+  "pass_rate": 1.0
+}

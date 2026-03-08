@@ -1,0 +1,15 @@
+{
+  "eval_id": 2,
+  "eval_name": "resume-combat-system",
+  "prompt": "I already have a Godot 4 project with a player character that moves in 8 directions. The player scene has CharacterBody2D with Sprite2D and CollisionShape2D. Now I need to add: (1) a slime enemy with chase AI, (2) a sword attack for the player, and (3) a combat system where both can take damage. What's the plan?",
+  "assertions": [
+    {"text": "Recommends Area2D hitbox/hurtbox pattern (not body-to-body collision)", "type": "content"},
+    {"text": "Mentions periodic get_overlapping_areas() alongside area_entered", "type": "content"},
+    {"text": "Recommends building and testing incrementally (enemy, then attack, then wiring)", "type": "content"},
+    {"text": "Includes collision layer table with explicit bitmask values", "type": "content"},
+    {"text": "Separates hurt stun duration from invincibility duration", "type": "content"},
+    {"text": "Provides concrete numeric values (HP, damage, speed, durations)", "type": "content"},
+    {"text": "Mentions delegating to subagents for MCP or script writing", "type": "content"},
+    {"text": "Asks user to playtest after implementation", "type": "content"}
+  ]
+}

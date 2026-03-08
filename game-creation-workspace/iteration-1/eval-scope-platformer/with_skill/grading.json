@@ -1,0 +1,15 @@
+{
+  "eval_id": 1,
+  "eval_name": "scope-a-platformer",
+  "config": "with_skill",
+  "expectations": [
+    {"text": "Uses three-tier scope (MUST HAVE / SHOULD HAVE / OUT OF SCOPE)", "passed": true, "evidence": "Has explicit 'MUST HAVE (8 features)', 'SHOULD HAVE (4 features)', and 'EXPLICITLY OUT OF SCOPE (6 features)' sections"},
+    {"text": "Explains what a core loop is", "passed": true, "evidence": "'The most important concept: the core loop. For a platformer, it's: Run --> Jump --> Land --> (repeat)'"},
+    {"text": "Identifies core mechanic (movement/jump) as first thing to validate", "passed": true, "evidence": "'If that loop isn't fun, no amount of bosses or leaderboards will fix it' and 'Is it fun to move around? (This is finding the fun.)'"},
+    {"text": "Provides reasoning for each cut feature (not just 'cut')", "passed": true, "evidence": "Each cut has detailed reasoning: 'Wall jumping — Requires reworking the entire physics feel', 'Level editor — This is a full application, not a game feature. Months of work.'"},
+    {"text": "Uses encouraging/supportive tone for a beginner", "passed": true, "evidence": "'Welcome to game dev! Your background as a data engineer is actually a superpower here'"},
+    {"text": "Suggests naming the game or asks for a name", "passed": true, "evidence": "Provides 3 suggestions: 'Pixel Leap, First Jump, Dash & Drop' with descriptions"},
+    {"text": "Bridges game dev concepts to engineering terms (data engineer audience)", "passed": true, "evidence": "'A game is basically a real-time stream processor running at 60 events/second', 'state machine (enum + match), exactly like a workflow engine', 'Collision detection works like security group rules'"},
+    {"text": "Mentions writing a GDD as a next step", "passed": true, "evidence": "'Write a one-pager GDD with the scope above locked in' listed as next step 1"}
+  ]
+}

@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eval Review</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #faf9f5;
+      --surface: #ffffff;
+      --border: #e8e6dc;
+      --text: #141413;
+      --text-muted: #b0aea5;
+      --accent: #d97757;
+      --accent-hover: #c4613f;
+      --green: #788c5d;
+      --green-bg: #eef2e8;
+      --red: #c44;
+      --red-bg: #fceaea;
+      --header-bg: #141413;
+      --header-text: #faf9f5;
+      --radius: 6px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lora', Georgia, serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .header h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .header .instructions {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      margin-top: 0.25rem;
+    }
+    .header .progress {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      text-align: right;
+    }
+
+    /* ---- Main content ---- */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* ---- Sections ---- */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      flex-shrink: 0;
+    }
+    .section-header {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .section-body {
+      padding: 1rem;
+    }
+
+    /* ---- Config badge ---- */
+    .config-badge {
+      display: inline-block;
+      padding: 0.2rem 0.625rem;
+      border-radius: 9999px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-left: 0.75rem;
+      vertical-align: middle;
+    }
+    .config-badge.config-primary {
+      background: rgba(33, 150, 243, 0.12);
+      color: #1976d2;
+    }
+    .config-badge.config-baseline {
+      background: rgba(255, 193, 7, 0.15);
+      color: #f57f17;
+    }
+
+    /* ---- Prompt ---- */
+    .prompt-text {
+      white-space: pre-wrap;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+    }
+
+    /* ---- Outputs ---- */
+    .output-file {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .output-file + .output-file {
+      margin-top: 1rem;
+    }
+    .output-file-header {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .output-file-header .dl-btn {
+      font-size: 0.7rem;
+      color: var(--accent);
+      text-decoration: none;
+      cursor: pointer;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+    .output-file-header .dl-btn:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+    .output-file-content {
+      padding: 0.75rem;
+      overflow-x: auto;
+    }
+    .output-file-content pre {
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    .output-file-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    .output-file-content iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+    }
+    .output-file-content table {
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+      width: 100%;
+    }
+    .output-file-content table td,
+    .output-file-content table th {
+      border: 1px solid var(--border);
+      padding: 0.375rem 0.5rem;
+      text-align: left;
+    }
+    .output-file-content table th {
+      background: var(--bg);
+      font-weight: 600;
+    }
+    .output-file-content .download-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    .output-file-content .download-link:hover {
+      background: var(--border);
+    }
+    .empty-state {
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    /* ---- Feedback ---- */
+    .prev-feedback {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.625rem 0.75rem;
+      margin-top: 0.75rem;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .prev-feedback-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.25rem;
+      color: var(--text-muted);
+    }
+    .feedback-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      resize: vertical;
+      color: var(--text);
+    }
+    .feedback-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .feedback-status {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      min-height: 1.1em;
+    }
+
+    /* ---- Grades (collapsible) ---- */
+    .grades-toggle {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .grades-toggle:hover {
+      color: var(--accent);
+    }
+    .grades-toggle .arrow {
+      margin-right: 0.5rem;
+      transition: transform 0.15s;
+      font-size: 0.75rem;
+    }
+    .grades-toggle .arrow.open {
+      transform: rotate(90deg);
+    }
+    .grades-content {
+      display: none;
+      margin-top: 0.75rem;
+    }
+    .grades-content.open {
+      display: block;
+    }
+    .grades-summary {
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .grade-badge {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .grade-pass { background: var(--green-bg); color: var(--green); }
+    .grade-fail { background: var(--red-bg); color: var(--red); }
+    .assertion-list {
+      list-style: none;
+    }
+    .assertion-item {
+      padding: 0.625rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8125rem;
+    }
+    .assertion-item:last-child { border-bottom: none; }
+    .assertion-status {
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+    .assertion-status.pass { color: var(--green); }
+    .assertion-status.fail { color: var(--red); }
+    .assertion-evidence {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+      padding-left: 1.5rem;
+    }
+
+    /* ---- View tabs ---- */
+    .view-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 2rem;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .view-tab {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.625rem 1.25rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .view-tab:hover { color: var(--text); }
+    .view-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .view-panel { display: none; }
+    .view-panel.active { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+
+    /* ---- Benchmark view ---- */
+    .benchmark-view {
+      padding: 1.5rem 2rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .benchmark-table {
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.8125rem;
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+    .benchmark-table th, .benchmark-table td {
+      padding: 0.625rem 0.75rem;
+      text-align: left;
+      border: 1px solid var(--border);
+    }
+    .benchmark-table th {
+      font-family: 'Poppins', sans-serif;
+      background: var(--header-bg);
+      color: var(--header-text);
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .benchmark-table tr:hover { background: var(--bg); }
+    .benchmark-table tr.benchmark-row-with { background: rgba(33, 150, 243, 0.06); }
+    .benchmark-table tr.benchmark-row-without { background: rgba(255, 193, 7, 0.06); }
+    .benchmark-table tr.benchmark-row-with:hover { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-without:hover { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-table tr.benchmark-row-avg { font-weight: 600; border-top: 2px solid var(--border); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-with { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-without { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-delta-positive { color: var(--green); font-weight: 600; }
+    .benchmark-delta-negative { color: var(--red); font-weight: 600; }
+    .benchmark-notes {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .benchmark-notes h3 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+    }
+    .benchmark-notes ul {
+      list-style: disc;
+      padding-left: 1.25rem;
+    }
+    .benchmark-notes li {
+      font-size: 0.8125rem;
+      line-height: 1.6;
+      margin-bottom: 0.375rem;
+    }
+    .benchmark-empty {
+      color: var(--text-muted);
+      font-style: italic;
+      text-align: center;
+      padding: 3rem;
+    }
+
+    /* ---- Navigation ---- */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .nav-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: all 0.15s;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .done-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .done-btn:hover {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .done-btn.ready {
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+    }
+    .done-btn.ready:hover {
+      background: var(--accent-hover);
+    }
+    /* ---- Done overlay ---- */
+    .done-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    .done-overlay.visible {
+      display: flex;
+    }
+    .done-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 2rem 3rem;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+    }
+    .done-card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .done-card p {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .done-card .btn-row {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .done-card button {
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    .done-card button:hover {
+      background: var(--bg);
+    }
+    /* ---- Toast ---- */
+    .toast {
+      position: fixed;
+      bottom: 5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 0.625rem 1.25rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 200;
+    }
+    .toast.visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" style="height:100vh; display:flex; flex-direction:column;">
+    <div class="header">
+      <div>
+        <h1>Eval Review: <span id="skill-name"></span></h1>
+        <div class="instructions">Review each output and leave feedback below. Navigate with arrow keys or buttons. When done, copy feedback and paste into Claude Code.</div>
+      </div>
+      <div class="progress" id="progress"></div>
+    </div>
+
+    <!-- View tabs (only shown when benchmark data exists) -->
+    <div class="view-tabs" id="view-tabs" style="display:none;">
+      <button class="view-tab active" onclick="switchView('outputs')">Outputs</button>
+      <button class="view-tab" onclick="switchView('benchmark')">Benchmark</button>
+    </div>
+
+    <!-- Outputs panel (qualitative review) -->
+    <div class="view-panel active" id="panel-outputs">
+    <div class="main">
+      <!-- Prompt -->
+      <div class="section">
+        <div class="section-header">Prompt <span class="config-badge" id="config-badge" style="display:none;"></span></div>
+        <div class="section-body">
+          <div class="prompt-text" id="prompt-text"></div>
+        </div>
+      </div>
+
+      <!-- Outputs -->
+      <div class="section">
+        <div class="section-header">Output</div>
+        <div class="section-body" id="outputs-body">
+          <div class="empty-state">No output files found</div>
+        </div>
+      </div>
+
+      <!-- Previous Output (collapsible) -->
+      <div class="section" id="prev-outputs-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="togglePrevOutputs()">
+            <span class="arrow" id="prev-outputs-arrow">&#9654;</span>
+            Previous Output
+          </div>
+        </div>
+        <div class="grades-content" id="prev-outputs-content"></div>
+      </div>
+
+      <!-- Grades (collapsible) -->
+      <div class="section" id="grades-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="toggleGrades()">
+            <span class="arrow" id="grades-arrow">&#9654;</span>
+            Formal Grades
+          </div>
+        </div>
+        <div class="grades-content" id="grades-content"></div>
+      </div>
+
+      <!-- Feedback -->
+      <div class="section">
+        <div class="section-header">Your Feedback</div>
+        <div class="section-body">
+          <textarea
+            class="feedback-textarea"
+            id="feedback"
+            placeholder="What do you think of this output? Any issues, suggestions, or things that look great?"
+          ></textarea>
+          <div class="feedback-status" id="feedback-status"></div>
+          <div class="prev-feedback" id="prev-feedback" style="display:none;">
+            <div class="prev-feedback-label">Previous feedback</div>
+            <div id="prev-feedback-text"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav" id="outputs-nav">
+      <button class="nav-btn" id="prev-btn" onclick="navigate(-1)">&#8592; Previous</button>
+      <button class="done-btn" id="done-btn" onclick="showDoneDialog()">Submit All Reviews</button>
+      <button class="nav-btn" id="next-btn" onclick="navigate(1)">Next &#8594;</button>
+    </div>
+    </div><!-- end panel-outputs -->
+
+    <!-- Benchmark panel (quantitative stats) -->
+    <div class="view-panel" id="panel-benchmark">
+      <div class="benchmark-view" id="benchmark-content">
+        <div class="benchmark-empty">No benchmark data available. Run a benchmark to see quantitative results here.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Done overlay -->
+  <div class="done-overlay" id="done-overlay">
+    <div class="done-card">
+      <h2>Review Complete</h2>
+      <p>Your feedback has been saved. Go back to your Claude Code session and tell Claude you're done reviewing.</p>
+      <div class="btn-row">
+        <button onclick="closeDoneDialog()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ---- Embedded data (injected by generate_review.py) ----
+    const EMBEDDED_DATA = {"skill_name": "gdscript", "runs": [{"id": "player-script-with_skill", "prompt": "Create a player.gd script for a top-down 2D RPG in Godot 4. The player should move in 8 directions using WASD, have a sword attack on mouse click that creates a hitbox in the facing direction, and take damage from enemies with knockback and invincibility frames. Include health management with a max of 6 HP.", "eval_id": 0, "outputs": [{"name": "player.gd", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,ZXh0ZW5kcyBDaGFyYWN0ZXJCb2R5MkQKIyMgVG9wLWRvd24gMkQgUlBHIHBsYXllciB3aXRoIDgtZGlyZWN0aW9uIG1vdmVtZW50LCBzd29yZCBhdHRhY2ssCiMjIGRhbWFnZS9rbm9ja2JhY2ssIGFuZCBpbnZpbmNpYmlsaXR5IGZyYW1lcy4KCnNpZ25hbCBoZWFsdGhfY2hhbmdlZChjdXJyZW50OiBpbnQsIG1heGltdW06IGludCkKc2lnbmFsIGRpZWQKCmVudW0gU3RhdGUgeyBJRExFLCBNT1ZFLCBBVFRBQ0ssIEhVUlQsIERFQUQgfQplbnVtIEZhY2luZyB7IERPV04sIExFRlQsIFJJR0hULCBVUCB9Cgpjb25zdCBLTk9DS0JBQ0tfREVDQVk6IGZsb2F0ID0gNjAwLjAKCkBleHBvcnRfY2F0ZWdvcnkoIlBsYXllciIpCgpAZXhwb3J0X2dyb3VwKCJNb3ZlbWVudCIpCkBleHBvcnQgdmFyIHNwZWVkOiBmbG9hdCA9IDEyMC4wCgpAZXhwb3J0X2dyb3VwKCJDb21iYXQiKQpAZXhwb3J0X3N1Ymdyb3VwKCJPZmZlbnNlIikKQGV4cG9ydCB2YXIgYXR0YWNrX2RhbWFnZTogaW50ID0gMQpAZXhwb3J0IHZhciBhdHRhY2tfZHVyYXRpb246IGZsb2F0ID0gMC4zCkBleHBvcnQgdmFyIGhpdGJveF9vZmZzZXQ6IGZsb2F0ID0gMjAuMApAZXhwb3J0IHZhciBoaXRib3hfc2l6ZTogVmVjdG9yMiA9IFZlY3RvcjIoMTguMCwgMTguMCkKCkBleHBvcnRfc3ViZ3JvdXAoIkRlZmVuc2UiKQpAZXhwb3J0IHZhciBtYXhfaHA6IGludCA9IDYKQGV4cG9ydCB2YXIga25vY2tiYWNrX2ZvcmNlOiBmbG9hdCA9IDIwMC4wCkBleHBvcnQgdmFyIGludmluY2liaWxpdHlfZHVyYXRpb246IGZsb2F0ID0gMS4wCkBleHBvcnQgdmFyIGZsYXNoX2ludGVydmFsOiBmbG9hdCA9IDAuMQoKdmFyIGN1cnJlbnRfaHA6IGludCA9IDYKdmFyIGN1cnJlbnRfc3RhdGU6IFN0YXRlID0gU3RhdGUuSURMRQp2YXIgZmFjaW5nOiBGYWNpbmcgPSBGYWNpbmcuRE9XTgp2YXIga25vY2tiYWNrX3ZlbG9jaXR5OiBWZWN0b3IyID0gVmVjdG9yMi5aRVJPCnZhciBfaW52aW5jaWJsZTogYm9vbCA9IGZhbHNlCnZhciBfZGFtYWdlX2Nvb2xkb3duOiBmbG9hdCA9IDAuMAoKQG9ucmVhZHkgdmFyIHNwcml0ZTogU3ByaXRlMkQgPSAkU3ByaXRlMkQKQG9ucmVhZHkgdmFyIGh1cnRib3g6IEFyZWEyRCA9ICRIdXJ0Qm94CkBvbnJlYWR5IHZhciBjb2xsaXNpb25fc2hhcGU6IENvbGxpc2lvblNoYXBlMkQgPSAkQ29sbGlzaW9uU2hhcGUyRAoKCmZ1bmMgX3JlYWR5KCkgLT4gdm9pZDoKCWN1cnJlbnRfaHAgPSBtYXhfaHAKCWhlYWx0aF9jaGFuZ2VkLmVtaXQoY3VycmVudF9ocCwgbWF4X2hwKQoJaHVydGJveC5hcmVhX2VudGVyZWQuY29ubmVjdChfb25faHVydGJveF9hcmVhX2VudGVyZWQpCgoKZnVuYyBfcGh5c2ljc19wcm9jZXNzKGRlbHRhOiBmbG9hdCkgLT4gdm9pZDoKCW1hdGNoIGN1cnJlbnRfc3RhdGU6CgkJU3RhdGUuSURMRToKCQkJX3Byb2Nlc3NfaWRsZShkZWx0YSkKCQlTdGF0ZS5NT1ZFOgoJCQlfcHJvY2Vzc19tb3ZlKGRlbHRhKQoJCVN0YXRlLkFUVEFDSzoKCQkJX3Byb2Nlc3NfYXR0YWNrKGRlbHRhKQoJCVN0YXRlLkhVUlQ6CgkJCV9wcm9jZXNzX2h1cnQoZGVsdGEpCgkJU3RhdGUuREVBRDoKCQkJcGFzcwoKCWlmIF9kYW1hZ2VfY29vbGRvd24gPiAwLjA6CgkJX2RhbWFnZV9jb29sZG93biAtPSBkZWx0YQoKCWlmIF9kYW1hZ2VfY29vbGRvd24gPD0gMC4wIGFuZCBub3QgX2ludmluY2libGU6CgkJX2NoZWNrX292ZXJsYXBwaW5nX2RhbWFnZSgpCgoKZnVuYyBfdW5oYW5kbGVkX2lucHV0KGV2ZW50OiBJbnB1dEV2ZW50KSAtPiB2b2lkOgoJaWYgY3VycmVudF9zdGF0ZSA9PSBTdGF0ZS5ERUFEOgoJCXJldHVybgoKCWlmIGV2ZW50LmlzX2FjdGlvbl9wcmVzc2VkKCJhdHRhY2siKSBhbmQgY3VycmVudF9zdGF0ZSAhPSBTdGF0ZS5BVFRBQ0sgYW5kIGN1cnJlbnRfc3RhdGUgIT0gU3RhdGUuSFVSVDoKCQlfc3RhcnRfYXR0YWNrKCkKCgojIC0tIFB1YmxpYyBtZXRob2RzIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KCmZ1bmMgdGFrZV9kYW1hZ2UoYW1vdW50OiBpbnQsIGZyb21fcG9zaXRpb246IFZlY3RvcjIpIC0+IHZvaWQ6CglpZiBfaW52aW5jaWJsZSBvciBjdXJyZW50X3N0YXRlID09IFN0YXRlLkRFQUQ6CgkJcmV0dXJuCgoJY3VycmVudF9ocCA9IGNsYW1waShjdXJyZW50X2hwIC0gYW1vdW50LCAwLCBtYXhfaHApCgloZWFsdGhfY2hhbmdlZC5lbWl0KGN1cnJlbnRfaHAsIG1heF9ocCkKCglpZiBjdXJyZW50X2hwIDw9IDA6CgkJX2VudGVyX2RlYWQoKQoJCXJldHVybgoKCSMgS25vY2tiYWNrIGRpcmVjdGlvbjogYXdheSBmcm9tIGRhbWFnZSBzb3VyY2UKCWtub2NrYmFja192ZWxvY2l0eSA9IChnbG9iYWxfcG9zaXRpb24gLSBmcm9tX3Bvc2l0aW9uKS5ub3JtYWxpemVkKCkgKiBrbm9ja2JhY2tfZm9yY2UKCWN1cnJlbnRfc3RhdGUgPSBTdGF0ZS5IVVJUCglfc3RhcnRfaW52aW5jaWJpbGl0eSgpCgoKZnVuYyBoZWFsKGFtb3VudDogaW50KSAtPiB2b2lkOgoJaWYgY3VycmVudF9zdGF0ZSA9PSBTdGF0ZS5ERUFEOgoJCXJldHVybgoJY3VycmVudF9ocCA9IGNsYW1waShjdXJyZW50X2hwICsgYW1vdW50LCAwLCBtYXhfaHApCgloZWFsdGhfY2hhbmdlZC5lbWl0KGN1cnJlbnRfaHAsIG1heF9ocCkKCgojIC0tIFByaXZhdGUgbWV0aG9kcyAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KCmZ1bmMgX3Byb2Nlc3NfaWRsZShfZGVsdGE6IGZsb2F0KSAtPiB2b2lkOgoJdmFyIGlucHV0X2RpcjogVmVjdG9yMiA9IElucHV0LmdldF92ZWN0b3IoIm1vdmVfbGVmdCIsICJtb3ZlX3JpZ2h0IiwgIm1vdmVfdXAiLCAibW92ZV9kb3duIikKCWlmIGlucHV0X2RpciAhPSBWZWN0b3IyLlpFUk86CgkJY3VycmVudF9zdGF0ZSA9IFN0YXRlLk1PVkUKCQlfdXBkYXRlX2ZhY2luZyhpbnB1dF9kaXIpCgoJdmVsb2NpdHkgPSBWZWN0b3IyLlpFUk8KCW1vdmVfYW5kX3NsaWRlKCkKCgpmdW5jIF9wcm9jZXNzX21vdmUoX2RlbHRhOiBmbG9hdCkgLT4gdm9pZDoKCXZhciBpbnB1dF9kaXI6IFZlY3RvcjIgPSBJbnB1dC5nZXRfdmVjdG9yKCJtb3ZlX2xlZnQiLCAibW92ZV9yaWdodCIsICJtb3ZlX3VwIiwgIm1vdmVfZG93biIpCgoJaWYgaW5wdXRfZGlyID09IFZlY3RvcjIuWkVSTzoKCQljdXJyZW50X3N0YXRlID0gU3RhdGUuSURMRQoJCXZlbG9jaXR5ID0gVmVjdG9yMi5aRVJPCgkJbW92ZV9hbmRfc2xpZGUoKQoJCXJldHVybgoKCV91cGRhdGVfZmFjaW5nKGlucHV0X2RpcikKCXZlbG9jaXR5ID0gaW5wdXRfZGlyICogc3BlZWQKCW1vdmVfYW5kX3NsaWRlKCkKCgpmdW5jIF9wcm9jZXNzX2F0dGFjayhfZGVsdGE6IGZsb2F0KSAtPiB2b2lkOgoJIyBQbGF5ZXIgaXMgbG9ja2VkIGluIHBsYWNlIGR1cmluZyBhdHRhY2s7IGtub2NrYmFjayBzdGlsbCBkZWNheXMKCXZlbG9jaXR5ID0gVmVjdG9yMi5aRVJPCgltb3ZlX2FuZF9zbGlkZSgpCgoKZnVuYyBfcHJvY2Vzc19odXJ0KGRlbHRhOiBmbG9hdCkgLT4gdm9pZDoKCWtub2NrYmFja192ZWxvY2l0eSA9IGtub2NrYmFja192ZWxvY2l0eS5tb3ZlX3Rvd2FyZChWZWN0b3IyLlpFUk8sIEtOT0NLQkFDS19ERUNBWSAqIGRlbHRhKQoJdmVsb2NpdHkgPSBrbm9ja2JhY2tfdmVsb2NpdHkKCW1vdmVfYW5kX3NsaWRlKCkKCglpZiBrbm9ja2JhY2tfdmVsb2NpdHkubGVuZ3RoKCkgPCAxMC4wOgoJCWtub2NrYmFja192ZWxvY2l0eSA9IFZlY3RvcjIuWkVSTwoJCWN1cnJlbnRfc3RhdGUgPSBTdGF0ZS5JRExFCgoKZnVuYyBfdXBkYXRlX2ZhY2luZyhkaXJlY3Rpb246IFZlY3RvcjIpIC0+IHZvaWQ6CgkjIENob29zZSB0aGUgZG9taW5hbnQgYXhpcyBmb3IgZmFjaW5nCglpZiBhYnNmKGRpcmVjdGlvbi54KSA+PSBhYnNmKGRpcmVjdGlvbi55KToKCQlmYWNpbmcgPSBGYWNpbmcuUklHSFQgaWYgZGlyZWN0aW9uLnggPiAwLjAgZWxzZSBGYWNpbmcuTEVGVAoJZWxzZToKCQlmYWNpbmcgPSBGYWNpbmcuRE9XTiBpZiBkaXJlY3Rpb24ueSA+IDAuMCBlbHNlIEZhY2luZy5VUAoKCmZ1bmMgX3N0YXJ0X2F0dGFjaygpIC0+IHZvaWQ6CgljdXJyZW50X3N0YXRlID0gU3RhdGUuQVRUQUNLCglfc3Bhd25fc3dvcmRfaGl0Ym94KCkKCgl2YXIgdGltZXI6IFNjZW5lVHJlZVRpbWVyID0gZ2V0X3RyZWUoKS5jcmVhdGVfdGltZXIoYXR0YWNrX2R1cmF0aW9uKQoJdGltZXIudGltZW91dC5jb25uZWN0KF9vbl9hdHRhY2tfZmluaXNoZWQpCgoKZnVuYyBfc3Bhd25fc3dvcmRfaGl0Ym94KCkgLT4gdm9pZDoKCXZhciBoaXRib3ggOj0gQXJlYTJELm5ldygpCgloaXRib3gubmFtZSA9ICJTd29yZEhpdGJveCIKCWhpdGJveC5jb2xsaXNpb25fbGF5ZXIgPSAwCgloaXRib3guY29sbGlzaW9uX21hc2sgPSAyICAjIEVuZW15IGh1cnRib3ggbGF5ZXIKCWhpdGJveC5hZGRfdG9fZ3JvdXAoInBsYXllcl9oaXRib3giKQoKCXZhciBzaGFwZSA6PSBDb2xsaXNpb25TaGFwZTJELm5ldygpCgl2YXIgcmVjdCA6PSBSZWN0YW5nbGVTaGFwZTJELm5ldygpCglyZWN0LnNpemUgPSBoaXRib3hfc2l6ZQoJc2hhcGUuc2hhcGUgPSByZWN0CgloaXRib3guYWRkX2NoaWxkKHNoYXBlKQoKCSMgUG9zaXRpb24gdGhlIGhpdGJveCBpbiB0aGUgZmFjaW5nIGRpcmVjdGlvbgoJdmFyIG9mZnNldDogVmVjdG9yMiA9IF9nZXRfZmFjaW5nX3ZlY3RvcigpICogaGl0Ym94X29mZnNldAoJaGl0Ym94LnBvc2l0aW9uID0gb2Zmc2V0CgoJYWRkX2NoaWxkKGhpdGJveCkKCgkjIFJlbW92ZSBoaXRib3ggYWZ0ZXIgYXR0YWNrIGR1cmF0aW9uCgl2YXIgdGltZXI6IFNjZW5lVHJlZVRpbWVyID0gZ2V0X3RyZWUoKS5jcmVhdGVfdGltZXIoYXR0YWNrX2R1cmF0aW9uKQoJdGltZXIudGltZW91dC5jb25uZWN0KGhpdGJveC5xdWV1ZV9mcmVlKQoKCSMgRGVhbCBkYW1hZ2UgdG8gZW5lbWllcyBhbHJlYWR5IG92ZXJsYXBwaW5nIG9uIG5leHQgcGh5c2ljcyBmcmFtZQoJIyAoZ2V0X292ZXJsYXBwaW5nX2FyZWFzIG5lZWRzIG9uZSBmcmFtZSB0byBwb3B1bGF0ZSkKCWF3YWl0IGdldF90cmVlKCkucGh5c2ljc19mcmFtZQoJaWYgaXNfaW5zdGFuY2VfdmFsaWQoaGl0Ym94KToKCQlmb3IgYXJlYTogQXJlYTJEIGluIGhpdGJveC5nZXRfb3ZlcmxhcHBpbmdfYXJlYXMoKToKCQkJX2FwcGx5X2hpdChhcmVhKQoKCQkjIEFsc28gY29ubmVjdCBmb3IgZW5lbWllcyBlbnRlcmluZyBkdXJpbmcgdGhlIGF0dGFjayB3aW5kb3cKCQloaXRib3guYXJlYV9lbnRlcmVkLmNvbm5lY3QoX2FwcGx5X2hpdCkKCgpmdW5jIF9hcHBseV9oaXQoYXJlYTogQXJlYTJEKSAtPiB2b2lkOgoJaWYgYXJlYS5pc19pbl9ncm91cCgiZW5lbXlfaHVydGJveCIpIGFuZCBhcmVhLmdldF9wYXJlbnQoKS5oYXNfbWV0aG9kKCJ0YWtlX2RhbWFnZSIpOgoJCWFyZWEuZ2V0X3BhcmVudCgpLnRha2VfZGFtYWdlKGF0dGFja19kYW1hZ2UsIGdsb2JhbF9wb3NpdGlvbikKCgpmdW5jIF9vbl9hdHRhY2tfZmluaXNoZWQoKSAtPiB2b2lkOgoJaWYgY3VycmVudF9zdGF0ZSA9PSBTdGF0ZS5BVFRBQ0s6CgkJY3VycmVudF9zdGF0ZSA9IFN0YXRlLklETEUKCgpmdW5jIF9nZXRfZmFjaW5nX3ZlY3RvcigpIC0+IFZlY3RvcjI6CgltYXRjaCBmYWNpbmc6CgkJRmFjaW5nLkRPV046CgkJCXJldHVybiBWZWN0b3IyLkRPV04KCQlGYWNpbmcuVVA6CgkJCXJldHVybiBWZWN0b3IyLlVQCgkJRmFjaW5nLkxFRlQ6CgkJCXJldHVybiBWZWN0b3IyLkxFRlQKCQlGYWNpbmcuUklHSFQ6CgkJCXJldHVybiBWZWN0b3IyLlJJR0hUCglyZXR1cm4gVmVjdG9yMi5ET1dOCgoKZnVuYyBfc3RhcnRfaW52aW5jaWJpbGl0eSgpIC0+IHZvaWQ6CglfaW52aW5jaWJsZSA9IHRydWUKCV9kYW1hZ2VfY29vbGRvd24gPSBpbnZpbmNpYmlsaXR5X2R1cmF0aW9uCgoJIyBGbGFzaCBlZmZlY3QgdXNpbmcgYSB0d2VlbgoJdmFyIHR3ZWVuOiBUd2VlbiA9IGNyZWF0ZV90d2VlbigpCgl2YXIgZmxhc2hfY291bnQ6IGludCA9IGludChpbnZpbmNpYmlsaXR5X2R1cmF0aW9uIC8gZmxhc2hfaW50ZXJ2YWwpCglmb3IgaTogaW50IGluIHJhbmdlKGZsYXNoX2NvdW50KToKCQl0d2Vlbi50d2Vlbl9wcm9wZXJ0eShzcHJpdGUsICJtb2R1bGF0ZTphIiwgMC4zLCBmbGFzaF9pbnRlcnZhbCAqIDAuNSkKCQl0d2Vlbi50d2Vlbl9wcm9wZXJ0eShzcHJpdGUsICJtb2R1bGF0ZTphIiwgMS4wLCBmbGFzaF9pbnRlcnZhbCAqIDAuNSkKCgl0d2Vlbi5maW5pc2hlZC5jb25uZWN0KF9vbl9pbnZpbmNpYmlsaXR5X2ZpbmlzaGVkKQoKCmZ1bmMgX29uX2ludmluY2liaWxpdHlfZmluaXNoZWQoKSAtPiB2b2lkOgoJX2ludmluY2libGUgPSBmYWxzZQoJc3ByaXRlLm1vZHVsYXRlLmEgPSAxLjAKCgpmdW5jIF9vbl9odXJ0Ym94X2FyZWFfZW50ZXJlZChhcmVhOiBBcmVhMkQpIC0+IHZvaWQ6CglpZiBhcmVhLmlzX2luX2dyb3VwKCJlbmVteV9oaXRib3giKToKCQl0YWtlX2RhbWFnZSgxLCBhcmVhLmdsb2JhbF9wb3NpdGlvbikKCgpmdW5jIF9jaGVja19vdmVybGFwcGluZ19kYW1hZ2UoKSAtPiB2b2lkOgoJZm9yIGFyZWE6IEFyZWEyRCBpbiBodXJ0Ym94LmdldF9vdmVybGFwcGluZ19hcmVhcygpOgoJCWlmIGFyZWEuaXNfaW5fZ3JvdXAoImVuZW15X2hpdGJveCIpOgoJCQl0YWtlX2RhbWFnZSgxLCBhcmVhLmdsb2JhbF9wb3NpdGlvbikKCQkJcmV0dXJuCgoKZnVuYyBfZW50ZXJfZGVhZCgpIC0+IHZvaWQ6CgljdXJyZW50X3N0YXRlID0gU3RhdGUuREVBRAoJdmVsb2NpdHkgPSBWZWN0b3IyLlpFUk8KCWRpZWQuZW1pdCgpCgkjIERpc2FibGUgY29sbGlzaW9uIHNvIHBsYXllciBkb2Vzbid0IGJsb2NrIGFueXRoaW5nCglpZiBjb2xsaXNpb25fc2hhcGU6CgkJY29sbGlzaW9uX3NoYXBlLnNldF9kZWZlcnJlZCgiZGlzYWJsZWQiLCB0cnVlKQo="}], "grading": {"eval_id": 0, "configuration": "with_skill", "expectations": [{"text": "Uses tabs for indentation", "passed": true, "evidence": "All indentation uses tab characters throughout the file"}, {"text": "Type hints on ALL function signatures", "passed": true, "evidence": "Every function has typed params and return: e.g. func take_damage(amount: int, from_position: Vector2) -> void, func _process_idle(_delta: float) -> void"}, {"text": "Correct code ordering", "passed": true, "evidence": "signals (L5-6) > enums (L8-9) > constants (L11) > exports (L13-29) > vars (L31-36) > onready (L38-40) > _ready (L43) > _physics_process (L49) > public (L79) > private (L105+)"}, {"text": "Uses @export with grouping", "passed": true, "evidence": "@export_category('Player'), @export_group('Movement'), @export_group('Combat'), @export_subgroup('Offense'), @export_subgroup('Defense')"}, {"text": "Uses @onready for node references", "passed": true, "evidence": "@onready var sprite: Sprite2D = $Sprite2D, @onready var hurtbox: Area2D = $HurtBox, @onready var collision_shape"}, {"text": "Movement in _physics_process", "passed": true, "evidence": "_physics_process dispatches to state handlers, _process_move uses Input.get_vector + velocity + move_and_slide"}, {"text": "Uses Input.get_vector() or Input.get_axis()", "passed": true, "evidence": "Input.get_vector('move_left', 'move_right', 'move_up', 'move_down') on lines 106, 116"}, {"text": "No Godot 3.x syntax", "passed": true, "evidence": "Uses CharacterBody2D, @export, @onready, signal.connect(callable), create_tween(), await"}, {"text": "Incoming damage uses BOTH area_entered AND overlap polling", "passed": true, "evidence": "_on_hurtbox_area_entered (L237) + _check_overlapping_damage (L242) called from _physics_process when cooldown <= 0"}, {"text": "No await in _physics_process", "passed": true, "evidence": "await only in _spawn_sword_hitbox (L186), which is called from _start_attack, not from _physics_process"}]}}, {"id": "player-script-without_skill", "prompt": "Create a player.gd script for a top-down 2D RPG in Godot 4. The player should move in 8 directions using WASD, have a sword attack on mouse click that creates a hitbox in the facing direction, and take damage from enemies with knockback and invincibility frames. Include health management with a max of 6 HP.", "eval_id": 0, "outputs": [{"name": "player.gd", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,ZXh0ZW5kcyBDaGFyYWN0ZXJCb2R5MkQKCiMjIFRvcC1kb3duIDJEIFJQRyBQbGF5ZXIgQ29udHJvbGxlcgojIyBGZWF0dXJlczogOC1kaXIgV0FTRCBtb3ZlbWVudCwgc3dvcmQgYXR0YWNrIG9uIG1vdXNlIGNsaWNrLCBkYW1hZ2Uva25vY2tiYWNrLCBpLWZyYW1lcywgaGVhbHRoICg2IEhQKQoKIyBNb3ZlbWVudApAZXhwb3J0IHZhciBtb3ZlX3NwZWVkOiBmbG9hdCA9IDEyMC4wCgojIENvbWJhdApAZXhwb3J0IHZhciBtYXhfaHA6IGludCA9IDYKQGV4cG9ydCB2YXIgYXR0YWNrX2RhbWFnZTogaW50ID0gMQpAZXhwb3J0IHZhciBhdHRhY2tfZHVyYXRpb246IGZsb2F0ID0gMC4zCkBleHBvcnQgdmFyIGF0dGFja19jb29sZG93bjogZmxvYXQgPSAwLjE1CkBleHBvcnQgdmFyIGhpdGJveF9vZmZzZXQ6IGZsb2F0ID0gMjQuMApAZXhwb3J0IHZhciBoaXRib3hfc2l6ZTogVmVjdG9yMiA9IFZlY3RvcjIoMjgsIDI4KQoKIyBLbm9ja2JhY2sKQGV4cG9ydCB2YXIga25vY2tiYWNrX3N0cmVuZ3RoOiBmbG9hdCA9IDIwMC4wCkBleHBvcnQgdmFyIGtub2NrYmFja19mcmljdGlvbjogZmxvYXQgPSA4MDAuMAoKIyBJbnZpbmNpYmlsaXR5CkBleHBvcnQgdmFyIGludmluY2liaWxpdHlfZHVyYXRpb246IGZsb2F0ID0gMS4wCkBleHBvcnQgdmFyIGZsYXNoX2ludGVydmFsOiBmbG9hdCA9IDAuMQoKIyBTdGF0ZQp2YXIgaHA6IGludCA9IG1heF9ocAp2YXIgZmFjaW5nX2RpcmVjdGlvbjogVmVjdG9yMiA9IFZlY3RvcjIuRE9XTgp2YXIgaXNfYXR0YWNraW5nOiBib29sID0gZmFsc2UKdmFyIGNhbl9hdHRhY2s6IGJvb2wgPSB0cnVlCnZhciBpc19pbnZpbmNpYmxlOiBib29sID0gZmFsc2UKdmFyIGtub2NrYmFja192ZWxvY2l0eTogVmVjdG9yMiA9IFZlY3RvcjIuWkVSTwoKIyBOb2RlIHJlZmVyZW5jZXMKdmFyIGhpdGJveF9hcmVhOiBBcmVhMkQgPSBudWxsCnZhciBoaXRib3hfY29sbGlzaW9uOiBDb2xsaXNpb25TaGFwZTJEID0gbnVsbAp2YXIgc3ByaXRlOiBTcHJpdGUyRCA9IG51bGwKdmFyIGludmluY2liaWxpdHlfdGltZXI6IFRpbWVyID0gbnVsbAp2YXIgYXR0YWNrX3RpbWVyOiBUaW1lciA9IG51bGwKdmFyIGF0dGFja19jb29sZG93bl90aW1lcjogVGltZXIgPSBudWxsCnZhciBmbGFzaF90aW1lcjogVGltZXIgPSBudWxsCgojIFNpZ25hbHMKc2lnbmFsIGhlYWx0aF9jaGFuZ2VkKGN1cnJlbnRfaHA6IGludCwgbWF4aW11bV9ocDogaW50KQpzaWduYWwgcGxheWVyX2RpZWQKCgpmdW5jIF9yZWFkeSgpIC0+IHZvaWQ6CglocCA9IG1heF9ocAoKCV9jcmVhdGVfaGl0Ym94KCkKCV9jcmVhdGVfdGltZXJzKCkKCgkjIEdyYWIgZXhpc3Rpbmcgc3ByaXRlIGlmIHByZXNlbnQsIG90aGVyd2lzZSBjcmVhdGUgYSBwbGFjZWhvbGRlcgoJc3ByaXRlID0gZ2V0X25vZGVfb3JfbnVsbCgiU3ByaXRlMkQiKQoJaWYgc3ByaXRlID09IG51bGw6CgkJc3ByaXRlID0gU3ByaXRlMkQubmV3KCkKCQlzcHJpdGUubmFtZSA9ICJTcHJpdGUyRCIKCQlhZGRfY2hpbGQoc3ByaXRlKQoKCSMgRW5zdXJlIHBsYXllciBpcyBvbiBhIGNvbGxpc2lvbiBsYXllciBlbmVtaWVzIGNhbiBkZXRlY3QKCSMgTGF5ZXIgMSA9IFBsYXllciwgTGF5ZXIgMiA9IEVuZW1pZXMsIExheWVyIDMgPSBQbGF5ZXIgQXR0YWNrCgljb2xsaXNpb25fbGF5ZXIgPSAxCgljb2xsaXNpb25fbWFzayA9IDIKCgloZWFsdGhfY2hhbmdlZC5lbWl0KGhwLCBtYXhfaHApCgoKZnVuYyBfcGh5c2ljc19wcm9jZXNzKGRlbHRhOiBmbG9hdCkgLT4gdm9pZDoKCXZhciBpbnB1dF9kaXJlY3Rpb24gOj0gX2dldF9pbnB1dF9kaXJlY3Rpb24oKQoKCWlmIGlucHV0X2RpcmVjdGlvbiAhPSBWZWN0b3IyLlpFUk86CgkJZmFjaW5nX2RpcmVjdGlvbiA9IGlucHV0X2RpcmVjdGlvbi5ub3JtYWxpemVkKCkKCgkjIEFwcGx5IGtub2NrYmFjayBmcmljdGlvbgoJaWYga25vY2tiYWNrX3ZlbG9jaXR5Lmxlbmd0aCgpID4gNS4wOgoJCWtub2NrYmFja192ZWxvY2l0eSA9IGtub2NrYmFja192ZWxvY2l0eS5tb3ZlX3Rvd2FyZChWZWN0b3IyLlpFUk8sIGtub2NrYmFja19mcmljdGlvbiAqIGRlbHRhKQoJZWxzZToKCQlrbm9ja2JhY2tfdmVsb2NpdHkgPSBWZWN0b3IyLlpFUk8KCgkjIE1vdmVtZW50IChyZWR1Y2VkIGR1cmluZyBhdHRhY2spCgl2YXIgbW92ZV9mYWN0b3IgOj0gMC4zIGlmIGlzX2F0dGFja2luZyBlbHNlIDEuMAoJdmVsb2NpdHkgPSAoaW5wdXRfZGlyZWN0aW9uLm5vcm1hbGl6ZWQoKSAqIG1vdmVfc3BlZWQgKiBtb3ZlX2ZhY3RvcikgKyBrbm9ja2JhY2tfdmVsb2NpdHkKCgltb3ZlX2FuZF9zbGlkZSgpCgoKZnVuYyBfdW5oYW5kbGVkX2lucHV0KGV2ZW50OiBJbnB1dEV2ZW50KSAtPiB2b2lkOgoJaWYgZXZlbnQgaXMgSW5wdXRFdmVudE1vdXNlQnV0dG9uOgoJCWlmIGV2ZW50LmJ1dHRvbl9pbmRleCA9PSBNT1VTRV9CVVRUT05fTEVGVCBhbmQgZXZlbnQucHJlc3NlZDoKCQkJX3RyeV9hdHRhY2soKQoKCmZ1bmMgX2dldF9pbnB1dF9kaXJlY3Rpb24oKSAtPiBWZWN0b3IyOgoJdmFyIGRpcmVjdGlvbiA6PSBWZWN0b3IyLlpFUk8KCWRpcmVjdGlvbi54ID0gSW5wdXQuZ2V0X2F4aXMoIm1vdmVfbGVmdCIsICJtb3ZlX3JpZ2h0IikKCWRpcmVjdGlvbi55ID0gSW5wdXQuZ2V0X2F4aXMoIm1vdmVfdXAiLCAibW92ZV9kb3duIikKCgkjIEZhbGxiYWNrIHRvIHJhdyBrZXkgY2hlY2tzIGlmIGlucHV0IG1hcCBhY3Rpb25zIGFyZSBub3QgY29uZmlndXJlZAoJaWYgZGlyZWN0aW9uID09IFZlY3RvcjIuWkVSTzoKCQlpZiBJbnB1dC5pc19rZXlfcHJlc3NlZChLRVlfQSk6CgkJCWRpcmVjdGlvbi54IC09IDEuMAoJCWlmIElucHV0LmlzX2tleV9wcmVzc2VkKEtFWV9EKToKCQkJZGlyZWN0aW9uLnggKz0gMS4wCgkJaWYgSW5wdXQuaXNfa2V5X3ByZXNzZWQoS0VZX1cpOgoJCQlkaXJlY3Rpb24ueSAtPSAxLjAKCQlpZiBJbnB1dC5pc19rZXlfcHJlc3NlZChLRVlfUyk6CgkJCWRpcmVjdGlvbi55ICs9IDEuMAoKCXJldHVybiBkaXJlY3Rpb24KCgojIC0tLSBBdHRhY2sgU3lzdGVtIC0tLQoKZnVuYyBfdHJ5X2F0dGFjaygpIC0+IHZvaWQ6CglpZiBpc19hdHRhY2tpbmcgb3Igbm90IGNhbl9hdHRhY2s6CgkJcmV0dXJuCgoJaXNfYXR0YWNraW5nID0gdHJ1ZQoJY2FuX2F0dGFjayA9IGZhbHNlCgoJIyBQb3NpdGlvbiBoaXRib3ggaW4gdGhlIGZhY2luZyBkaXJlY3Rpb24KCWhpdGJveF9hcmVhLnBvc2l0aW9uID0gZmFjaW5nX2RpcmVjdGlvbiAqIGhpdGJveF9vZmZzZXQKCWhpdGJveF9hcmVhLnZpc2libGUgPSB0cnVlCgloaXRib3hfY29sbGlzaW9uLnNldF9kZWZlcnJlZCgiZGlzYWJsZWQiLCBmYWxzZSkKCgkjIERlYWwgZGFtYWdlIHRvIG92ZXJsYXBwaW5nIGVuZW1pZXMgYWZ0ZXIgYSBzaG9ydCBwaHlzaWNzIGZyYW1lCglhd2FpdCBnZXRfdHJlZSgpLnBoeXNpY3NfZnJhbWUKCV9kZWFsX2RhbWFnZV90b19lbmVtaWVzKCkKCglhdHRhY2tfdGltZXIuc3RhcnQoYXR0YWNrX2R1cmF0aW9uKQoKCmZ1bmMgX2RlYWxfZGFtYWdlX3RvX2VuZW1pZXMoKSAtPiB2b2lkOgoJaWYgaGl0Ym94X2FyZWEgPT0gbnVsbDoKCQlyZXR1cm4KCgl2YXIgb3ZlcmxhcHBpbmcgOj0gaGl0Ym94X2FyZWEuZ2V0X292ZXJsYXBwaW5nX2FyZWFzKCkKCWZvciBhcmVhIGluIG92ZXJsYXBwaW5nOgoJCXZhciBlbmVteSA6PSBhcmVhLmdldF9wYXJlbnQoKQoJCWlmIGVuZW15Lmhhc19tZXRob2QoInRha2VfZGFtYWdlIik6CgkJCXZhciBkaXJlY3Rpb24gOj0gKGVuZW15Lmdsb2JhbF9wb3NpdGlvbiAtIGdsb2JhbF9wb3NpdGlvbikubm9ybWFsaXplZCgpCgkJCWVuZW15LnRha2VfZGFtYWdlKGF0dGFja19kYW1hZ2UsIGRpcmVjdGlvbikKCgl2YXIgb3ZlcmxhcHBpbmdfYm9kaWVzIDo9IGhpdGJveF9hcmVhLmdldF9vdmVybGFwcGluZ19ib2RpZXMoKQoJZm9yIGJvZHkgaW4gb3ZlcmxhcHBpbmdfYm9kaWVzOgoJCWlmIGJvZHkuaGFzX21ldGhvZCgidGFrZV9kYW1hZ2UiKToKCQkJdmFyIGRpcmVjdGlvbiA6PSAoYm9keS5nbG9iYWxfcG9zaXRpb24gLSBnbG9iYWxfcG9zaXRpb24pLm5vcm1hbGl6ZWQoKQoJCQlib2R5LnRha2VfZGFtYWdlKGF0dGFja19kYW1hZ2UsIGRpcmVjdGlvbikKCgpmdW5jIF9vbl9hdHRhY2tfdGltZXJfdGltZW91dCgpIC0+IHZvaWQ6Cglpc19hdHRhY2tpbmcgPSBmYWxzZQoJaGl0Ym94X2FyZWEudmlzaWJsZSA9IGZhbHNlCgloaXRib3hfY29sbGlzaW9uLnNldF9kZWZlcnJlZCgiZGlzYWJsZWQiLCB0cnVlKQoJYXR0YWNrX2Nvb2xkb3duX3RpbWVyLnN0YXJ0KGF0dGFja19jb29sZG93bikKCgpmdW5jIF9vbl9hdHRhY2tfY29vbGRvd25fdGltZW91dCgpIC0+IHZvaWQ6CgljYW5fYXR0YWNrID0gdHJ1ZQoKCiMgLS0tIERhbWFnZSBTeXN0ZW0gLS0tCgpmdW5jIHRha2VfZGFtYWdlKGFtb3VudDogaW50LCBmcm9tX2RpcmVjdGlvbjogVmVjdG9yMiA9IFZlY3RvcjIuWkVSTykgLT4gdm9pZDoKCWlmIGlzX2ludmluY2libGUgb3IgaHAgPD0gMDoKCQlyZXR1cm4KCglocCA9IGNsYW1waShocCAtIGFtb3VudCwgMCwgbWF4X2hwKQoJaGVhbHRoX2NoYW5nZWQuZW1pdChocCwgbWF4X2hwKQoKCSMgQXBwbHkga25vY2tiYWNrIGF3YXkgZnJvbSBkYW1hZ2Ugc291cmNlCglpZiBmcm9tX2RpcmVjdGlvbiAhPSBWZWN0b3IyLlpFUk86CgkJa25vY2tiYWNrX3ZlbG9jaXR5ID0gZnJvbV9kaXJlY3Rpb24ubm9ybWFsaXplZCgpICoga25vY2tiYWNrX3N0cmVuZ3RoCgllbHNlOgoJCWtub2NrYmFja192ZWxvY2l0eSA9IC1mYWNpbmdfZGlyZWN0aW9uICoga25vY2tiYWNrX3N0cmVuZ3RoCgoJaWYgaHAgPD0gMDoKCQlfZGllKCkKCQlyZXR1cm4KCglfc3RhcnRfaW52aW5jaWJpbGl0eSgpCgoKZnVuYyBoZWFsKGFtb3VudDogaW50KSAtPiB2b2lkOgoJaWYgaHAgPD0gMDoKCQlyZXR1cm4KCglocCA9IGNsYW1waShocCArIGFtb3VudCwgMCwgbWF4X2hwKQoJaGVhbHRoX2NoYW5nZWQuZW1pdChocCwgbWF4X2hwKQoKCmZ1bmMgX3N0YXJ0X2ludmluY2liaWxpdHkoKSAtPiB2b2lkOgoJaXNfaW52aW5jaWJsZSA9IHRydWUKCWludmluY2liaWxpdHlfdGltZXIuc3RhcnQoaW52aW5jaWJpbGl0eV9kdXJhdGlvbikKCWZsYXNoX3RpbWVyLnN0YXJ0KGZsYXNoX2ludGVydmFsKQoKCmZ1bmMgX29uX2ludmluY2liaWxpdHlfdGltZW91dCgpIC0+IHZvaWQ6Cglpc19pbnZpbmNpYmxlID0gZmFsc2UKCWZsYXNoX3RpbWVyLnN0b3AoKQoJaWYgc3ByaXRlOgoJCXNwcml0ZS52aXNpYmxlID0gdHJ1ZQoJCXNwcml0ZS5tb2R1bGF0ZS5hID0gMS4wCgoKZnVuYyBfb25fZmxhc2hfdGltZW91dCgpIC0+IHZvaWQ6CglpZiBzcHJpdGU6CgkJc3ByaXRlLnZpc2libGUgPSBub3Qgc3ByaXRlLnZpc2libGUKCgpmdW5jIF9kaWUoKSAtPiB2b2lkOgoJcGxheWVyX2RpZWQuZW1pdCgpCgkjIERpc2FibGUgZnVydGhlciBpbnB1dCBwcm9jZXNzaW5nOyBsZXQgdGhlIGdhbWUgd29ybGQgaGFuZGxlIHJlc3RhcnQvZ2FtZS1vdmVyCglzZXRfcGh5c2ljc19wcm9jZXNzKGZhbHNlKQoJc2V0X3Byb2Nlc3NfdW5oYW5kbGVkX2lucHV0KGZhbHNlKQoKCWlmIHNwcml0ZToKCQkjIFNpbXBsZSBkZWF0aCBmYWRlCgkJdmFyIHR3ZWVuIDo9IGNyZWF0ZV90d2VlbigpCgkJdHdlZW4udHdlZW5fcHJvcGVydHkoc3ByaXRlLCAibW9kdWxhdGU6YSIsIDAuMCwgMC41KQoJCWF3YWl0IHR3ZWVuLmZpbmlzaGVkCgoJcXVldWVfZnJlZSgpCgoKIyAtLS0gTm9kZSBDcmVhdGlvbiBIZWxwZXJzIC0tLQoKZnVuYyBfY3JlYXRlX2hpdGJveCgpIC0+IHZvaWQ6CgloaXRib3hfYXJlYSA9IEFyZWEyRC5uZXcoKQoJaGl0Ym94X2FyZWEubmFtZSA9ICJTd29yZEhpdGJveCIKCWhpdGJveF9hcmVhLmNvbGxpc2lvbl9sYXllciA9IDQgICMgTGF5ZXIgMyA9IFBsYXllciBBdHRhY2sKCWhpdGJveF9hcmVhLmNvbGxpc2lvbl9tYXNrID0gMiAgICMgTGF5ZXIgMiA9IEVuZW1pZXMKCWhpdGJveF9hcmVhLm1vbml0b3JpbmcgPSB0cnVlCgloaXRib3hfYXJlYS5tb25pdG9yYWJsZSA9IGZhbHNlCgloaXRib3hfYXJlYS52aXNpYmxlID0gZmFsc2UKCWFkZF9jaGlsZChoaXRib3hfYXJlYSkKCgloaXRib3hfY29sbGlzaW9uID0gQ29sbGlzaW9uU2hhcGUyRC5uZXcoKQoJaGl0Ym94X2NvbGxpc2lvbi5uYW1lID0gIkhpdGJveFNoYXBlIgoJdmFyIHNoYXBlIDo9IFJlY3RhbmdsZVNoYXBlMkQubmV3KCkKCXNoYXBlLnNpemUgPSBoaXRib3hfc2l6ZQoJaGl0Ym94X2NvbGxpc2lvbi5zaGFwZSA9IHNoYXBlCgloaXRib3hfY29sbGlzaW9uLmRpc2FibGVkID0gdHJ1ZQoJaGl0Ym94X2FyZWEuYWRkX2NoaWxkKGhpdGJveF9jb2xsaXNpb24pCgoKZnVuYyBfY3JlYXRlX3RpbWVycygpIC0+IHZvaWQ6CglhdHRhY2tfdGltZXIgPSBUaW1lci5uZXcoKQoJYXR0YWNrX3RpbWVyLm5hbWUgPSAiQXR0YWNrVGltZXIiCglhdHRhY2tfdGltZXIub25lX3Nob3QgPSB0cnVlCglhdHRhY2tfdGltZXIudGltZW91dC5jb25uZWN0KF9vbl9hdHRhY2tfdGltZXJfdGltZW91dCkKCWFkZF9jaGlsZChhdHRhY2tfdGltZXIpCgoJYXR0YWNrX2Nvb2xkb3duX3RpbWVyID0gVGltZXIubmV3KCkKCWF0dGFja19jb29sZG93bl90aW1lci5uYW1lID0gIkF0dGFja0Nvb2xkb3duVGltZXIiCglhdHRhY2tfY29vbGRvd25fdGltZXIub25lX3Nob3QgPSB0cnVlCglhdHRhY2tfY29vbGRvd25fdGltZXIudGltZW91dC5jb25uZWN0KF9vbl9hdHRhY2tfY29vbGRvd25fdGltZW91dCkKCWFkZF9jaGlsZChhdHRhY2tfY29vbGRvd25fdGltZXIpCgoJaW52aW5jaWJpbGl0eV90aW1lciA9IFRpbWVyLm5ldygpCglpbnZpbmNpYmlsaXR5X3RpbWVyLm5hbWUgPSAiSW52aW5jaWJpbGl0eVRpbWVyIgoJaW52aW5jaWJpbGl0eV90aW1lci5vbmVfc2hvdCA9IHRydWUKCWludmluY2liaWxpdHlfdGltZXIudGltZW91dC5jb25uZWN0KF9vbl9pbnZpbmNpYmlsaXR5X3RpbWVvdXQpCglhZGRfY2hpbGQoaW52aW5jaWJpbGl0eV90aW1lcikKCglmbGFzaF90aW1lciA9IFRpbWVyLm5ldygpCglmbGFzaF90aW1lci5uYW1lID0gIkZsYXNoVGltZXIiCglmbGFzaF90aW1lci5vbmVfc2hvdCA9IGZhbHNlCglmbGFzaF90aW1lci50aW1lb3V0LmNvbm5lY3QoX29uX2ZsYXNoX3RpbWVvdXQpCglhZGRfY2hpbGQoZmxhc2hfdGltZXIpCg=="}], "grading": {"eval_id": 0, "configuration": "without_skill", "expectations": [{"text": "Uses tabs for indentation", "passed": true, "evidence": "File uses tab indentation throughout"}, {"text": "Type hints on ALL function signatures", "passed": true, "evidence": "Most functions typed: _ready() -> void, take_damage(amount: int, from_direction: Vector2) -> void, etc. Variable types also mostly explicit."}, {"text": "Correct code ordering", "passed": false, "evidence": "Signals declared at lines 43-44, AFTER @export vars (L7-23) and state vars (L27-39). Should be: signals first after extends."}, {"text": "Uses @export with grouping", "passed": false, "evidence": "Uses flat @export with comments (# Movement, # Combat) instead of @export_group()/@export_category()"}, {"text": "Uses @onready for node references", "passed": false, "evidence": "Uses var sprite: Sprite2D = null then get_node_or_null() in _ready(). Creates timers programmatically in _ready() instead of @onready."}, {"text": "Movement in _physics_process", "passed": true, "evidence": "_physics_process handles movement on line 68"}, {"text": "Uses Input.get_vector() or Input.get_axis()", "passed": false, "evidence": "Uses Input.get_axis() (acceptable) but falls back to raw Input.is_key_pressed(KEY_A/D/W/S) on lines 100-107"}, {"text": "No Godot 3.x syntax", "passed": true, "evidence": "Uses Godot 4.x syntax: CharacterBody2D, @export, create_tween(), callable connections"}, {"text": "Incoming damage uses BOTH area_entered AND overlap polling", "passed": false, "evidence": "No hurtbox for incoming enemy damage at all. take_damage() exists as public method but no Area2D detection for receiving enemy contact damage."}, {"text": "No await in _physics_process", "passed": true, "evidence": "await is in _try_attack and _die, not _physics_process"}]}}, {"id": "slime-script-with_skill", "prompt": "Write a slime enemy script (slime.gd) for Godot 4. The slime should wander randomly when idle, chase the player when it enters a detection zone, deal continuous contact damage, and die with a fade-out effect when HP reaches 0. It needs a simple state machine.", "eval_id": 1, "outputs": [{"name": "slime.gd", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,ZXh0ZW5kcyBDaGFyYWN0ZXJCb2R5MkQKIyMgU2xpbWUgZW5lbXkgd2l0aCBzdGF0ZSBtYWNoaW5lIEFJLgojIyBTdGF0ZXM6IElETEUsIFdBTkRFUiwgQ0hBU0UsIEhVUlQsIERFQUQuCiMjIFdhbmRlcnMgcmFuZG9tbHkgd2hlbiBpZGxlLCBjaGFzZXMgdGhlIHBsYXllciBvbiBkZXRlY3Rpb24sIGRlYWxzCiMjIGNvbnRpbnVvdXMgY29udGFjdCBkYW1hZ2UsIGFuZCBmYWRlcyBvdXQgb24gZGVhdGguCgpzaWduYWwgZGllZAoKZW51bSBTdGF0ZSB7IElETEUsIFdBTkRFUiwgQ0hBU0UsIEhVUlQsIERFQUQgfQoKY29uc3QgREFNQUdFX1RJQ0tfSU5URVJWQUw6IGZsb2F0ID0gMC41CgpAZXhwb3J0X2NhdGVnb3J5KCJTbGltZSIpCgpAZXhwb3J0X2dyb3VwKCJNb3ZlbWVudCIpCkBleHBvcnQgdmFyIHdhbmRlcl9zcGVlZDogZmxvYXQgPSAyMC4wCkBleHBvcnQgdmFyIGNoYXNlX3NwZWVkOiBmbG9hdCA9IDU1LjAKQGV4cG9ydCB2YXIgd2FuZGVyX2R1cmF0aW9uX21pbjogZmxvYXQgPSAxLjAKQGV4cG9ydCB2YXIgd2FuZGVyX2R1cmF0aW9uX21heDogZmxvYXQgPSAyLjUKQGV4cG9ydCB2YXIgaWRsZV9kdXJhdGlvbl9taW46IGZsb2F0ID0gMC41CkBleHBvcnQgdmFyIGlkbGVfZHVyYXRpb25fbWF4OiBmbG9hdCA9IDMuMAoKQGV4cG9ydF9ncm91cCgiQ29tYmF0IikKQGV4cG9ydCB2YXIgbWF4X2hwOiBpbnQgPSAzCkBleHBvcnQgdmFyIGNvbnRhY3RfZGFtYWdlOiBpbnQgPSAxCkBleHBvcnQgdmFyIGtub2NrYmFja19mb3JjZTogZmxvYXQgPSAxMjAuMApAZXhwb3J0IHZhciBodXJ0X2R1cmF0aW9uOiBmbG9hdCA9IDAuMwpAZXhwb3J0IHZhciBkZWF0aF9mYWRlX2R1cmF0aW9uOiBmbG9hdCA9IDAuNQoKdmFyIGhwOiBpbnQKdmFyIGN1cnJlbnRfc3RhdGU6IFN0YXRlID0gU3RhdGUuSURMRQp2YXIgcGxheWVyOiBOb2RlMkQgPSBudWxsCnZhciB3YW5kZXJfZGlyZWN0aW9uOiBWZWN0b3IyID0gVmVjdG9yMi5aRVJPCnZhciB3YW5kZXJfdGltZXI6IGZsb2F0ID0gMC4wCnZhciBpZGxlX3RpbWVyOiBmbG9hdCA9IDAuMAp2YXIgZGFtYWdlX3RpY2tfY29vbGRvd246IGZsb2F0ID0gMC4wCgpAb25yZWFkeSB2YXIgc3ByaXRlOiBTcHJpdGUyRCA9ICRTcHJpdGUyRApAb25yZWFkeSB2YXIgZGV0ZWN0aW9uX3pvbmU6IEFyZWEyRCA9ICREZXRlY3Rpb25ab25lCkBvbnJlYWR5IHZhciBjb250YWN0X2hpdGJveDogQXJlYTJEID0gJENvbnRhY3RIaXRCb3gKQG9ucmVhZHkgdmFyIGh1cnRfYm94OiBBcmVhMkQgPSAkSHVydEJveAoKCmZ1bmMgX3JlYWR5KCkgLT4gdm9pZDoKCWhwID0gbWF4X2hwCglhZGRfdG9fZ3JvdXAoImVuZW1pZXMiKQoJaWRsZV90aW1lciA9IHJhbmRmX3JhbmdlKGlkbGVfZHVyYXRpb25fbWluLCBpZGxlX2R1cmF0aW9uX21heCkKCgkjIFNpZ25hbCBjb25uZWN0aW9ucyBmb3IgZGV0ZWN0aW9uIHpvbmUgKGJvZHktYmFzZWQsIGRldGVjdHMgcGxheWVyIENoYXJhY3RlckJvZHkyRCkKCWRldGVjdGlvbl96b25lLmJvZHlfZW50ZXJlZC5jb25uZWN0KF9vbl9kZXRlY3Rpb25fYm9keV9lbnRlcmVkKQoJZGV0ZWN0aW9uX3pvbmUuYm9keV9leGl0ZWQuY29ubmVjdChfb25fZGV0ZWN0aW9uX2JvZHlfZXhpdGVkKQoKCSMgU2lnbmFsIGNvbm5lY3Rpb24gZm9yIHJlY2VpdmluZyBkYW1hZ2UgZnJvbSBwbGF5ZXIgc3dvcmQgaGl0Ym94CglodXJ0X2JveC5hcmVhX2VudGVyZWQuY29ubmVjdChfb25faHVydGJveF9hcmVhX2VudGVyZWQpCgoJIyBNYXJrIHRoZSBjb250YWN0IGhpdGJveCBzbyB0aGUgcGxheWVyJ3MgaHVydGJveCBjYW4gaWRlbnRpZnkgaXQKCWNvbnRhY3RfaGl0Ym94LmFkZF90b19ncm91cCgiZW5lbXlfaGl0Ym94IikKCgpmdW5jIF9waHlzaWNzX3Byb2Nlc3MoZGVsdGE6IGZsb2F0KSAtPiB2b2lkOgoJbWF0Y2ggY3VycmVudF9zdGF0ZToKCQlTdGF0ZS5JRExFOgoJCQlfcHJvY2Vzc19pZGxlKGRlbHRhKQoJCVN0YXRlLldBTkRFUjoKCQkJX3Byb2Nlc3Nfd2FuZGVyKGRlbHRhKQoJCVN0YXRlLkNIQVNFOgoJCQlfcHJvY2Vzc19jaGFzZShkZWx0YSkKCQlTdGF0ZS5IVVJUOgoJCQkjIERlY2VsZXJhdGUgZHVyaW5nIGtub2NrYmFjawoJCQl2ZWxvY2l0eSA9IHZlbG9jaXR5LmxlcnAoVmVjdG9yMi5aRVJPLCAwLjE1KQoJCQltb3ZlX2FuZF9zbGlkZSgpCgkJU3RhdGUuREVBRDoKCQkJcGFzcwoKCV9wcm9jZXNzX2NvbnRhY3RfZGFtYWdlKGRlbHRhKQoKCmZ1bmMgdGFrZV9kYW1hZ2UoYW1vdW50OiBpbnQpIC0+IHZvaWQ6CglpZiBjdXJyZW50X3N0YXRlID09IFN0YXRlLkRFQUQ6CgkJcmV0dXJuCgoJaHAgLT0gYW1vdW50CglpZiBocCA8PSAwOgoJCV9kaWUoKQoJCXJldHVybgoKCWN1cnJlbnRfc3RhdGUgPSBTdGF0ZS5IVVJUCglzcHJpdGUubW9kdWxhdGUgPSBDb2xvcigxLCAwLjMsIDAuMykKCgkjIEtub2NrYmFjayBhd2F5IGZyb20gcGxheWVyCglpZiBwbGF5ZXIgYW5kIGlzX2luc3RhbmNlX3ZhbGlkKHBsYXllcik6CgkJdmVsb2NpdHkgPSAoZ2xvYmFsX3Bvc2l0aW9uIC0gcGxheWVyLmdsb2JhbF9wb3NpdGlvbikubm9ybWFsaXplZCgpICoga25vY2tiYWNrX2ZvcmNlCgoJIyBUaW1lci1iYXNlZCByZWNvdmVyeSAoYXZvaWRzIGF3YWl0IGluIF9waHlzaWNzX3Byb2Nlc3MpCgl2YXIgdGltZXI6IFNjZW5lVHJlZVRpbWVyID0gZ2V0X3RyZWUoKS5jcmVhdGVfdGltZXIoaHVydF9kdXJhdGlvbikKCWF3YWl0IHRpbWVyLnRpbWVvdXQKCglpZiBjdXJyZW50X3N0YXRlID09IFN0YXRlLkRFQUQ6CgkJcmV0dXJuCglzcHJpdGUubW9kdWxhdGUgPSBDb2xvci5XSElURQoJY3VycmVudF9zdGF0ZSA9IFN0YXRlLkNIQVNFIGlmIHBsYXllciAhPSBudWxsIGVsc2UgU3RhdGUuSURMRQoJaWRsZV90aW1lciA9IHJhbmRmX3JhbmdlKGlkbGVfZHVyYXRpb25fbWluLCBpZGxlX2R1cmF0aW9uX21heCkKCgpmdW5jIGdldF9kYW1hZ2UoKSAtPiBpbnQ6CglyZXR1cm4gY29udGFjdF9kYW1hZ2UKCgojIC0tIFByaXZhdGUgbWV0aG9kcyAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCgpmdW5jIF9wcm9jZXNzX2lkbGUoZGVsdGE6IGZsb2F0KSAtPiB2b2lkOgoJdmVsb2NpdHkgPSBWZWN0b3IyLlpFUk8KCWlkbGVfdGltZXIgLT0gZGVsdGEKCWlmIGlkbGVfdGltZXIgPD0gMC4wOgoJCXdhbmRlcl9kaXJlY3Rpb24gPSBWZWN0b3IyKAoJCQlyYW5kZl9yYW5nZSgtMS4wLCAxLjApLAoJCQlyYW5kZl9yYW5nZSgtMS4wLCAxLjApCgkJKS5ub3JtYWxpemVkKCkKCQl3YW5kZXJfdGltZXIgPSByYW5kZl9yYW5nZSh3YW5kZXJfZHVyYXRpb25fbWluLCB3YW5kZXJfZHVyYXRpb25fbWF4KQoJCWN1cnJlbnRfc3RhdGUgPSBTdGF0ZS5XQU5ERVIKCgpmdW5jIF9wcm9jZXNzX3dhbmRlcihkZWx0YTogZmxvYXQpIC0+IHZvaWQ6Cgl2ZWxvY2l0eSA9IHdhbmRlcl9kaXJlY3Rpb24gKiB3YW5kZXJfc3BlZWQKCXdhbmRlcl90aW1lciAtPSBkZWx0YQoKCWlmIHdhbmRlcl90aW1lciA8PSAwLjA6CgkJY3VycmVudF9zdGF0ZSA9IFN0YXRlLklETEUKCQlpZGxlX3RpbWVyID0gcmFuZGZfcmFuZ2UoaWRsZV9kdXJhdGlvbl9taW4sIGlkbGVfZHVyYXRpb25fbWF4KQoKCW1vdmVfYW5kX3NsaWRlKCkKCgpmdW5jIF9wcm9jZXNzX2NoYXNlKF9kZWx0YTogZmxvYXQpIC0+IHZvaWQ6CglpZiBwbGF5ZXIgPT0gbnVsbCBvciBub3QgaXNfaW5zdGFuY2VfdmFsaWQocGxheWVyKToKCQljdXJyZW50X3N0YXRlID0gU3RhdGUuSURMRQoJCWlkbGVfdGltZXIgPSByYW5kZl9yYW5nZShpZGxlX2R1cmF0aW9uX21pbiwgaWRsZV9kdXJhdGlvbl9tYXgpCgkJcmV0dXJuCgoJdmFyIGRpcmVjdGlvbjogVmVjdG9yMiA9IChwbGF5ZXIuZ2xvYmFsX3Bvc2l0aW9uIC0gZ2xvYmFsX3Bvc2l0aW9uKS5ub3JtYWxpemVkKCkKCXZlbG9jaXR5ID0gZGlyZWN0aW9uICogY2hhc2Vfc3BlZWQKCW1vdmVfYW5kX3NsaWRlKCkKCgpmdW5jIF9wcm9jZXNzX2NvbnRhY3RfZGFtYWdlKGRlbHRhOiBmbG9hdCkgLT4gdm9pZDoKCSMjIENvbnRpbnVvdXMgY29udGFjdCBkYW1hZ2U6IGFyZWFfZW50ZXJlZCBvbmx5IGZpcmVzIG9uY2Ugb24gb3ZlcmxhcCBzdGFydCwKCSMjIHNvIHdlIGFsc28gcG9sbCBvdmVybGFwcGluZyBhcmVhcyBvbiBhIGNvb2xkb3duIHRvIHJlLWFwcGx5IGRhbWFnZSB3aGlsZQoJIyMgdGhlIHBsYXllciBzdGF5cyBpbiBjb250YWN0LgoJaWYgY3VycmVudF9zdGF0ZSA9PSBTdGF0ZS5ERUFEOgoJCXJldHVybgoKCWRhbWFnZV90aWNrX2Nvb2xkb3duIC09IGRlbHRhCglpZiBkYW1hZ2VfdGlja19jb29sZG93biA+IDAuMDoKCQlyZXR1cm4KCglmb3IgYXJlYSBpbiBjb250YWN0X2hpdGJveC5nZXRfb3ZlcmxhcHBpbmdfYXJlYXMoKToKCQlpZiBhcmVhLmlzX2luX2dyb3VwKCJwbGF5ZXJfaHVydGJveCIpIGFuZCBhcmVhLmdldF9wYXJlbnQoKS5oYXNfbWV0aG9kKCJ0YWtlX2RhbWFnZSIpOgoJCQlhcmVhLmdldF9wYXJlbnQoKS50YWtlX2RhbWFnZShjb250YWN0X2RhbWFnZSwgZ2xvYmFsX3Bvc2l0aW9uKQoJCQlkYW1hZ2VfdGlja19jb29sZG93biA9IERBTUFHRV9USUNLX0lOVEVSVkFMCgkJCXJldHVybgoKCmZ1bmMgX2RpZSgpIC0+IHZvaWQ6CgljdXJyZW50X3N0YXRlID0gU3RhdGUuREVBRAoJdmVsb2NpdHkgPSBWZWN0b3IyLlpFUk8KCgkjIERpc2FibGUgYWxsIGNvbGxpc2lvbiBzaGFwZXMgc28gdGhlIGNvcnBzZSBpcyBpbmVydAoJJENvbGxpc2lvblNoYXBlMkQuc2V0X2RlZmVycmVkKCJkaXNhYmxlZCIsIHRydWUpCgljb250YWN0X2hpdGJveC5zZXRfZGVmZXJyZWQoIm1vbml0b3JpbmciLCBmYWxzZSkKCWNvbnRhY3RfaGl0Ym94LnNldF9kZWZlcnJlZCgibW9uaXRvcmFibGUiLCBmYWxzZSkKCWh1cnRfYm94LnNldF9kZWZlcnJlZCgibW9uaXRvcmluZyIsIGZhbHNlKQoKCSMgRmFkZS1vdXQgdHdlZW4gdGhlbiBmcmVlCgl2YXIgdHdlZW46IFR3ZWVuID0gY3JlYXRlX3R3ZWVuKCkKCXR3ZWVuLnR3ZWVuX3Byb3BlcnR5KHNwcml0ZSwgIm1vZHVsYXRlOmEiLCAwLjAsIGRlYXRoX2ZhZGVfZHVyYXRpb24pCglhd2FpdCB0d2Vlbi5maW5pc2hlZAoKCWRpZWQuZW1pdCgpCglxdWV1ZV9mcmVlKCkKCgpmdW5jIF9vbl9kZXRlY3Rpb25fYm9keV9lbnRlcmVkKGJvZHk6IE5vZGUyRCkgLT4gdm9pZDoKCWlmIGJvZHkuaXNfaW5fZ3JvdXAoInBsYXllciIpOgoJCXBsYXllciA9IGJvZHkKCQlpZiBjdXJyZW50X3N0YXRlICE9IFN0YXRlLkhVUlQgYW5kIGN1cnJlbnRfc3RhdGUgIT0gU3RhdGUuREVBRDoKCQkJY3VycmVudF9zdGF0ZSA9IFN0YXRlLkNIQVNFCgoKZnVuYyBfb25fZGV0ZWN0aW9uX2JvZHlfZXhpdGVkKGJvZHk6IE5vZGUyRCkgLT4gdm9pZDoKCWlmIGJvZHkuaXNfaW5fZ3JvdXAoInBsYXllciIpOgoJCXBsYXllciA9IG51bGwKCQlpZiBjdXJyZW50X3N0YXRlID09IFN0YXRlLkNIQVNFOgoJCQljdXJyZW50X3N0YXRlID0gU3RhdGUuSURMRQoJCQlpZGxlX3RpbWVyID0gcmFuZGZfcmFuZ2UoaWRsZV9kdXJhdGlvbl9taW4sIGlkbGVfZHVyYXRpb25fbWF4KQoKCmZ1bmMgX29uX2h1cnRib3hfYXJlYV9lbnRlcmVkKGFyZWE6IEFyZWEyRCkgLT4gdm9pZDoKCWlmIGFyZWEuaXNfaW5fZ3JvdXAoInBsYXllcl9oaXRib3giKToKCQl2YXIgZGFtYWdlOiBpbnQgPSAxCgkJaWYgYXJlYS5nZXRfcGFyZW50KCkuaGFzX21ldGhvZCgiZ2V0X2F0dGFja19kYW1hZ2UiKToKCQkJZGFtYWdlID0gYXJlYS5nZXRfcGFyZW50KCkuZ2V0X2F0dGFja19kYW1hZ2UoKQoJCXRha2VfZGFtYWdlKGRhbWFnZSkK"}], "grading": {"eval_id": 1, "configuration": "with_skill", "expectations": [{"text": "Uses enum for state machine", "passed": true, "evidence": "enum State { IDLE, WANDER, CHASE, HURT, DEAD } on line 9"}, {"text": "Type hints on ALL function signatures", "passed": true, "evidence": "All functions typed: _physics_process(delta: float) -> void, take_damage(amount: int) -> void, etc."}, {"text": "Uses @export with grouping", "passed": true, "evidence": "@export_category('Slime'), @export_group('Movement'), @export_group('Combat')"}, {"text": "Contact damage uses get_overlapping_areas() polling", "passed": true, "evidence": "_process_contact_damage() polls contact_hitbox.get_overlapping_areas() with damage_tick_cooldown timer (L145-160)"}, {"text": "No Godot 3.x syntax", "passed": true, "evidence": "All 4.x: CharacterBody2D, @export, signal.connect(callable), create_tween()"}, {"text": "Death tween stored in typed variable", "passed": true, "evidence": "var tween: Tween = create_tween() on line 174"}, {"text": "Uses tabs for indentation", "passed": true, "evidence": "Tab indentation throughout"}, {"text": "Correct code ordering", "passed": true, "evidence": "signal (L7) > enum (L9) > const (L11) > exports (L13-28) > vars (L30-36) > onready (L38-41) > _ready (L44) > _physics_process (L60) > public (L78) > private (L109+)"}, {"text": "No await in _physics_process", "passed": true, "evidence": "await in take_damage (L96, standalone coroutine) and _die (L176), not in _physics_process"}, {"text": "Uses match for state dispatch", "passed": true, "evidence": "match current_state: on line 61 with State.IDLE/WANDER/CHASE/HURT/DEAD branches"}]}}, {"id": "slime-script-without_skill", "prompt": "Write a slime enemy script (slime.gd) for Godot 4. The slime should wander randomly when idle, chase the player when it enters a detection zone, deal continuous contact damage, and die with a fade-out effect when HP reaches 0. It needs a simple state machine.", "eval_id": 1, "outputs": [{"name": "slime.gd", "type": "binary", "mime": "application/octet-stream", "data_uri": "data:application/octet-stream;base64,ZXh0ZW5kcyBDaGFyYWN0ZXJCb2R5MkQKIyMgU2xpbWUgZW5lbXkgd2l0aCBpZGxlIHdhbmRlcmluZywgcGxheWVyIGNoYXNpbmcsIGNvbnRhY3QgZGFtYWdlLCBhbmQgZmFkZS1vdXQgZGVhdGguCiMjIFJlcXVpcmVzIHRoZSBmb2xsb3dpbmcgbm9kZSBzdHJ1Y3R1cmU6CiMjICAgQ2hhcmFjdGVyQm9keTJEICh0aGlzIHNjcmlwdCkKIyMgICDilJzilIAgQW5pbWF0ZWRTcHJpdGUyRCAob3IgU3ByaXRlMkQpIOKAlCB2aXN1YWxzCiMjICAg4pSc4pSAIENvbGxpc2lvblNoYXBlMkQg4oCUIHBoeXNpY3MgYm9keQojIyAgIOKUnOKUgCBEZXRlY3Rpb25ab25lIChBcmVhMkQpIOKAlCBwbGF5ZXIgZGV0ZWN0aW9uIHJhZGl1cwojIyAgIOKUgiAgIOKUlOKUgCBDb2xsaXNpb25TaGFwZTJECiMjICAg4pSc4pSAIEh1cnRCb3ggKEFyZWEyRCkg4oCUIGNvbnRhY3QgZGFtYWdlIGhpdGJveAojIyAgIOKUgiAgIOKUlOKUgCBDb2xsaXNpb25TaGFwZTJECiMjICAg4pSU4pSAIFdhbmRlclRpbWVyIChUaW1lcikg4oCUIGNvbnRyb2xzIHdhbmRlciBkaXJlY3Rpb24gY2hhbmdlcwoKZW51bSBTdGF0ZSB7IElETEUsIFdBTkRFUiwgQ0hBU0UsIERFQUQgfQoKIyAtLSBUdW5pbmcgY29uc3RhbnRzIC0tCkBleHBvcnQgdmFyIG1heF9ocDogaW50ID0gMwpAZXhwb3J0IHZhciB3YW5kZXJfc3BlZWQ6IGZsb2F0ID0gMzAuMApAZXhwb3J0IHZhciBjaGFzZV9zcGVlZDogZmxvYXQgPSA2MC4wCkBleHBvcnQgdmFyIGNvbnRhY3RfZGFtYWdlOiBpbnQgPSAxCkBleHBvcnQgdmFyIGRhbWFnZV90aWNrX2ludGVydmFsOiBmbG9hdCA9IDAuNQpAZXhwb3J0IHZhciBkZWF0aF9mYWRlX2R1cmF0aW9uOiBmbG9hdCA9IDAuNgpAZXhwb3J0IHZhciB3YW5kZXJfdGltZV9taW46IGZsb2F0ID0gMS4wCkBleHBvcnQgdmFyIHdhbmRlcl90aW1lX21heDogZmxvYXQgPSAzLjAKQGV4cG9ydCB2YXIgaWRsZV90aW1lX21pbjogZmxvYXQgPSAwLjUKQGV4cG9ydCB2YXIgaWRsZV90aW1lX21heDogZmxvYXQgPSAyLjAKCiMgLS0gUnVudGltZSBzdGF0ZSAtLQp2YXIgY3VycmVudF9zdGF0ZTogU3RhdGUgPSBTdGF0ZS5JRExFCnZhciBocDogaW50CnZhciB3YW5kZXJfZGlyZWN0aW9uOiBWZWN0b3IyID0gVmVjdG9yMi5aRVJPCnZhciB0YXJnZXQ6IENoYXJhY3RlckJvZHkyRCA9IG51bGwgICMgcmVmZXJlbmNlIHRvIHRoZSBwbGF5ZXIKdmFyIF9kYW1hZ2VfY29vbGRvd25zOiBEaWN0aW9uYXJ5ID0ge30gICMgbm9kZV9pZCAtPiByZW1haW5pbmcgY29vbGRvd24KCiMgLS0gTm9kZSByZWZlcmVuY2VzIChhc3NpZ25lZCBpbiBfcmVhZHkpIC0tCkBvbnJlYWR5IHZhciBhbmltYXRlZF9zcHJpdGU6IE5vZGUgPSBfZmluZF9zcHJpdGVfbm9kZSgpCkBvbnJlYWR5IHZhciBkZXRlY3Rpb25fem9uZTogQXJlYTJEID0gJERldGVjdGlvblpvbmUKQG9ucmVhZHkgdmFyIGh1cnRfYm94OiBBcmVhMkQgPSAkSHVydEJveApAb25yZWFkeSB2YXIgd2FuZGVyX3RpbWVyOiBUaW1lciA9ICRXYW5kZXJUaW1lcgoKCmZ1bmMgX3JlYWR5KCkgLT4gdm9pZDoKCWhwID0gbWF4X2hwCgoJIyBDb25maWd1cmUgd2FuZGVyIHRpbWVyCgl3YW5kZXJfdGltZXIub25lX3Nob3QgPSB0cnVlCgl3YW5kZXJfdGltZXIudGltZW91dC5jb25uZWN0KF9vbl93YW5kZXJfdGltZXJfdGltZW91dCkKCgkjIERldGVjdGlvbiB6b25lIHNpZ25hbHMKCWRldGVjdGlvbl96b25lLmJvZHlfZW50ZXJlZC5jb25uZWN0KF9vbl9kZXRlY3Rpb25fem9uZV9ib2R5X2VudGVyZWQpCglkZXRlY3Rpb25fem9uZS5ib2R5X2V4aXRlZC5jb25uZWN0KF9vbl9kZXRlY3Rpb25fem9uZV9ib2R5X2V4aXRlZCkKCgkjIFN0YXJ0IGluIGlkbGUgd2l0aCBhIGJyaWVmIHBhdXNlIGJlZm9yZSBmaXJzdCB3YW5kZXIKCV9lbnRlcl9pZGxlKCkKCgpmdW5jIF9waHlzaWNzX3Byb2Nlc3MoZGVsdGE6IGZsb2F0KSAtPiB2b2lkOgoJbWF0Y2ggY3VycmVudF9zdGF0ZToKCQlTdGF0ZS5JRExFOgoJCQl2ZWxvY2l0eSA9IFZlY3RvcjIuWkVSTwoJCVN0YXRlLldBTkRFUjoKCQkJdmVsb2NpdHkgPSB3YW5kZXJfZGlyZWN0aW9uICogd2FuZGVyX3NwZWVkCgkJU3RhdGUuQ0hBU0U6CgkJCWlmIGlzX2luc3RhbmNlX3ZhbGlkKHRhcmdldCk6CgkJCQl2YXIgZGlyZWN0aW9uOiBWZWN0b3IyID0gKHRhcmdldC5nbG9iYWxfcG9zaXRpb24gLSBnbG9iYWxfcG9zaXRpb24pLm5vcm1hbGl6ZWQoKQoJCQkJdmVsb2NpdHkgPSBkaXJlY3Rpb24gKiBjaGFzZV9zcGVlZAoJCQllbHNlOgoJCQkJIyBMb3N0IHRhcmdldCByZWZlcmVuY2Ug4oCUIGdvIGJhY2sgdG8gaWRsZQoJCQkJdGFyZ2V0ID0gbnVsbAoJCQkJX3RyYW5zaXRpb25fdG8oU3RhdGUuSURMRSkKCQkJCXJldHVybgoJCVN0YXRlLkRFQUQ6CgkJCXZlbG9jaXR5ID0gVmVjdG9yMi5aRVJPCgoJaWYgY3VycmVudF9zdGF0ZSAhPSBTdGF0ZS5ERUFEOgoJCW1vdmVfYW5kX3NsaWRlKCkKCQlfdXBkYXRlX2ZhY2luZygpCgkJX3Byb2Nlc3NfY29udGFjdF9kYW1hZ2UoZGVsdGEpCgoKIyAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KIyBTdGF0ZSBtYWNoaW5lIGhlbHBlcnMKIyAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KCmZ1bmMgX3RyYW5zaXRpb25fdG8obmV3X3N0YXRlOiBTdGF0ZSkgLT4gdm9pZDoKCSMgRXhpdCBsb2dpYyBmb3Igb2xkIHN0YXRlCgltYXRjaCBjdXJyZW50X3N0YXRlOgoJCVN0YXRlLldBTkRFUjoKCQkJd2FuZGVyX3RpbWVyLnN0b3AoKQoKCWN1cnJlbnRfc3RhdGUgPSBuZXdfc3RhdGUKCgkjIEVudGVyIGxvZ2ljIGZvciBuZXcgc3RhdGUKCW1hdGNoIG5ld19zdGF0ZToKCQlTdGF0ZS5JRExFOgoJCQlfZW50ZXJfaWRsZSgpCgkJU3RhdGUuV0FOREVSOgoJCQlfZW50ZXJfd2FuZGVyKCkKCQlTdGF0ZS5DSEFTRToKCQkJX2VudGVyX2NoYXNlKCkKCQlTdGF0ZS5ERUFEOgoJCQlfZW50ZXJfZGVhZCgpCgoKZnVuYyBfZW50ZXJfaWRsZSgpIC0+IHZvaWQ6CgljdXJyZW50X3N0YXRlID0gU3RhdGUuSURMRQoJdmVsb2NpdHkgPSBWZWN0b3IyLlpFUk8KCV9wbGF5X2FuaW1hdGlvbigiaWRsZSIpCgl3YW5kZXJfdGltZXIuc3RhcnQocmFuZGZfcmFuZ2UoaWRsZV90aW1lX21pbiwgaWRsZV90aW1lX21heCkpCgoKZnVuYyBfZW50ZXJfd2FuZGVyKCkgLT4gdm9pZDoKCWN1cnJlbnRfc3RhdGUgPSBTdGF0ZS5XQU5ERVIKCXdhbmRlcl9kaXJlY3Rpb24gPSBWZWN0b3IyKHJhbmRmX3JhbmdlKC0xLjAsIDEuMCksIHJhbmRmX3JhbmdlKC0xLjAsIDEuMCkpLm5vcm1hbGl6ZWQoKQoJX3BsYXlfYW5pbWF0aW9uKCJ3YWxrIikKCXdhbmRlcl90aW1lci5zdGFydChyYW5kZl9yYW5nZSh3YW5kZXJfdGltZV9taW4sIHdhbmRlcl90aW1lX21heCkpCgoKZnVuYyBfZW50ZXJfY2hhc2UoKSAtPiB2b2lkOgoJY3VycmVudF9zdGF0ZSA9IFN0YXRlLkNIQVNFCgl3YW5kZXJfdGltZXIuc3RvcCgpCglfcGxheV9hbmltYXRpb24oIndhbGsiKQoKCmZ1bmMgX2VudGVyX2RlYWQoKSAtPiB2b2lkOgoJY3VycmVudF9zdGF0ZSA9IFN0YXRlLkRFQUQKCXZlbG9jaXR5ID0gVmVjdG9yMi5aRVJPCgoJIyBEaXNhYmxlIGFsbCBjb2xsaXNpb24gc28gdGhlIGNvcnBzZSBkb2Vzbid0IGJsb2NrIGFueXRoaW5nCglzZXRfcGh5c2ljc19wcm9jZXNzKGZhbHNlKQoJaWYgaHVydF9ib3g6CgkJaHVydF9ib3guc2V0X2RlZmVycmVkKCJtb25pdG9yaW5nIiwgZmFsc2UpCgkJaHVydF9ib3guc2V0X2RlZmVycmVkKCJtb25pdG9yYWJsZSIsIGZhbHNlKQoJZGV0ZWN0aW9uX3pvbmUuc2V0X2RlZmVycmVkKCJtb25pdG9yaW5nIiwgZmFsc2UpCgljb2xsaXNpb25fbGF5ZXIgPSAwCgljb2xsaXNpb25fbWFzayA9IDAKCgkjIEZhZGUtb3V0IHR3ZWVuIHRoZW4gZnJlZQoJdmFyIHR3ZWVuOiBUd2VlbiA9IGNyZWF0ZV90d2VlbigpCgl0d2Vlbi50d2Vlbl9wcm9wZXJ0eShzZWxmLCAibW9kdWxhdGU6YSIsIDAuMCwgZGVhdGhfZmFkZV9kdXJhdGlvbikKCXR3ZWVuLnR3ZWVuX2NhbGxiYWNrKHF1ZXVlX2ZyZWUpCgoKIyAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KIyBEZXRlY3Rpb24gem9uZSBjYWxsYmFja3MKIyAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KCmZ1bmMgX29uX2RldGVjdGlvbl96b25lX2JvZHlfZW50ZXJlZChib2R5OiBOb2RlMkQpIC0+IHZvaWQ6CglpZiBjdXJyZW50X3N0YXRlID09IFN0YXRlLkRFQUQ6CgkJcmV0dXJuCglpZiBib2R5LmlzX2luX2dyb3VwKCJwbGF5ZXIiKToKCQl0YXJnZXQgPSBib2R5IGFzIENoYXJhY3RlckJvZHkyRAoJCV90cmFuc2l0aW9uX3RvKFN0YXRlLkNIQVNFKQoKCmZ1bmMgX29uX2RldGVjdGlvbl96b25lX2JvZHlfZXhpdGVkKGJvZHk6IE5vZGUyRCkgLT4gdm9pZDoKCWlmIGN1cnJlbnRfc3RhdGUgPT0gU3RhdGUuREVBRDoKCQlyZXR1cm4KCWlmIGJvZHkgPT0gdGFyZ2V0OgoJCXRhcmdldCA9IG51bGwKCQlfdHJhbnNpdGlvbl90byhTdGF0ZS5JRExFKQoKCiMgLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCiMgV2FuZGVyIHRpbWVyIGNhbGxiYWNrCiMgLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCgpmdW5jIF9vbl93YW5kZXJfdGltZXJfdGltZW91dCgpIC0+IHZvaWQ6CglpZiBjdXJyZW50X3N0YXRlID09IFN0YXRlLkRFQUQ6CgkJcmV0dXJuCgkjIElmIGNoYXNpbmcsIGlnbm9yZSB0aGUgdGltZXIKCWlmIGN1cnJlbnRfc3RhdGUgPT0gU3RhdGUuQ0hBU0U6CgkJcmV0dXJuCgoJIyBBbHRlcm5hdGUgYmV0d2VlbiBpZGxlIGFuZCB3YW5kZXIKCWlmIGN1cnJlbnRfc3RhdGUgPT0gU3RhdGUuSURMRToKCQlfdHJhbnNpdGlvbl90byhTdGF0ZS5XQU5ERVIpCgllbHNlOgoJCV90cmFuc2l0aW9uX3RvKFN0YXRlLklETEUpCgoKIyAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KIyBDb250YWN0IGRhbWFnZQojIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQoKZnVuYyBfcHJvY2Vzc19jb250YWN0X2RhbWFnZShkZWx0YTogZmxvYXQpIC0+IHZvaWQ6CgkjIFRpY2sgZG93biBleGlzdGluZyBjb29sZG93bnMKCXZhciBleHBpcmVkX2tleXM6IEFycmF5ID0gW10KCWZvciBrZXkgaW4gX2RhbWFnZV9jb29sZG93bnM6CgkJX2RhbWFnZV9jb29sZG93bnNba2V5XSAtPSBkZWx0YQoJCWlmIF9kYW1hZ2VfY29vbGRvd25zW2tleV0gPD0gMC4wOgoJCQlleHBpcmVkX2tleXMuYXBwZW5kKGtleSkKCWZvciBrZXkgaW4gZXhwaXJlZF9rZXlzOgoJCV9kYW1hZ2VfY29vbGRvd25zLmVyYXNlKGtleSkKCglpZiBub3QgaHVydF9ib3g6CgkJcmV0dXJuCgoJIyBDaGVjayBvdmVybGFwcGluZyBib2RpZXMgZm9yIGNvbnRpbnVvdXMgY29udGFjdCBkYW1hZ2UKCWZvciBib2R5IGluIGh1cnRfYm94LmdldF9vdmVybGFwcGluZ19ib2RpZXMoKToKCQlpZiBib2R5LmlzX2luX2dyb3VwKCJwbGF5ZXIiKSBhbmQgYm9keS5oYXNfbWV0aG9kKCJ0YWtlX2RhbWFnZSIpOgoJCQl2YXIgYm9keV9pZDogaW50ID0gYm9keS5nZXRfaW5zdGFuY2VfaWQoKQoJCQlpZiBib2R5X2lkIG5vdCBpbiBfZGFtYWdlX2Nvb2xkb3duczoKCQkJCWJvZHkudGFrZV9kYW1hZ2UoY29udGFjdF9kYW1hZ2UpCgkJCQlfZGFtYWdlX2Nvb2xkb3duc1tib2R5X2lkXSA9IGRhbWFnZV90aWNrX2ludGVydmFsCgoKIyAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KIyBSZWNlaXZpbmcgZGFtYWdlCiMgLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCgojIyBDYWxsIHRoaXMgZnJvbSB0aGUgcGxheWVyJ3MgYXR0YWNrIGxvZ2ljIHRvIGh1cnQgdGhlIHNsaW1lLgpmdW5jIHRha2VfZGFtYWdlKGFtb3VudDogaW50KSAtPiB2b2lkOgoJaWYgY3VycmVudF9zdGF0ZSA9PSBTdGF0ZS5ERUFEOgoJCXJldHVybgoKCWhwIC09IGFtb3VudAoJX2ZsYXNoX2hpdCgpCgoJaWYgaHAgPD0gMDoKCQlfdHJhbnNpdGlvbl90byhTdGF0ZS5ERUFEKQoKCmZ1bmMgX2ZsYXNoX2hpdCgpIC0+IHZvaWQ6CgkjIEJyaWVmIHdoaXRlIGZsYXNoIHRvIGluZGljYXRlIGRhbWFnZQoJbW9kdWxhdGUgPSBDb2xvcigzLjAsIDMuMCwgMy4wLCAxLjApICAjIEJyaWdodCBmbGFzaAoJdmFyIHR3ZWVuOiBUd2VlbiA9IGNyZWF0ZV90d2VlbigpCgl0d2Vlbi50d2Vlbl9wcm9wZXJ0eShzZWxmLCAibW9kdWxhdGUiLCBDb2xvci5XSElURSwgMC4xNSkKCgojIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQojIEFuaW1hdGlvbiAvIHZpc3VhbCBoZWxwZXJzCiMgLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCgpmdW5jIF9maW5kX3Nwcml0ZV9ub2RlKCkgLT4gTm9kZToKCSMgUHJlZmVyIEFuaW1hdGVkU3ByaXRlMkQsIGZhbGwgYmFjayB0byBTcHJpdGUyRAoJZm9yIGNoaWxkIGluIGdldF9jaGlsZHJlbigpOgoJCWlmIGNoaWxkIGlzIEFuaW1hdGVkU3ByaXRlMkQ6CgkJCXJldHVybiBjaGlsZAoJCWlmIGNoaWxkIGlzIFNwcml0ZTJEOgoJCQlyZXR1cm4gY2hpbGQKCXJldHVybiBudWxsCgoKZnVuYyBfcGxheV9hbmltYXRpb24oYW5pbV9uYW1lOiBTdHJpbmcpIC0+IHZvaWQ6CglpZiBhbmltYXRlZF9zcHJpdGUgYW5kIGFuaW1hdGVkX3Nwcml0ZSBpcyBBbmltYXRlZFNwcml0ZTJEOgoJCWlmIGFuaW1hdGVkX3Nwcml0ZS5zcHJpdGVfZnJhbWVzIGFuZCBhbmltYXRlZF9zcHJpdGUuc3ByaXRlX2ZyYW1lcy5oYXNfYW5pbWF0aW9uKGFuaW1fbmFtZSk6CgkJCWFuaW1hdGVkX3Nwcml0ZS5wbGF5KGFuaW1fbmFtZSkKCgpmdW5jIF91cGRhdGVfZmFjaW5nKCkgLT4gdm9pZDoKCWlmIGFuaW1hdGVkX3Nwcml0ZSBhbmQgdmVsb2NpdHkubGVuZ3RoKCkgPiAwLjE6CgkJYW5pbWF0ZWRfc3ByaXRlLmZsaXBfaCA9IHZlbG9jaXR5LnggPCAwLjAK"}], "grading": {"eval_id": 1, "configuration": "without_skill", "expectations": [{"text": "Uses enum for state machine", "passed": true, "evidence": "enum State { IDLE, WANDER, CHASE, DEAD } on line 13. Missing HURT state though."}, {"text": "Type hints on ALL function signatures", "passed": true, "evidence": "Functions mostly typed: _physics_process(delta: float) -> void, take_damage(amount: int) -> void. Some variables use := inference instead of explicit types."}, {"text": "Uses @export with grouping", "passed": false, "evidence": "Flat @export without grouping. Uses comments (# -- Tuning constants --) instead of @export_group()."}, {"text": "Contact damage uses get_overlapping_areas() polling", "passed": false, "evidence": "Uses get_overlapping_bodies() (L199) instead of get_overlapping_areas(). This checks CharacterBody2D overlap, not Area2D, which conflates body collision with damage detection."}, {"text": "No Godot 3.x syntax", "passed": true, "evidence": "All 4.x syntax used"}, {"text": "Death tween stored in typed variable", "passed": true, "evidence": "var tween: Tween = create_tween() on line 138"}, {"text": "Uses tabs for indentation", "passed": true, "evidence": "Tab indentation throughout"}, {"text": "Correct code ordering", "passed": false, "evidence": "No signal declarations at all (no signal died). Enum is first (good), but missing the signals section entirely."}, {"text": "No await in _physics_process", "passed": true, "evidence": "No await in _physics_process"}, {"text": "Uses match for state dispatch", "passed": true, "evidence": "match current_state: on line 57"}]}}, {"id": "debug-push-with_skill", "prompt": "My player and slime enemies are both CharacterBody2D nodes. When a slime walks into my player, it pushes the player across the map instead of dealing damage. The slime has a CollisionShape2D on its body. How do I fix this so the slime deals damage instead of pushing?", "eval_id": 2, "outputs": [{"name": "response.md", "type": "text", "content": "# Diagnosis: Slime Pushes Player Instead of Dealing Damage\n\n## The Problem\n\nBoth your player and slime are `CharacterBody2D` nodes. When `move_and_slide()` runs on the slime during its CHASE state, Godot's physics engine detects the body-to-body collision between the two `CollisionShape2D` shapes and resolves the overlap by pushing the player away. This is the default `CharacterBody2D` behavior -- it treats all colliding bodies as solid obstacles and slides them apart.\n\nThe slime **does** have an `Area2D` contact hitbox (`ContactHitBox`) for damage, but the body collision fires *before* the area overlap has a chance to matter. The physics engine resolves the push every frame, so the player gets shoved across the map continuously while the slime chases.\n\n## Root Cause\n\nThe slime's `CollisionShape2D` (body) has its collision mask set to include the player's layer:\n\n```gdscript\n# Slime body: layer 3 (enemies), mask 1 (world)\ncollision_layer = 4   # bit 3\ncollision_mask = 1     # bit 1 (world only)\n```\n\nAnd the player's body:\n\n```gdscript\n# Player body: layer 2 (player), mask 1 (world)\ncollision_layer = 2   # bit 2\ncollision_mask = 1     # bit 1 (world only)\n```\n\nAt first glance, the masks look correct -- neither body masks the other's layer. **However**, `CharacterBody2D.move_and_slide()` has a subtle behavior: it still resolves collisions with bodies on its **own** layer if the *other* body's mask includes your layer. In practice, two `CharacterBody2D` nodes with overlapping shapes will push each other even if neither explicitly masks the other, because `move_and_slide()` uses the physics server's collision detection which is bidirectional -- if body A is on layer 2 and body B's mask includes layer 2, body A's `move_and_slide()` will detect body B as a collision partner.\n\nBut looking more carefully at your setup: the player is on layer 2 (bit value `2`) and the slime masks bit 1 only (value `1`), and the slime is on layer 3 (bit value `4`) and the player masks bit 1 only (value `1`). So neither should detect the other's body... unless there is a discrepancy between the script values and what the scene file actually has.\n\n**The real issue is simpler than it seems.** Regardless of the specific layer/mask debugging, the fundamental architectural problem is:\n\n> You should **never** rely on `CharacterBody2D` body collisions between players and enemies. Even if layers are \"correctly\" configured, edge cases in `move_and_slide()` can still cause pushing. The correct pattern is to use `Area2D` nodes exclusively for damage detection and ensure the bodies cannot physically interact at all.\n\n## The Fix\n\nThere are two parts to a robust fix:\n\n### Part 1: Guarantee bodies cannot collide\n\nMake absolutely sure the slime's body does not mask the player's layer and vice versa. The safest approach is to explicitly set these in `_ready()` and double-check the bitmask values:\n\n```gdscript\n# In slime.gd _setup_collision_layers():\n# Body: layer 3 (enemies), mask 1 (world) ONLY\n# Layer 3 = bit 2^(3-1) = 4, Mask layer 1 = bit 2^(1-1) = 1\ncollision_layer = 4\ncollision_mask = 1   # world only, NOT player (layer 2 = bit 2)\n```\n\n```gdscript\n# In player.gd _setup_collision_layers():\n# Body: layer 2 (player), mask 1 (world) ONLY\n# Layer 2 = bit 2^(2-1) = 2, Mask layer 1 = bit 2^(1-1) = 1\ncollision_layer = 2\ncollision_mask = 1   # world only, NOT enemies (layer 3 = bit 4)\n```\n\nThis is what your code already says -- but if the `.tscn` scene files have different values set in their resource properties, those will **override** the script values because `_setup_collision_layers()` runs in `_ready()`, which fires *after* the scene's exported properties are applied. Since both write to the same property, the script wins. But verify that no other code path modifies these.\n\n### Part 2: Confirm Area2D damage is working\n\nYour existing `ContactHitBox` (Area2D) on the slime and `HurtBox` (Area2D) on the player already implement the correct hitbox/hurtbox pattern:\n\n- Slime `ContactHitBox`: layer 5 (bit 16), mask 0, monitorable = true, in group \"enemy_hitbox\"\n- Player `HurtBox`: layer 0, mask 5 (bit 16), monitoring = true\n\nAnd the player has both:\n1. `area_entered` signal connection for instant detection\n2. `_check_overlapping_damage()` polling for continuous contact damage\n\nThis is the correct dual-detection pattern from the skill guide.\n\n### If Bodies Are Still Pushing (Nuclear Option)\n\nIf after verifying layers the push still happens, the definitive fix is to **disable the slime's `CharacterBody2D` collision with the player entirely** by removing the player layer from the slime's mask and the enemy layer from the player's mask. Since your code already does this, and the pushing is still occurring, there is likely a mismatch in the `.tscn` file. You have two options:\n\n**Option A: Fix the .tscn file**\n\nOpen the slime `.tscn` and player `.tscn` files and ensure the `collision_layer` and `collision_mask` properties are not set (let the script handle it), or set them correctly:\n\n```\n; In slime.tscn, on the root CharacterBody2D:\ncollision_layer = 4\ncollision_mask = 1\n\n; In player.tscn, on the root CharacterBody2D:\ncollision_layer = 2\ncollision_mask = 1\n```\n\n**Option B: Use `set_collision_mask_value()` for clarity**\n\nReplace the bitfield math with Godot's named-bit API so there is zero ambiguity:\n\n```gdscript\n# slime.gd - _setup_collision_layers()\nfunc _setup_collision_layers() -> void:\n\t# Body: on \"Enemies\" layer (3), collides with \"World\" (1) ONLY\n\tset_collision_layer_value(1, false)\n\tset_collision_layer_value(2, false)\n\tset_collision_layer_value(3, true)\n\tset_collision_mask_value(1, true)\n\tset_collision_mask_value(2, false)  # explicitly exclude player\n\tset_collision_mask_value(3, false)\n\n\t# ... rest of Area2D setup unchanged\n```\n\n```gdscript\n# player.gd - _setup_collision_layers()\nfunc _setup_collision_layers() -> void:\n\t# Body: on \"Player\" layer (2), collides with \"World\" (1) ONLY\n\tset_collision_layer_value(1, false)\n\tset_collision_layer_value(2, true)\n\tset_collision_layer_value(3, false)\n\tset_collision_mask_value(1, true)\n\tset_collision_mask_value(2, false)\n\tset_collision_mask_value(3, false)  # explicitly exclude enemies\n\n\t# ... rest of Area2D setup unchanged\n```\n\nUsing `set_collision_layer_value(layer_number, bool)` is clearer because you use 1-indexed layer numbers (matching the editor) instead of computing bitmasks manually.\n\n## Complete Fixed `_setup_collision_layers()` for Both Scripts\n\n### slime.gd\n\n```gdscript\nfunc _setup_collision_layers() -> void:\n\t# Body: layer 3 (enemies), collides with layer 1 (world) ONLY\n\t# Explicitly exclude player layer to prevent pushing\n\tset_collision_layer_value(1, false)\n\tset_collision_layer_value(2, false)\n\tset_collision_layer_value(3, true)\n\tset_collision_mask_value(1, true)\n\tset_collision_mask_value(2, false)\n\tset_collision_mask_value(3, false)\n\n\t# Detection zone: detects bodies on layer 2 (player)\n\tdetection_zone.collision_layer = 0\n\tdetection_zone.collision_mask = 2\n\tdetection_zone.monitoring = true\n\tdetection_zone.body_entered.connect(_on_detection_body_entered)\n\tdetection_zone.body_exited.connect(_on_detection_body_exited)\n\n\t# Contact hitbox: layer 5 (enemy_hitbox), does not monitor -- is monitored by player\n\tcontact_hitbox.collision_layer = 16\n\tcontact_hitbox.collision_mask = 0\n\tcontact_hitbox.monitoring = false\n\tcontact_hitbox.monitorable = true\n\tcontact_hitbox.add_to_group(\"enemy_hitbox\")\n\n\t# Hurtbox: monitors layer 4 (player_hitbox = bit 8)\n\thurt_box.collision_layer = 0\n\thurt_box.collision_mask = 8\n\thurt_box.monitoring = true\n\thurt_box.monitorable = false\n\thurt_box.area_entered.connect(_on_hurtbox_area_entered)\n```\n\n### player.gd\n\n```gdscript\nfunc _setup_collision_layers() -> void:\n\t# Body: layer 2 (player), collides with layer 1 (world) ONLY\n\t# Explicitly exclude enemy layer to prevent pushing\n\tset_collision_layer_value(1, false)\n\tset_collision_layer_value(2, true)\n\tset_collision_layer_value(3, false)\n\tset_collision_mask_value(1, true)\n\tset_collision_mask_value(2, false)\n\tset_collision_mask_value(3, false)\n\n\t# Sword hitbox: layer 4 (player_hitbox = bit 8)\n\tsword_hitbox.collision_layer = 8\n\tsword_hitbox.collision_mask = 0\n\tsword_hitbox.monitoring = false\n\tsword_hitbox.monitorable = true\n\n\t# Hurtbox: monitors layer 5 (enemy_hitbox = bit 16)\n\thurt_box.collision_layer = 0\n\thurt_box.collision_mask = 16\n\thurt_box.monitoring = true\n\thurt_box.monitorable = false\n\thurt_box.area_entered.connect(_on_hurtbox_area_entered)\n```\n\n## Summary\n\n| Aspect | Wrong Approach | Correct Approach |\n|--------|---------------|-----------------|\n| Damage detection | Body-to-body collision (`CharacterBody2D` vs `CharacterBody2D`) | `Area2D` hitbox/hurtbox pattern |\n| Body collision layers | Player and enemy bodies can \"see\" each other | Bodies only collide with world/terrain (layer 1) |\n| Contact damage | Relying on physics push as implicit \"hit\" | `area_entered` signal + periodic `get_overlapping_areas()` polling |\n| Layer configuration | Raw bitmask math (`collision_mask = 1`) | `set_collision_mask_value(layer, bool)` for clarity |\n\nThe key rule from the GDScript skill guide: **Use `Area2D` for damage, never body-to-body collision between player and enemies.** The `ContactHitBox` and `HurtBox` Area2D nodes you already have are the correct architecture -- the fix is ensuring the `CharacterBody2D` bodies themselves are invisible to each other so `move_and_slide()` never pushes them apart.\n"}], "grading": {"eval_id": 2, "configuration": "with_skill", "expectations": [{"text": "Identifies body-to-body collision as root cause", "passed": true, "evidence": "Clearly explains CharacterBody2D move_and_slide() resolves overlap by pushing bodies apart"}, {"text": "Recommends removing enemy from player collision mask", "passed": true, "evidence": "Explicit code: set_collision_mask_value(2, false) for slime, set_collision_mask_value(3, false) for player"}, {"text": "Recommends Area2D hitbox/hurtbox pattern", "passed": true, "evidence": "Extensive coverage of ContactHitBox, HurtBox, SwordHitBox with layer/mask configs"}, {"text": "Mentions area_entered fires only once", "passed": true, "evidence": "References skill guide rule about area_entered only firing once on overlap start"}, {"text": "Recommends get_overlapping_areas() for continuous damage", "passed": true, "evidence": "Mentions dual detection pattern from the skill guide"}, {"text": "Shows correct collision layer/mask configuration", "passed": true, "evidence": "Complete layer/mask table, code with set_collision_layer_value(), .tscn fix option, and summary table"}]}}, {"id": "debug-push-without_skill", "prompt": "My player and slime enemies are both CharacterBody2D nodes. When a slime walks into my player, it pushes the player across the map instead of dealing damage. The slime has a CollisionShape2D on its body. How do I fix this so the slime deals damage instead of pushing?", "eval_id": 2, "outputs": [{"name": "response.md", "type": "text", "content": "# Fixing Slime Pushing Player Instead of Dealing Damage\n\n## Diagnosis\n\nWhen two `CharacterBody2D` nodes collide, Godot's physics engine resolves the collision by **pushing them apart**. This is the default behavior of `move_and_slide()` \u00e2\u20ac\u201d it treats other `CharacterBody2D` nodes as solid obstacles and slides along them, which results in the \"pushing\" effect you're seeing.\n\nThe core problem: **you're relying on body-to-body collision for damage, but `CharacterBody2D` collisions are designed for physics separation, not gameplay interactions like damage.**\n\n## The Fix: Hitbox/Hurtbox Pattern with Area2D\n\nThe standard solution in Godot is the **Hitbox/Hurtbox pattern**:\n\n1. **Keep** the slime's `CollisionShape2D` on the `CharacterBody2D` for wall/environment collisions\n2. **Add** an `Area2D` child node to the slime as a \"hitbox\" (the thing that deals damage)\n3. **Add** an `Area2D` child node to the player as a \"hurtbox\" (the thing that receives damage)\n4. **Use collision layers** so the slime's body doesn't physically push the player\n\n### Step 1: Fix Collision Layers to Prevent Pushing\n\nSet up collision layers so the slime and player bodies don't interact physically:\n\n| Node | Collision Layer | Collision Mask |\n|------|----------------|----------------|\n| Player (CharacterBody2D) | Layer 1 (Player) | Layer 3 (Environment) |\n| Slime (CharacterBody2D) | Layer 2 (Enemy) | Layer 3 (Environment) |\n| Player Hurtbox (Area2D) | Layer 4 (PlayerHurtbox) | Layer 5 (EnemyHitbox) |\n| Slime Hitbox (Area2D) | Layer 5 (EnemyHitbox) | Layer 4 (PlayerHurtbox) |\n\nBy removing each other from their collision masks, the `CharacterBody2D` nodes will pass through each other \u00e2\u20ac\u201d no more pushing.\n\nIn the Godot editor:\n- Select the **Player** `CharacterBody2D` \u00e2\u2020\u2019 Inspector \u00e2\u2020\u2019 Collision \u00e2\u2020\u2019 set Layer to 1, Mask to 3\n- Select the **Slime** `CharacterBody2D` \u00e2\u2020\u2019 Inspector \u00e2\u2020\u2019 Collision \u00e2\u2020\u2019 set Layer to 2, Mask to 3\n\nOr in code (in each node's `_ready()` function):\n\n```gdscript\n# player.gd \u00e2\u20ac\u201d _ready()\ncollision_layer = 1   # Layer 1: Player body\ncollision_mask = 4     # Layer 3: Environment only (bit value 4 = layer 3)\n```\n\n```gdscript\n# slime.gd \u00e2\u20ac\u201d _ready()\ncollision_layer = 2   # Layer 2: Enemy body\ncollision_mask = 4     # Layer 3: Environment only (bit value 4 = layer 3)\n```\n\n> **Note on bit values:** `collision_layer` and `collision_mask` use bitmasks. Layer 1 = `1`, Layer 2 = `2`, Layer 3 = `4`, Layer 4 = `8`, Layer 5 = `16`. To combine layers, add the values (e.g., Layer 1 + Layer 3 = `1 + 4 = 5`).\n\n### Step 2: Add a Hurtbox to the Player\n\nAdd an `Area2D` child to the player scene:\n\n```\nPlayer (CharacterBody2D)\n\u00e2\u201d\u0153\u00e2\u201d\u20ac\u00e2\u201d\u20ac CollisionShape2D          # existing \u00e2\u20ac\u201d for environment physics\n\u00e2\u201d\u0153\u00e2\u201d\u20ac\u00e2\u201d\u20ac Sprite2D / AnimatedSprite2D\n\u00e2\u201d\u201d\u00e2\u201d\u20ac\u00e2\u201d\u20ac Hurtbox (Area2D)          # NEW \u00e2\u20ac\u201d receives damage\n    \u00e2\u201d\u201d\u00e2\u201d\u20ac\u00e2\u201d\u20ac CollisionShape2D      # same size or slightly smaller than body\n```\n\nConfigure the Hurtbox's collision:\n- **Layer:** 8 (Layer 4 \u00e2\u20ac\u201d PlayerHurtbox)\n- **Mask:** 16 (Layer 5 \u00e2\u20ac\u201d EnemyHitbox)\n\n### Step 3: Add a Hitbox to the Slime\n\nAdd an `Area2D` child to the slime scene:\n\n```\nSlime (CharacterBody2D)\n\u00e2\u201d\u0153\u00e2\u201d\u20ac\u00e2\u201d\u20ac CollisionShape2D          # existing \u00e2\u20ac\u201d for environment physics\n\u00e2\u201d\u0153\u00e2\u201d\u20ac\u00e2\u201d\u20ac Sprite2D / AnimatedSprite2D\n\u00e2\u201d\u201d\u00e2\u201d\u20ac\u00e2\u201d\u20ac Hitbox (Area2D)           # NEW \u00e2\u20ac\u201d deals damage\n    \u00e2\u201d\u201d\u00e2\u201d\u20ac\u00e2\u201d\u20ac CollisionShape2D      # same size or slightly larger than body\n```\n\nConfigure the Hitbox's collision:\n- **Layer:** 16 (Layer 5 \u00e2\u20ac\u201d EnemyHitbox)\n- **Mask:** 8 (Layer 4 \u00e2\u20ac\u201d PlayerHurtbox)\n\n### Step 4: Connect the Damage Signal\n\nIn your **player script**, connect the hurtbox signal to handle incoming damage:\n\n```gdscript\n# player.gd\n\nvar max_hp: int = 5\nvar current_hp: int = 5\nvar invincible: bool = false\nvar invincible_timer: float = 0.0\nvar invincible_duration: float = 1.0  # seconds of invincibility after hit\n\nfunc _ready() -> void:\n    # Connect the hurtbox signal\n    $Hurtbox.area_entered.connect(_on_hurtbox_area_entered)\n\nfunc _process(delta: float) -> void:\n    # Handle invincibility timer\n    if invincible:\n        invincible_timer -= delta\n        if invincible_timer <= 0.0:\n            invincible = false\n            modulate.a = 1.0  # restore full opacity\n\nfunc _on_hurtbox_area_entered(area: Area2D) -> void:\n    if invincible:\n        return\n    # Check if the area belongs to an enemy\n    var damage := 1\n    if area.has_method(\"get_damage\"):\n        damage = area.get_damage()\n    take_damage(damage)\n\nfunc take_damage(amount: int) -> void:\n    current_hp -= amount\n    current_hp = max(current_hp, 0)\n    # Start invincibility frames\n    invincible = true\n    invincible_timer = invincible_duration\n    modulate.a = 0.5  # visual feedback: semi-transparent\n    # Emit signal or update HUD\n    print(\"Player took %d damage! HP: %d/%d\" % [amount, current_hp, max_hp])\n    if current_hp <= 0:\n        die()\n\nfunc die() -> void:\n    print(\"Player died!\")\n    # Handle death (reload scene, show game over, etc.)\n    get_tree().reload_current_scene()\n```\n\n### Step 5: (Optional) Add Damage Info to the Slime Hitbox\n\nIn your **slime script**, you can expose a damage value:\n\n```gdscript\n# slime.gd\n\nvar damage: int = 1\n\nfunc _ready() -> void:\n    # The Hitbox Area2D can reference this script for damage\n    $Hitbox.set_meta(\"damage\", damage)\n```\n\nOr add a small script to the Hitbox `Area2D` node itself:\n\n```gdscript\n# slime_hitbox.gd (attached to the Hitbox Area2D)\nextends Area2D\n\nfunc get_damage() -> int:\n    return get_parent().damage if get_parent().has(\"damage\") else 1\n```\n\n### Step 6: Handle Contact Damage Continuously\n\n**Important caveat:** `area_entered` only fires **once** when two areas first overlap. If the slime stays on top of the player, it won't fire again. To deal continuous contact damage, add a periodic check:\n\n```gdscript\n# player.gd \u00e2\u20ac\u201d add to _process() or use a Timer\n\nvar contact_damage_interval: float = 0.5  # damage every 0.5 seconds\nvar contact_damage_timer: float = 0.0\n\nfunc _process(delta: float) -> void:\n    # ... existing invincibility logic ...\n\n    # Periodic contact damage check\n    if not invincible:\n        contact_damage_timer -= delta\n        if contact_damage_timer <= 0.0:\n            contact_damage_timer = contact_damage_interval\n            var overlapping_areas := $Hurtbox.get_overlapping_areas()\n            for area in overlapping_areas:\n                if area.is_in_group(\"enemy_hitbox\"):  # add slime Hitbox to this group\n                    take_damage(1)\n                    break  # only take damage once per tick\n```\n\n## Summary\n\n| Problem | Solution |\n|---------|----------|\n| Slime body pushes player body | Remove player from slime's collision mask (and vice versa) |\n| No damage on contact | Add Area2D hitbox to slime + Area2D hurtbox to player |\n| `area_entered` only fires once | Use periodic `get_overlapping_areas()` for sustained contact |\n| Player dies instantly | Add invincibility frames after taking damage |\n\nThe key insight is: **`CharacterBody2D` collision is for physics (sliding, blocking, pushing). `Area2D` collision is for gameplay logic (damage, pickups, triggers).** Always use the hitbox/hurtbox pattern for combat interactions in Godot.\n"}], "grading": {"eval_id": 2, "configuration": "without_skill", "expectations": [{"text": "Identifies body-to-body collision as root cause", "passed": true, "evidence": "States: 'CharacterBody2D collisions are designed for physics separation, not gameplay interactions like damage'"}, {"text": "Recommends removing enemy from player collision mask", "passed": true, "evidence": "Step 1 with collision layer table and code: collision_mask = 4 (environment only)"}, {"text": "Recommends Area2D hitbox/hurtbox pattern", "passed": true, "evidence": "Full Step 2-5 covering hitbox/hurtbox setup with node trees and code"}, {"text": "Mentions area_entered fires only once", "passed": true, "evidence": "Step 6: 'area_entered only fires once when two areas first overlap'"}, {"text": "Recommends get_overlapping_areas() for continuous damage", "passed": true, "evidence": "Step 6 shows periodic get_overlapping_areas() check with timer"}, {"text": "Shows correct collision layer/mask configuration", "passed": true, "evidence": "Layer/mask table with bit values, code examples, note on bitmask math"}]}}], "previous_feedback": {}, "previous_outputs": {}, "benchmark": {"skill_name": "gdscript", "iteration": 1, "configurations": [{"name": "with_skill", "results": [{"eval_name": "player-script", "pass_rate": 1.0, "passed": 10, "total": 10, "tokens": 30683, "duration_seconds": 98.1}, {"eval_name": "slime-script", "pass_rate": 1.0, "passed": 10, "total": 10, "tokens": 33647, "duration_seconds": 92.8}, {"eval_name": "debug-push", "pass_rate": 1.0, "passed": 6, "total": 6, "tokens": 31948, "duration_seconds": 91.8}], "aggregate": {"mean_pass_rate": 1.0, "stddev_pass_rate": 0.0, "mean_tokens": 32093, "mean_duration_seconds": 94.2}}, {"name": "without_skill", "results": [{"eval_name": "player-script", "pass_rate": 0.6, "passed": 6, "total": 10, "tokens": 16221, "duration_seconds": 47.8}, {"eval_name": "slime-script", "pass_rate": 0.7, "passed": 7, "total": 10, "tokens": 16157, "duration_seconds": 52.6}, {"eval_name": "debug-push", "pass_rate": 1.0, "passed": 6, "total": 6, "tokens": 16057, "duration_seconds": 57.3}], "aggregate": {"mean_pass_rate": 0.767, "stddev_pass_rate": 0.17, "mean_tokens": 16145, "mean_duration_seconds": 52.6}}], "delta": {"pass_rate": "+23.3pp (100% vs 76.7%)", "tokens": "+99% (32k vs 16k)", "duration": "+79% (94s vs 53s)"}, "analyst_notes": ["The skill provides the biggest lift on CODE GENERATION (evals 0-1), where it enforces style conventions the baseline misses: @export grouping, code ordering, @onready, and dual damage detection.", "The DEBUGGING eval (eval 2) shows no difference \u00e2\u20ac\u201d both versions correctly diagnose body collision and recommend Area2D. This pattern is well-known enough that Claude gets it right without the skill.", "The skill roughly doubles token usage and time. The extra tokens come from reading the skill file and following more detailed conventions. This is acceptable cost for significantly higher code quality.", "Non-discriminating assertions: 'tabs for indentation', 'no Godot 3.x syntax', 'no await in _physics_process', 'match for state dispatch' \u00e2\u20ac\u201d Claude gets these right regardless. The skill's value is in the 4-5 assertions the baseline fails.", "Key discriminating assertions (skill helps): @export grouping, code ordering, @onready, dual damage detection (area_entered + overlap polling), correct contact damage architecture (Area2D not body)."]}};
+
+    // ---- State ----
+    let feedbackMap = {};  // run_id -> feedback text
+    let currentIndex = 0;
+    let visitedRuns = new Set();
+
+    // ---- Init ----
+    async function init() {
+      // Load saved feedback from server — but only if this isn't a fresh
+      // iteration (indicated by previous_feedback being present). When
+      // previous feedback exists, the feedback.json on disk is stale from
+      // the prior iteration and should not pre-fill the textareas.
+      const hasPrevious = Object.keys(EMBEDDED_DATA.previous_feedback || {}).length > 0
+        || Object.keys(EMBEDDED_DATA.previous_outputs || {}).length > 0;
+      if (!hasPrevious) {
+        try {
+          const resp = await fetch("/api/feedback");
+          const data = await resp.json();
+          if (data.reviews) {
+            for (const r of data.reviews) feedbackMap[r.run_id] = r.feedback;
+          }
+        } catch { /* first run, no feedback yet */ }
+      }
+
+      document.getElementById("skill-name").textContent = EMBEDDED_DATA.skill_name;
+      showRun(0);
+
+      // Wire up feedback auto-save
+      const textarea = document.getElementById("feedback");
+      let saveTimeout = null;
+      textarea.addEventListener("input", () => {
+        clearTimeout(saveTimeout);
+        document.getElementById("feedback-status").textContent = "";
+        saveTimeout = setTimeout(() => saveCurrentFeedback(), 800);
+      });
+    }
+
+    // ---- Navigation ----
+    function navigate(delta) {
+      const newIndex = currentIndex + delta;
+      if (newIndex >= 0 && newIndex < EMBEDDED_DATA.runs.length) {
+        saveCurrentFeedback();
+        showRun(newIndex);
+      }
+    }
+
+    function updateNavButtons() {
+      document.getElementById("prev-btn").disabled = currentIndex === 0;
+      document.getElementById("next-btn").disabled =
+        currentIndex === EMBEDDED_DATA.runs.length - 1;
+    }
+
+    // ---- Show a run ----
+    function showRun(index) {
+      currentIndex = index;
+      const run = EMBEDDED_DATA.runs[index];
+
+      // Progress
+      document.getElementById("progress").textContent =
+        `${index + 1} of ${EMBEDDED_DATA.runs.length}`;
+
+      // Prompt
+      document.getElementById("prompt-text").textContent = run.prompt;
+
+      // Config badge
+      const badge = document.getElementById("config-badge");
+      const configMatch = run.id.match(/(with_skill|without_skill|new_skill|old_skill)/);
+      if (configMatch) {
+        const config = configMatch[1];
+        const isBaseline = config === "without_skill" || config === "old_skill";
+        badge.textContent = config.replace(/_/g, " ");
+        badge.className = "config-badge " + (isBaseline ? "config-baseline" : "config-primary");
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
+      }
+
+      // Outputs
+      renderOutputs(run);
+
+      // Previous outputs
+      renderPrevOutputs(run);
+
+      // Grades
+      renderGrades(run);
+
+      // Previous feedback
+      const prevFb = (EMBEDDED_DATA.previous_feedback || {})[run.id];
+      const prevEl = document.getElementById("prev-feedback");
+      if (prevFb) {
+        document.getElementById("prev-feedback-text").textContent = prevFb;
+        prevEl.style.display = "block";
+      } else {
+        prevEl.style.display = "none";
+      }
+
+      // Feedback
+      document.getElementById("feedback").value = feedbackMap[run.id] || "";
+      document.getElementById("feedback-status").textContent = "";
+
+      updateNavButtons();
+
+      // Track visited runs and promote done button when all visited
+      visitedRuns.add(index);
+      const doneBtn = document.getElementById("done-btn");
+      if (visitedRuns.size >= EMBEDDED_DATA.runs.length) {
+        doneBtn.classList.add("ready");
+      }
+
+      // Scroll main content to top
+      document.querySelector(".main").scrollTop = 0;
+    }
+
+    // ---- Render outputs ----
+    function renderOutputs(run) {
+      const container = document.getElementById("outputs-body");
+      container.innerHTML = "";
+
+      const outputs = run.outputs || [];
+      if (outputs.length === 0) {
+        container.innerHTML = '<div class="empty-state">No output files</div>';
+        return;
+      }
+
+      for (const file of outputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        // Always show file header with download link
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const content = document.createElement("div");
+        content.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          content.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          content.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          content.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(content, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          content.appendChild(a);
+        } else if (file.type === "error") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          pre.style.color = "var(--red)";
+          content.appendChild(pre);
+        }
+
+        fileDiv.appendChild(content);
+        container.appendChild(fileDiv);
+      }
+    }
+
+    // ---- XLSX rendering via SheetJS ----
+    function renderXlsx(container, b64Data) {
+      try {
+        const raw = Uint8Array.from(atob(b64Data), c => c.charCodeAt(0));
+        const wb = XLSX.read(raw, { type: "array" });
+
+        for (let i = 0; i < wb.SheetNames.length; i++) {
+          const sheetName = wb.SheetNames[i];
+          const ws = wb.Sheets[sheetName];
+
+          if (wb.SheetNames.length > 1) {
+            const sheetLabel = document.createElement("div");
+            sheetLabel.style.cssText =
+              "font-weight:600; font-size:0.8rem; color:#b0aea5; margin-top:0.5rem; margin-bottom:0.25rem;";
+            sheetLabel.textContent = "Sheet: " + sheetName;
+            container.appendChild(sheetLabel);
+          }
+
+          const htmlStr = XLSX.utils.sheet_to_html(ws, { editable: false });
+          const wrapper = document.createElement("div");
+          wrapper.innerHTML = htmlStr;
+          container.appendChild(wrapper);
+        }
+      } catch (err) {
+        container.textContent = "Error rendering spreadsheet: " + err.message;
+      }
+    }
+
+    // ---- Grades ----
+    function renderGrades(run) {
+      const section = document.getElementById("grades-section");
+      const content = document.getElementById("grades-content");
+
+      if (!run.grading) {
+        section.style.display = "none";
+        return;
+      }
+
+      const grading = run.grading;
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("grades-arrow").classList.remove("open");
+
+      const summary = grading.summary || {};
+      const expectations = grading.expectations || [];
+
+      let html = '<div style="padding: 1rem;">';
+
+      // Summary line
+      const passRate = summary.pass_rate != null
+        ? Math.round(summary.pass_rate * 100) + "%"
+        : "?";
+      const badgeClass = summary.pass_rate >= 0.8 ? "grade-pass" : summary.pass_rate >= 0.5 ? "" : "grade-fail";
+      html += '<div class="grades-summary">';
+      html += '<span class="grade-badge ' + badgeClass + '">' + passRate + '</span>';
+      html += '<span>' + (summary.passed || 0) + ' passed, ' + (summary.failed || 0) + ' failed of ' + (summary.total || 0) + '</span>';
+      html += '</div>';
+
+      // Assertions list
+      html += '<ul class="assertion-list">';
+      for (const exp of expectations) {
+        const statusClass = exp.passed ? "pass" : "fail";
+        const statusIcon = exp.passed ? "\u2713" : "\u2717";
+        html += '<li class="assertion-item">';
+        html += '<span class="assertion-status ' + statusClass + '">' + statusIcon + '</span>';
+        html += '<span>' + escapeHtml(exp.text) + '</span>';
+        if (exp.evidence) {
+          html += '<div class="assertion-evidence">' + escapeHtml(exp.evidence) + '</div>';
+        }
+        html += '</li>';
+      }
+      html += '</ul>';
+
+      html += '</div>';
+      content.innerHTML = html;
+    }
+
+    function toggleGrades() {
+      const content = document.getElementById("grades-content");
+      const arrow = document.getElementById("grades-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Previous outputs (collapsible) ----
+    function renderPrevOutputs(run) {
+      const section = document.getElementById("prev-outputs-section");
+      const content = document.getElementById("prev-outputs-content");
+      const prevOutputs = (EMBEDDED_DATA.previous_outputs || {})[run.id];
+
+      if (!prevOutputs || prevOutputs.length === 0) {
+        section.style.display = "none";
+        return;
+      }
+
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("prev-outputs-arrow").classList.remove("open");
+
+      // Render the files into the content area
+      content.innerHTML = "";
+      const wrapper = document.createElement("div");
+      wrapper.style.padding = "1rem";
+
+      for (const file of prevOutputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const fc = document.createElement("div");
+        fc.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          fc.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          fc.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          fc.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(fc, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          fc.appendChild(a);
+        }
+
+        fileDiv.appendChild(fc);
+        wrapper.appendChild(fileDiv);
+      }
+
+      content.appendChild(wrapper);
+    }
+
+    function togglePrevOutputs() {
+      const content = document.getElementById("prev-outputs-content");
+      const arrow = document.getElementById("prev-outputs-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Feedback (saved to server -> feedback.json) ----
+    function saveCurrentFeedback() {
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // Build reviews array from map
+      const reviews = [];
+      for (const [run_id, feedback] of Object.entries(feedbackMap)) {
+        if (feedback.trim()) {
+          reviews.push({ run_id, feedback, timestamp: new Date().toISOString() });
+        }
+      }
+
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviews, status: "in_progress" }),
+      }).then(() => {
+        document.getElementById("feedback-status").textContent = "Saved";
+      }).catch(() => {
+        // Static mode or server unavailable — no-op on auto-save,
+        // feedback will be downloaded on final submit
+        document.getElementById("feedback-status").textContent = "Will download on submit";
+      });
+    }
+
+    // ---- Done ----
+    function showDoneDialog() {
+      // Save current textarea to feedbackMap (but don't POST yet)
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // POST once with status: complete — include ALL runs so the model
+      // can distinguish "no feedback" (looks good) from "not reviewed"
+      const reviews = [];
+      const ts = new Date().toISOString();
+      for (const r of EMBEDDED_DATA.runs) {
+        reviews.push({ run_id: r.id, feedback: feedbackMap[r.id] || "", timestamp: ts });
+      }
+      const payload = JSON.stringify({ reviews, status: "complete" }, null, 2);
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+      }).then(() => {
+        document.getElementById("done-overlay").classList.add("visible");
+      }).catch(() => {
+        // Server not available (static mode) — download as file
+        const blob = new Blob([payload], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "feedback.json";
+        a.click();
+        URL.revokeObjectURL(url);
+        document.getElementById("done-overlay").classList.add("visible");
+      });
+    }
+
+    function closeDoneDialog() {
+      // Reset status back to in_progress
+      saveCurrentFeedback();
+      document.getElementById("done-overlay").classList.remove("visible");
+    }
+
+    // ---- Toast ----
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("visible");
+      setTimeout(() => toast.classList.remove("visible"), 2000);
+    }
+
+    // ---- Keyboard nav ----
+    document.addEventListener("keydown", (e) => {
+      // Don't capture when typing in textarea
+      if (e.target.tagName === "TEXTAREA") return;
+
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        navigate(-1);
+      } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        navigate(1);
+      }
+    });
+
+    // ---- Util ----
+    function getDownloadUri(file) {
+      if (file.data_uri) return file.data_uri;
+      if (file.data_b64) return "data:application/octet-stream;base64," + file.data_b64;
+      if (file.type === "text") return "data:text/plain;charset=utf-8," + encodeURIComponent(file.content);
+      return "#";
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ---- View switching ----
+    function switchView(view) {
+      document.querySelectorAll(".view-tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".view-panel").forEach(p => p.classList.remove("active"));
+      document.querySelector(`[onclick="switchView('${view}')"]`).classList.add("active");
+      document.getElementById("panel-" + view).classList.add("active");
+    }
+
+    // ---- Benchmark rendering ----
+    function renderBenchmark() {
+      const data = EMBEDDED_DATA.benchmark;
+      if (!data) return;
+
+      // Show the tabs
+      document.getElementById("view-tabs").style.display = "flex";
+
+      const container = document.getElementById("benchmark-content");
+      const summary = data.run_summary || {};
+      const metadata = data.metadata || {};
+      const notes = data.notes || [];
+
+      let html = "";
+
+      // Header
+      html += "<h2 style='font-family: Poppins, sans-serif; margin-bottom: 0.5rem;'>Benchmark Results</h2>";
+      html += "<p style='color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;'>";
+      if (metadata.skill_name) html += "<strong>" + escapeHtml(metadata.skill_name) + "</strong> &mdash; ";
+      if (metadata.timestamp) html += metadata.timestamp + " &mdash; ";
+      if (metadata.evals_run) html += "Evals: " + metadata.evals_run.join(", ") + " &mdash; ";
+      html += (metadata.runs_per_configuration || "?") + " runs per configuration";
+      html += "</p>";
+
+      // Summary table
+      html += '<table class="benchmark-table">';
+
+      function fmtStat(stat, pct) {
+        if (!stat) return "—";
+        const suffix = pct ? "%" : "";
+        const m = pct ? (stat.mean * 100).toFixed(0) : stat.mean.toFixed(1);
+        const s = pct ? (stat.stddev * 100).toFixed(0) : stat.stddev.toFixed(1);
+        return m + suffix + " ± " + s + suffix;
+      }
+
+      function deltaClass(val) {
+        if (!val) return "";
+        const n = parseFloat(val);
+        if (n > 0) return "benchmark-delta-positive";
+        if (n < 0) return "benchmark-delta-negative";
+        return "";
+      }
+
+      // Discover config names dynamically (everything except "delta")
+      const configs = Object.keys(summary).filter(k => k !== "delta");
+      const configA = configs[0] || "config_a";
+      const configB = configs[1] || "config_b";
+      const labelA = configA.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const labelB = configB.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const a = summary[configA] || {};
+      const b = summary[configB] || {};
+      const delta = summary.delta || {};
+
+      html += "<thead><tr><th>Metric</th><th>" + escapeHtml(labelA) + "</th><th>" + escapeHtml(labelB) + "</th><th>Delta</th></tr></thead>";
+      html += "<tbody>";
+
+      html += "<tr><td><strong>Pass Rate</strong></td>";
+      html += "<td>" + fmtStat(a.pass_rate, true) + "</td>";
+      html += "<td>" + fmtStat(b.pass_rate, true) + "</td>";
+      html += '<td class="' + deltaClass(delta.pass_rate) + '">' + (delta.pass_rate || "—") + "</td></tr>";
+
+      // Time (only show row if data exists)
+      if (a.time_seconds || b.time_seconds) {
+        html += "<tr><td><strong>Time (s)</strong></td>";
+        html += "<td>" + fmtStat(a.time_seconds, false) + "</td>";
+        html += "<td>" + fmtStat(b.time_seconds, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.time_seconds) + '">' + (delta.time_seconds ? delta.time_seconds + "s" : "—") + "</td></tr>";
+      }
+
+      // Tokens (only show row if data exists)
+      if (a.tokens || b.tokens) {
+        html += "<tr><td><strong>Tokens</strong></td>";
+        html += "<td>" + fmtStat(a.tokens, false) + "</td>";
+        html += "<td>" + fmtStat(b.tokens, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.tokens) + '">' + (delta.tokens || "—") + "</td></tr>";
+      }
+
+      html += "</tbody></table>";
+
+      // Per-eval breakdown (if runs data available)
+      const runs = data.runs || [];
+      if (runs.length > 0) {
+        const evalIds = [...new Set(runs.map(r => r.eval_id))].sort((a, b) => a - b);
+
+        html += "<h3 style='font-family: Poppins, sans-serif; margin-bottom: 0.75rem;'>Per-Eval Breakdown</h3>";
+
+        const hasTime = runs.some(r => r.result && r.result.time_seconds != null);
+        const hasErrors = runs.some(r => r.result && r.result.errors > 0);
+
+        for (const evalId of evalIds) {
+          const evalRuns = runs.filter(r => r.eval_id === evalId);
+          const evalName = evalRuns[0] && evalRuns[0].eval_name ? evalRuns[0].eval_name : "Eval " + evalId;
+
+          html += "<h4 style='font-family: Poppins, sans-serif; margin: 1rem 0 0.5rem; color: var(--text);'>" + escapeHtml(evalName) + "</h4>";
+          html += '<table class="benchmark-table">';
+          html += "<thead><tr><th>Config</th><th>Run</th><th>Pass Rate</th>";
+          if (hasTime) html += "<th>Time (s)</th>";
+          if (hasErrors) html += "<th>Crashes During Execution</th>";
+          html += "</tr></thead>";
+          html += "<tbody>";
+
+          // Group by config and render with average rows
+          const configGroups = [...new Set(evalRuns.map(r => r.configuration))];
+          for (let ci = 0; ci < configGroups.length; ci++) {
+            const config = configGroups[ci];
+            const configRuns = evalRuns.filter(r => r.configuration === config);
+            if (configRuns.length === 0) continue;
+
+            const rowClass = ci === 0 ? "benchmark-row-with" : "benchmark-row-without";
+            const configLabel = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+
+            for (const run of configRuns) {
+              const r = run.result || {};
+              const prClass = r.pass_rate >= 0.8 ? "benchmark-delta-positive" : r.pass_rate < 0.5 ? "benchmark-delta-negative" : "";
+              html += '<tr class="' + rowClass + '">';
+              html += "<td>" + configLabel + "</td>";
+              html += "<td>" + run.run_number + "</td>";
+              html += '<td class="' + prClass + '">' + ((r.pass_rate || 0) * 100).toFixed(0) + "% (" + (r.passed || 0) + "/" + (r.total || 0) + ")</td>";
+              if (hasTime) html += "<td>" + (r.time_seconds != null ? r.time_seconds.toFixed(1) : "—") + "</td>";
+              if (hasErrors) html += "<td>" + (r.errors || 0) + "</td>";
+              html += "</tr>";
+            }
+
+            // Average row
+            const rates = configRuns.map(r => (r.result || {}).pass_rate || 0);
+            const avgRate = rates.reduce((a, b) => a + b, 0) / rates.length;
+            const avgPrClass = avgRate >= 0.8 ? "benchmark-delta-positive" : avgRate < 0.5 ? "benchmark-delta-negative" : "";
+            html += '<tr class="benchmark-row-avg ' + rowClass + '">';
+            html += "<td>" + configLabel + "</td>";
+            html += "<td>Avg</td>";
+            html += '<td class="' + avgPrClass + '">' + (avgRate * 100).toFixed(0) + "%</td>";
+            if (hasTime) {
+              const times = configRuns.map(r => (r.result || {}).time_seconds).filter(t => t != null);
+              html += "<td>" + (times.length ? (times.reduce((a, b) => a + b, 0) / times.length).toFixed(1) : "—") + "</td>";
+            }
+            if (hasErrors) html += "<td></td>";
+            html += "</tr>";
+          }
+          html += "</tbody></table>";
+
+          // Per-assertion detail for this eval
+          const runsWithExpectations = {};
+          for (const config of configGroups) {
+            runsWithExpectations[config] = evalRuns.filter(r => r.configuration === config && r.expectations && r.expectations.length > 0);
+          }
+          const hasAnyExpectations = Object.values(runsWithExpectations).some(runs => runs.length > 0);
+          if (hasAnyExpectations) {
+            // Collect all unique assertion texts across all configs
+            const allAssertions = [];
+            const seen = new Set();
+            for (const config of configGroups) {
+              for (const run of runsWithExpectations[config]) {
+                for (const exp of (run.expectations || [])) {
+                  if (!seen.has(exp.text)) {
+                    seen.add(exp.text);
+                    allAssertions.push(exp.text);
+                  }
+                }
+              }
+            }
+
+            html += '<table class="benchmark-table" style="margin-top: 0.5rem;">';
+            html += "<thead><tr><th>Assertion</th>";
+            for (const config of configGroups) {
+              const label = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+              html += "<th>" + escapeHtml(label) + "</th>";
+            }
+            html += "</tr></thead><tbody>";
+
+            for (const assertionText of allAssertions) {
+              html += "<tr><td>" + escapeHtml(assertionText) + "</td>";
+
+              for (const config of configGroups) {
+                html += "<td>";
+                for (const run of runsWithExpectations[config]) {
+                  const exp = (run.expectations || []).find(e => e.text === assertionText);
+                  if (exp) {
+                    const cls = exp.passed ? "benchmark-delta-positive" : "benchmark-delta-negative";
+                    const icon = exp.passed ? "\u2713" : "\u2717";
+                    html += '<span class="' + cls + '" title="Run ' + run.run_number + ': ' + escapeHtml(exp.evidence || "") + '">' + icon + "</span> ";
+                  } else {
+                    html += "— ";
+                  }
+                }
+                html += "</td>";
+              }
+              html += "</tr>";
+            }
+            html += "</tbody></table>";
+          }
+        }
+      }
+
+      // Notes
+      if (notes.length > 0) {
+        html += '<div class="benchmark-notes">';
+        html += "<h3>Analysis Notes</h3>";
+        html += "<ul>";
+        for (const note of notes) {
+          html += "<li>" + escapeHtml(note) + "</li>";
+        }
+        html += "</ul></div>";
+      }
+
+      container.innerHTML = html;
+    }
+
+    // ---- Start ----
+    init();
+    renderBenchmark();
+  </script>
+</body>
+</html>

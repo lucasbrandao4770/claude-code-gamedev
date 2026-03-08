@@ -1,0 +1,37 @@
+{
+  "eval_name": "eval-3-fix-broken",
+  "variant": "without_skill",
+  "expectations": [
+    {
+      "text": "Section ordering fixed",
+      "passed": true,
+      "evidence": "ext@2 sub@5 node@8"
+    },
+    {
+      "text": "preload() replaced with ExtResource()",
+      "passed": true,
+      "evidence": "no_preload=True, has_ExtResource=True"
+    },
+    {
+      "text": "Vector2 syntax fixed",
+      "passed": true,
+      "evidence": "Found Vector2(100, 200)"
+    },
+    {
+      "text": "Parent paths fixed (parent='.')",
+      "passed": true,
+      "evidence": "Sprite2D parent='.' found"
+    },
+    {
+      "text": "CollisionShape2D has parent attribute",
+      "passed": true,
+      "evidence": "[node name=\"CollisionShape2D\" type=\"CollisionShape2D\" parent=\".\"]"
+    },
+    {
+      "text": "SubResource ref matches declared ID",
+      "passed": true,
+      "evidence": "Found abc"
+    }
+  ],
+  "pass_rate": 1.0
+}

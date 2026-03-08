@@ -1,0 +1,27 @@
+{
+  "eval_id": 1,
+  "eval_name": "load-sprite-error-diagnosis",
+  "configuration": "with_skill",
+  "expectations": [
+    {
+      "text": "Identifies headless import as the root cause (not just one of many)",
+      "passed": true,
+      "evidence": "Root Cause section: 'Godot requires an import step before any file on disk becomes a usable resource... This is the single most common load_sprite failure'"
+    },
+    {
+      "text": "Provides exact fix command with --path flag: godot --headless --path <project> --import",
+      "passed": true,
+      "evidence": "Shows 'godot --headless --path <your-project-folder> --import' with concrete example using actual project path"
+    },
+    {
+      "text": "Explains WHY it happens (Godot resource system / .import sidecar files)",
+      "passed": true,
+      "evidence": "'Godot's resource system only recognizes files that have been imported -- raw files on disk without a matching .import file are invisible to the engine'"
+    },
+    {
+      "text": "Mentions that this applies to ALL new assets, not just first time",
+      "passed": true,
+      "evidence": "'This applies every time you add any new asset file -- not just the first time. If you later add more sprites, audio files, or fonts, you need to run the headless import again'"
+    }
+  ]
+}

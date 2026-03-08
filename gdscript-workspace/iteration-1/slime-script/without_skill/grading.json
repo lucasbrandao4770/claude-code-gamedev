@@ -1,0 +1,16 @@
+{
+  "eval_id": 1,
+  "configuration": "without_skill",
+  "expectations": [
+    {"text": "Uses enum for state machine", "passed": true, "evidence": "enum State { IDLE, WANDER, CHASE, DEAD } on line 13. Missing HURT state though."},
+    {"text": "Type hints on ALL function signatures", "passed": true, "evidence": "Functions mostly typed: _physics_process(delta: float) -> void, take_damage(amount: int) -> void. Some variables use := inference instead of explicit types."},
+    {"text": "Uses @export with grouping", "passed": false, "evidence": "Flat @export without grouping. Uses comments (# -- Tuning constants --) instead of @export_group()."},
+    {"text": "Contact damage uses get_overlapping_areas() polling", "passed": false, "evidence": "Uses get_overlapping_bodies() (L199) instead of get_overlapping_areas(). This checks CharacterBody2D overlap, not Area2D, which conflates body collision with damage detection."},
+    {"text": "No Godot 3.x syntax", "passed": true, "evidence": "All 4.x syntax used"},
+    {"text": "Death tween stored in typed variable", "passed": true, "evidence": "var tween: Tween = create_tween() on line 138"},
+    {"text": "Uses tabs for indentation", "passed": true, "evidence": "Tab indentation throughout"},
+    {"text": "Correct code ordering", "passed": false, "evidence": "No signal declarations at all (no signal died). Enum is first (good), but missing the signals section entirely."},
+    {"text": "No await in _physics_process", "passed": true, "evidence": "No await in _physics_process"},
+    {"text": "Uses match for state dispatch", "passed": true, "evidence": "match current_state: on line 57"}
+  ]
+}

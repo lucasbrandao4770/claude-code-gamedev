@@ -1,0 +1,16 @@
+{
+  "eval_id": 0,
+  "eval_name": "build-rpg-from-scratch",
+  "config": "without_skill",
+  "expectations": [
+    {"text": "Uses three-tier scope (MUST HAVE / SHOULD HAVE / OUT OF SCOPE)", "passed": false, "evidence": "No formal scope tiers. Has a 'Step 7: Polish (stretch goals)' but no MUST HAVE / SHOULD HAVE / OUT OF SCOPE structure."},
+    {"text": "Creates GDD.md separate from CLAUDE.md (two distinct documents)", "passed": false, "evidence": "Never mentions GDD or game design document. No mention of CLAUDE.md as a separate deliverable."},
+    {"text": "Mentions design pillars or core loop concept", "passed": false, "evidence": "No mention of design pillars or core loop anywhere in the response."},
+    {"text": "Mentions delegating to subagents for heavy work", "passed": false, "evidence": "No mention of subagents or delegation."},
+    {"text": "Specifies incremental build order with testing after each entity", "passed": true, "evidence": "Clear 7-step build order, each step has 'Test:' instructions (e.g., 'Test: player moves around an empty world')"},
+    {"text": "Includes anti-patterns from real sessions (body collision, area_entered, etc.)", "passed": true, "evidence": "Mentions hitbox/hurtbox pattern, periodic overlap checks, area_entered limitation, PROCESS_MODE_ALWAYS for dialog"},
+    {"text": "Asks user to name the game", "passed": true, "evidence": "'what would you like to name the project'"},
+    {"text": "Shows collision layers with explicit bitmask values (not just layer numbers)", "passed": false, "evidence": "Shows collision layer table with layer numbers 1-7 but no bitmask values"},
+    {"text": "Mentions analyzing sprite sheets before writing animation code", "passed": true, "evidence": "'Row order is DOWN=0, LEFT=1, RIGHT=2, UP=3', frame count normalization, per-sheet hframes differences"}
+  ]
+}

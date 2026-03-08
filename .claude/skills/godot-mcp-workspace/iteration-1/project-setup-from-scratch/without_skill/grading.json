@@ -1,0 +1,37 @@
+{
+  "eval_id": 2,
+  "eval_name": "project-setup-from-scratch",
+  "configuration": "without_skill",
+  "expectations": [
+    {
+      "text": "Covers GODOT_PATH env var in .mcp.json config",
+      "passed": true,
+      "evidence": ".mcp.json example includes 'env': {'GODOT_PATH': '...'}"
+    },
+    {
+      "text": "Shows complete .mcp.json configuration example",
+      "passed": true,
+      "evidence": "Step 4 shows full .mcp.json with placeholder and concrete Windows example"
+    },
+    {
+      "text": "Includes headless import step for assets",
+      "passed": true,
+      "evidence": "Step 6: 'godot --headless --import --path .' with explanation of what it does"
+    },
+    {
+      "text": "Mentions get_godot_version as connectivity verification",
+      "passed": true,
+      "evidence": "Step 9: 'call get_godot_version and get_project_info. If both return valid data, your setup is complete.'"
+    },
+    {
+      "text": "Instructs to commit .uid and .import files to git",
+      "passed": true,
+      "evidence": "Step 7: 'Do NOT ignore these -- they must be committed: *.uid files... *.import files'"
+    },
+    {
+      "text": "Clearly lists what MCP can vs cannot do",
+      "passed": true,
+      "evidence": "'What the MCP Can Do' and 'What the MCP Cannot Do' sections with clear delineation"
+    }
+  ]
+}

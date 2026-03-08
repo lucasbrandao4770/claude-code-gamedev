@@ -1,0 +1,11 @@
+{
+  "eval_id": 1,
+  "eval_name": "load-sprite-error-diagnosis",
+  "prompt": "I'm getting 'No loader found for resource' when calling load_sprite to load my player sprite. The PNG file exists at assets/sprites/player/idle.png in my project folder. What's going wrong?",
+  "assertions": [
+    {"text": "Identifies headless import as the root cause (not just one of many)", "type": "accuracy"},
+    {"text": "Provides exact fix command with --path flag: godot --headless --path <project> --import", "type": "accuracy"},
+    {"text": "Explains WHY it happens (Godot resource system / .import sidecar files)", "type": "completeness"},
+    {"text": "Mentions that this applies to ALL new assets, not just first time", "type": "completeness"}
+  ]
+}

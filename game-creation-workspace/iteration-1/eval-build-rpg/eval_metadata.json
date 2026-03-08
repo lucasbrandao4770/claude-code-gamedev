@@ -1,0 +1,16 @@
+{
+  "eval_id": 0,
+  "eval_name": "build-rpg-from-scratch",
+  "prompt": "I want to build a 2D top-down action RPG in Godot, like a simplified Zelda. The player fights slime enemies with a sword. I have pixel art assets from CraftPix (64x64 sprites). Help me plan and get started — what should we do first?",
+  "assertions": [
+    {"text": "Uses three-tier scope (MUST HAVE / SHOULD HAVE / OUT OF SCOPE)", "type": "content"},
+    {"text": "Creates GDD.md separate from CLAUDE.md (two distinct documents)", "type": "content"},
+    {"text": "Mentions design pillars or core loop concept", "type": "content"},
+    {"text": "Mentions delegating to subagents for heavy work", "type": "content"},
+    {"text": "Specifies incremental build order with testing after each entity", "type": "content"},
+    {"text": "Includes anti-patterns from real sessions (body collision, area_entered, etc.)", "type": "content"},
+    {"text": "Asks user to name the game", "type": "content"},
+    {"text": "Shows collision layers with explicit bitmask values (not just layer numbers)", "type": "content"},
+    {"text": "Mentions analyzing sprite sheets before writing animation code", "type": "content"}
+  ]
+}

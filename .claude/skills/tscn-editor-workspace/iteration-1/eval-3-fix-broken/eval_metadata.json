@@ -1,0 +1,13 @@
+{
+  "eval_id": 3,
+  "eval_name": "fix-broken-tscn",
+  "prompt": "Find and fix all format errors in a broken .tscn file with section ordering violations, preload() usage, wrong Vector2 syntax, incorrect parent paths, missing parent attribute, and dangling SubResource reference.",
+  "assertions": [
+    {"text": "Section ordering fixed: ext_resource before sub_resource before nodes", "type": "structural"},
+    {"text": "preload() replaced with ExtResource() + ext_resource declaration", "type": "safety"},
+    {"text": "Vector2 syntax fixed: Vector2(100, 200) not (100, 200)", "type": "functional"},
+    {"text": "Parent paths fixed: children use parent='.' not parent='Enemy'", "type": "structural"},
+    {"text": "CollisionShape2D has parent attribute", "type": "structural"},
+    {"text": "SubResource reference matches declared ID (CircleShape2D_abc)", "type": "functional"}
+  ]
+}

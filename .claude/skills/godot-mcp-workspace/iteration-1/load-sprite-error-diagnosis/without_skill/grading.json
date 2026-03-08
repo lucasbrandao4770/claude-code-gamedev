@@ -1,0 +1,27 @@
+{
+  "eval_id": 1,
+  "eval_name": "load-sprite-error-diagnosis",
+  "configuration": "without_skill",
+  "expectations": [
+    {
+      "text": "Identifies headless import as the root cause (not just one of many)",
+      "passed": true,
+      "evidence": "Section titled 'Most Likely Cause: Missing Import Step' — correctly identifies it as primary cause, not just a bullet"
+    },
+    {
+      "text": "Provides exact fix command with --path flag: godot --headless --path <project> --import",
+      "passed": false,
+      "evidence": "Primary fix shows 'godot --headless --import' without --path flag. Steam example also omits --path. Only later mentions '--path .' in the workflow section"
+    },
+    {
+      "text": "Explains WHY it happens (Godot resource system / .import sidecar files)",
+      "passed": true,
+      "evidence": "'Godot must import it before it can be used as a resource... generate the corresponding .import sidecar files and the binary resources in the .godot/imported/ directory'"
+    },
+    {
+      "text": "Mentions that this applies to ALL new assets, not just first time",
+      "passed": true,
+      "evidence": "'Whenever you add new asset files to a Godot project while working with the MCP, follow this sequence'"
+    }
+  ]
+}

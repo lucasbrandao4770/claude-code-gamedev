@@ -1,0 +1,26 @@
+{
+  "skill_name": "game-creation",
+  "evals": [
+    {
+      "id": 0,
+      "name": "build-rpg-from-scratch",
+      "prompt": "I want to build a 2D top-down action RPG in Godot, like a simplified Zelda. The player fights slime enemies with a sword. I have pixel art assets from CraftPix (64x64 sprites). Help me plan and get started — what should we do first?",
+      "expected_output": "Should follow Phase 1: ask about mechanics, define scope tiers, create GDD.md and CLAUDE.md separately, mention design pillars and core loop, reference subagent delegation for build phase",
+      "files": []
+    },
+    {
+      "id": 1,
+      "name": "scope-a-platformer",
+      "prompt": "I'm a data engineer, never made a game before. I want to make a pixel art platformer but I keep thinking of features — wall jumping, double jump, enemies, bosses, power-ups, collectibles, a level editor, online leaderboards... Can you help me scope this down to something I can actually build in one session with Claude Code and Godot MCP?",
+      "expected_output": "Should focus on scoping: define core mechanic first, use MUST HAVE / SHOULD HAVE / OUT OF SCOPE tiers, mention design pillars (3 max for prototype), explain what a core loop is, be encouraging but firm about cutting scope, suggest starting with movement feel as the core mechanic to validate",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "resume-combat-system",
+      "prompt": "I already have a Godot 4 project with a player character that moves in 8 directions. The player scene has CharacterBody2D with Sprite2D and CollisionShape2D. Now I need to add: (1) a slime enemy with chase AI, (2) a sword attack for the player, and (3) a combat system where both can take damage. What's the plan?",
+      "expected_output": "Should pick up at Phase 3 (Build Core), recommend Area2D hitbox/hurtbox pattern (NOT body collision), mention incremental build order (enemy first, then combat), delegate to subagents for MCP and script writing, warn about contact damage needing periodic overlap checks, mention playtesting after each entity",
+      "files": []
+    }
+  ]
+}

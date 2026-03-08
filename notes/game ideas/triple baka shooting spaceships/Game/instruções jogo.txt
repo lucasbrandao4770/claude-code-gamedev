@@ -1,0 +1,28 @@
+O jogo é inspirado no estilo de jogo de um spaceship shooter, em que nós jogadores controlamos "naves" que atiram sem parar e inimigos entram na tela e vão atirando em nós. O nosso objetivo é matar os inimigos, desviar das balas para que não nos matem e chegar ao final da fase. No fim da fase há um boss. Dentro da pasta de assets você encontrará tiles para montar a fase. Vamos começar com apenas uma fase e um menu principal para o jogo. O jogo deve ser feito para suportar até 4 jogadores jogando juntos na mesma fase. A "vida" de cada jogador estará localizada no canto inferior da tela, identificando qual jogador é, sua vida, sua barra de especial (carrega conforme mata inimigos) e seus power ups. 
+Dentro da fase, as vezes, os inimigos morrem e deixam cair um item. Esse item pode ser uma cura para o player que a pegar, um aumento de dano, invencibilidade por um tempo ou dar dano elevado em todos os monstros da tela (desaparecendo os ataques dos monstros junto com eles). Como o jogo é um simulador de spaceship shooter, o cenário se movimenta abaixo dos jogadores, considerando que eles estão no ar, não no solo. Assim, o cenário é uma decoração e influencia pouco no gameplay, ele deve ser gerado com antecedência, não feito enquanto ocorre o jogo. Cada fase possui um layout de mapa diferente. Os inimigos das fases possuem suas posições e ataques em uma sequencia pré-determinada. Com alguns monstros bonus que surgem aleatoriamente e não seguem esse padrão. Quanto maior o nível de dificuldade, mais desses monstros bonus aparecem e a chance deles de drop de itens é maior que dos outros inimigos. 
+Gestão de Tela: Como o jogo suporta até 4 jogadores, a câmera deve seguir um ritmo de rolagem automática (auto-scrolling) constante. Se um jogador ficar para trás e tocar a borda esquerda/inferior da tela, ele será impedido de sair da área visível.
+Reviver Aliados: Quando a vida de um jogador chega a zero, ele perde uma das 2 vidas reservas da equipe. Caso não sobrem mais vidas ele entra em um estado de "espera". Se outro jogador conseguir sobreviver por 30 segundos ou coletar um item específico de "Resgate", o jogador abatido retorna com 25% de vida. Se todos os jogadores morrerem, é exibida a tela de Game Over.
+Colisão entre Players: Para evitar frustração, as naves dos jogadores não possuem colisão entre si, permitindo que eles se atravessem para desviar de padrões de tiros complexos.
+Sistema de Especial e Tiro
+
+Ataques Únicos: Cada um dos 4 jogadores começa com um ataque padrão, mas pode pegar power ups que mudam os padrões de tiro para um ligeiramente diferente (ex: o normal é um tiro frontal e o power up ativa um tiro espalhado em leque ou tiros que perseguem inimigos ou tiros lentos porém explosivos). Se o jogador perder uma vida ou morrer ele perde os power ups.
+
+O Especial: Ao ativar a barra de especial (carregada com abates), o jogador ganha um "Hyper Mode" por 5 segundos, onde sua cadência de tiro dobra e ele se torna imune a pequenas balas, focado em causar dano massivo.
+
+Comportamento do Boss e Inimigos
+Fases do Boss: O boss ao final da fase terá três barras de vida visíveis no topo da tela. A cada barra drenada, o Boss muda seu padrão de ataque (ex: na primeira fase ele atira projéteis simples; na última, ele usa lasers que cruzam a tela inteira).
+
+Indicadores de Dano: Inimigos maiores piscam em branco ou vermelho ao serem atingidos, dando um feedback visual claro de que estão recebendo dano.
+
+Interface e Feedback (HUD/UI)
+Menu Principal: Incluirá as opções: "Iniciar Missão" (Seleção de Dificuldade), "Garagem" (para visualizar as naves), "Configurações" (Ajuste de volume e controles) e "Sair".
+
+Feedback de Power-up: Ao coletar um item, um texto flutuante rápido (ex: "+DAMAGE!", "MAX HP!") aparece sobre a nave do jogador para confirmar a coleta em meio ao caos dos tiros.
+
+Progressão Técnica do Cenário
+Camadas de Parallax: O cenário gerado com tiles terá pelo menos duas camadas de profundidade. A camada de fundo se move mais devagar que a camada superior (nuvens ou destroços), criando uma ilusão de altitude e velocidade.
+
+Checkpoints: Existirão pontos de salvamento invisíveis no meio da fase. Se o time inteiro perder, eles podem optar por recomeçar do último checkpoint em vez do início da fase.
+
+Sistema de Pontuação (Score)
+Um placar no topo da tela somará os pontos de todos os jogadores. Destruir inimigos em sequência sem levar dano gera um Multiplicador de Combo (x2, x3, x5), incentivando a jogabilidade habilidosa.

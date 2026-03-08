@@ -1,0 +1,13 @@
+{
+  "eval_id": 2,
+  "eval_name": "project-setup-from-scratch",
+  "prompt": "I'm starting a fresh Godot 4.x project and want to use godot-mcp to build it. I have sprite sheets downloaded already. Walk me through setting everything up from scratch, including MCP configuration.",
+  "assertions": [
+    {"text": "Covers GODOT_PATH env var in .mcp.json config", "type": "keyword"},
+    {"text": "Shows complete .mcp.json configuration example", "type": "completeness"},
+    {"text": "Includes headless import step for assets", "type": "keyword"},
+    {"text": "Mentions get_godot_version as connectivity verification", "type": "keyword"},
+    {"text": "Instructs to commit .uid and .import files to git", "type": "accuracy"},
+    {"text": "Clearly lists what MCP can vs cannot do", "type": "completeness"}
+  ]
+}

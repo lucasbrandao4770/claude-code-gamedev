@@ -1,0 +1,15 @@
+{
+  "eval_id": 2,
+  "eval_name": "resume-combat-system",
+  "config": "without_skill",
+  "expectations": [
+    {"text": "Recommends Area2D hitbox/hurtbox pattern (not body-to-body collision)", "passed": true, "evidence": "'Using body-to-body collision between two CharacterBody2D nodes causes physics pushing and unreliable signals. The hitbox/hurtbox pattern with Area2D is the standard Godot approach.'"},
+    {"text": "Mentions periodic get_overlapping_areas() alongside area_entered", "passed": true, "evidence": "'add a periodic check using get_overlapping_areas() on the PlayerHurtbox — area_entered only fires once on initial overlap'"},
+    {"text": "Recommends building and testing incrementally (enemy, then attack, then wiring)", "passed": true, "evidence": "Three phases: 'Phase 1: Slime Enemy with Chase AI', 'Phase 2: Sword Attack', 'Phase 3: Combat System' with testing after each"},
+    {"text": "Includes collision layer table with explicit bitmask values", "passed": false, "evidence": "Shows layers 1-5 with names but only layer numbers, no bitmask values. Uses conventional layer assignments without bitmask distinction."},
+    {"text": "Separates hurt stun duration from invincibility duration", "passed": false, "evidence": "Mentions 'invincibility timer (~1.0s)' and 'knockback: brief velocity impulse' but does not explicitly separate stun from invincibility or warn about the death spiral from blocking input."},
+    {"text": "Provides concrete numeric values (HP, damage, speed, durations)", "passed": true, "evidence": "'hp: int = 3' for slime, 'hp: int = 5' for player, detection radius 120px, attack cooldown 0.4s, invincibility 1.0s"},
+    {"text": "Mentions delegating to subagents for MCP or script writing", "passed": false, "evidence": "No mention of subagents."},
+    {"text": "Asks user to playtest after implementation", "passed": false, "evidence": "Ends with 'Want me to start with Phase 1?' but never asks user to playtest or test the feel."}
+  ]
+}

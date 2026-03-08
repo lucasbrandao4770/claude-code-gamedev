@@ -1,0 +1,42 @@
+{
+  "eval_id": 0,
+  "eval_name": "mcp-workflow-sequence",
+  "configuration": "with_skill",
+  "expectations": [
+    {
+      "text": "Mentions headless import step before load_sprite",
+      "passed": true,
+      "evidence": "Phase 1 prominently covers headless import: 'godot --headless --path <your_project_path> --import' with emphasis 'This is the single most critical step.'"
+    },
+    {
+      "text": "Uses correct create_scene param: scenePath (not sceneName/scene_name)",
+      "passed": true,
+      "evidence": "create_scene(projectPath=..., scenePath='scenes/enemies/skeleton.tscn', rootNodeType='CharacterBody2D')"
+    },
+    {
+      "text": "Uses correct load_sprite param: nodePath (not nodeName/node_name)",
+      "passed": true,
+      "evidence": "load_sprite(projectPath=..., scenePath=..., nodePath='root/Sprite2D', texturePath='res://...')"
+    },
+    {
+      "text": "Does not invent fictional load_sprite params (hframes/vframes)",
+      "passed": true,
+      "evidence": "load_sprite only uses projectPath, scenePath, nodePath, texturePath — no fictional params"
+    },
+    {
+      "text": "Warns that Vector2/complex properties are silently dropped by add_node",
+      "passed": true,
+      "evidence": "Multiple mentions: 'MCP silently drops Vector2 values, so this must be in the .tscn' and 'MCP silently drops Vector2, Color, and sub-resource properties'"
+    },
+    {
+      "text": "Shows stop_project and get_debug_output with no parameters",
+      "passed": true,
+      "evidence": "get_debug_output() and stop_project() shown with empty parens in Phase 4"
+    },
+    {
+      "text": "Explicitly lists what MCP cannot do (scripts, shapes, sub-scenes)",
+      "passed": true,
+      "evidence": "Phase 3 titled 'What MCP Cannot Do' covers GDScript, script attachment, collision shapes, and sub-scenes"
+    }
+  ]
+}

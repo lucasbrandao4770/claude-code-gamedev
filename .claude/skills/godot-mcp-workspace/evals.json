@@ -1,0 +1,23 @@
+{
+  "skill_name": "godot-mcp",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "I want to create a new enemy scene for my 2D RPG using the Godot MCP tools. It's a skeleton that chases the player and deals contact damage. What MCP calls do I need to make, and in what order?",
+      "expected_output": "Correct MCP tool sequence with accurate parameter names, mentions headless import step, warns about Vector2/complex property limitations, identifies what MCP can't do (scripts, collision shapes) and says to use Write/Edit tools for those.",
+      "files": []
+    },
+    {
+      "id": 1,
+      "prompt": "I'm getting 'No loader found for resource' when calling load_sprite to load my player sprite. The PNG file exists at assets/sprites/player/idle.png in my project folder. What's going wrong?",
+      "expected_output": "Immediately identifies the missing headless import step as the cause. Provides the exact command: godot --headless --path <project> --import. Explains that assets on disk are not Godot resources until imported.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I'm starting a fresh Godot 4.x project and want to use godot-mcp to build it. I have sprite sheets downloaded already. Walk me through setting everything up from scratch, including MCP configuration.",
+      "expected_output": "Covers: GODOT_PATH or auto-detection, .mcp.json config, project.godot creation, headless import for assets, get_godot_version connectivity check, then the full build workflow sequence.",
+      "files": []
+    }
+  ]
+}

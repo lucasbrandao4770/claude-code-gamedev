@@ -1,0 +1,15 @@
+{
+  "eval_id": 1,
+  "eval_name": "scope-a-platformer",
+  "config": "without_skill",
+  "expectations": [
+    {"text": "Uses three-tier scope (MUST HAVE / SHOULD HAVE / OUT OF SCOPE)", "passed": false, "evidence": "Has 'Must Have' and 'What Gets Cut and Why' but no SHOULD HAVE tier. Collectibles marked 'MAYBE (session 2)' inline, not as a formal tier."},
+    {"text": "Explains what a core loop is", "passed": false, "evidence": "No mention of core loop concept anywhere in the response."},
+    {"text": "Identifies core mechanic (movement/jump) as first thing to validate", "passed": false, "evidence": "Step 8 mentions 'Playtest and tweak jump height/gravity/speed' but doesn't frame it as 'validate the core mechanic before adding features' or 'find the fun'. Tuning is step 8 of 8, not the first priority."},
+    {"text": "Provides reasoning for each cut feature (not just 'cut')", "passed": true, "evidence": "Each cut has a 'Reason' column: 'Single jump is not even working yet', 'AI patrol/chase logic is a whole system'"},
+    {"text": "Uses encouraging/supportive tone for a beginner", "passed": true, "evidence": "'Great instinct asking this before diving in'"},
+    {"text": "Suggests naming the game or asks for a name", "passed": true, "evidence": "Names the project 'First Jump' directly in the heading"},
+    {"text": "Bridges game dev concepts to engineering terms (data engineer audience)", "passed": false, "evidence": "No engineering analogies. Does not reference the user's data engineer background or bridge concepts."},
+    {"text": "Mentions writing a GDD as a next step", "passed": false, "evidence": "No mention of GDD or game design document. Goes straight from scoping to 'I will set up the project'."}
+  ]
+}

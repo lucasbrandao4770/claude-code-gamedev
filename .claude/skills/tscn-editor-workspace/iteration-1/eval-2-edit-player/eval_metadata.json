@@ -1,0 +1,13 @@
+{
+  "eval_id": 2,
+  "eval_name": "edit-player-add-detection",
+  "prompt": "Edit the existing player scene to add a DetectionZone Area2D with CircleShape2D (radius 80), collision_layer=0, collision_mask=4, and a body_entered signal connection.",
+  "assertions": [
+    {"text": "DetectionZone Area2D node added with parent='.'", "type": "functional"},
+    {"text": "CircleShape2D sub_resource with radius 80 exists", "type": "functional"},
+    {"text": "collision_layer=0 and collision_mask=4 on DetectionZone", "type": "functional"},
+    {"text": "[connection] block for body_entered signal at end of file", "type": "functional"},
+    {"text": "All original nodes preserved (Player, Sprite2D, CollisionShape2D, Camera2D, SwordHitBox, HurtBox)", "type": "safety"},
+    {"text": "New sub_resource in sub_resource section (before nodes)", "type": "structural"}
+  ]
+}

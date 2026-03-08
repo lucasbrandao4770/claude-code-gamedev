@@ -1,0 +1,23 @@
+{
+  "skill_name": "tscn-editor",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create a .tscn file for a treasure chest pickup in my Godot 4 RPG. It should be an Area2D root node named 'Chest', with a Sprite2D child for the chest visual (texture at res://assets/sprites/items/chest.png), a CollisionShape2D child with a CircleShape2D (radius 16) for player detection, and a script attached at res://scripts/pickups/chest.gd. Write the complete .tscn file content to examples/forge-of-worlds/scenes/pickups/chest.tscn.",
+      "expected_output": "A valid .tscn file with correct section ordering (header -> ext_resource -> sub_resource -> node), proper ext_resource entries for the script and texture, a sub_resource for CircleShape2D, correct parent paths, and script = ExtResource() on the root node.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Edit the existing player scene at examples/forge-of-worlds/scenes/player/player.tscn to add a DetectionZone. Add an Area2D node called 'DetectionZone' as a child of the root Player node. It needs a CircleShape2D with radius 80 as a sub-resource, referenced by a CollisionShape2D child of DetectionZone. Set the DetectionZone's collision_layer to 0 and collision_mask to 4. Also add a signal connection: connect DetectionZone's 'body_entered' signal to the root node's '_on_detection_zone_body_entered' method.",
+      "expected_output": "The existing player.tscn file with new sub_resource for CircleShape2D added in the sub_resource section (not after nodes), new DetectionZone Area2D and CollisionShape2D nodes with correct parent paths, collision_layer/mask integers set correctly, and a [connection] block at the end of the file.",
+      "files": ["examples/forge-of-worlds/scenes/player/player.tscn"]
+    },
+    {
+      "id": 3,
+      "prompt": "This .tscn file has several format errors. Find and fix ALL of them:\n\n```\n[gd_scene format=3]\n\n[node name=\"Enemy\" type=\"CharacterBody2D\"]\nscript = preload(\"res://scripts/enemy.gd\")\nposition = (100, 200)\n\n[ext_resource type=\"Texture2D\" path=\"res://sprites/enemy.png\" id=\"1_tex\"]\n\n[sub_resource type=\"CircleShape2D\" id=\"CircleShape2D_abc\"]\nradius = 12.0\n\n[node name=\"Sprite2D\" type=\"Sprite2D\" parent=\"Enemy\"]\ntexture = ExtResource(\"1_tex\")\n\n[node name=\"CollisionShape2D\" type=\"CollisionShape2D\"]\nshape = SubResource(\"CircleShape2D_xyz\")\n```\n\nList each error you find and provide the corrected .tscn file.",
+      "expected_output": "Should identify at minimum: 1) preload() is invalid in .tscn (use ExtResource), 2) position uses wrong syntax (should be Vector2(100, 200)), 3) ext_resource is after nodes (wrong section order), 4) Sprite2D parent should be '.' not 'Enemy', 5) CollisionShape2D is missing parent attribute, 6) SubResource references non-existent id 'CircleShape2D_xyz' (should be 'CircleShape2D_abc'). Corrected file should have proper ordering and all fixes applied.",
+      "files": []
+    }
+  ]
+}

@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eval Review</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #faf9f5;
+      --surface: #ffffff;
+      --border: #e8e6dc;
+      --text: #141413;
+      --text-muted: #b0aea5;
+      --accent: #d97757;
+      --accent-hover: #c4613f;
+      --green: #788c5d;
+      --green-bg: #eef2e8;
+      --red: #c44;
+      --red-bg: #fceaea;
+      --header-bg: #141413;
+      --header-text: #faf9f5;
+      --radius: 6px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lora', Georgia, serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .header h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .header .instructions {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      margin-top: 0.25rem;
+    }
+    .header .progress {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      text-align: right;
+    }
+
+    /* ---- Main content ---- */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* ---- Sections ---- */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      flex-shrink: 0;
+    }
+    .section-header {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .section-body {
+      padding: 1rem;
+    }
+
+    /* ---- Config badge ---- */
+    .config-badge {
+      display: inline-block;
+      padding: 0.2rem 0.625rem;
+      border-radius: 9999px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-left: 0.75rem;
+      vertical-align: middle;
+    }
+    .config-badge.config-primary {
+      background: rgba(33, 150, 243, 0.12);
+      color: #1976d2;
+    }
+    .config-badge.config-baseline {
+      background: rgba(255, 193, 7, 0.15);
+      color: #f57f17;
+    }
+
+    /* ---- Prompt ---- */
+    .prompt-text {
+      white-space: pre-wrap;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+    }
+
+    /* ---- Outputs ---- */
+    .output-file {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .output-file + .output-file {
+      margin-top: 1rem;
+    }
+    .output-file-header {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .output-file-header .dl-btn {
+      font-size: 0.7rem;
+      color: var(--accent);
+      text-decoration: none;
+      cursor: pointer;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+    .output-file-header .dl-btn:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+    .output-file-content {
+      padding: 0.75rem;
+      overflow-x: auto;
+    }
+    .output-file-content pre {
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    .output-file-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    .output-file-content iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+    }
+    .output-file-content table {
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+      width: 100%;
+    }
+    .output-file-content table td,
+    .output-file-content table th {
+      border: 1px solid var(--border);
+      padding: 0.375rem 0.5rem;
+      text-align: left;
+    }
+    .output-file-content table th {
+      background: var(--bg);
+      font-weight: 600;
+    }
+    .output-file-content .download-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    .output-file-content .download-link:hover {
+      background: var(--border);
+    }
+    .empty-state {
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    /* ---- Feedback ---- */
+    .prev-feedback {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.625rem 0.75rem;
+      margin-top: 0.75rem;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .prev-feedback-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.25rem;
+      color: var(--text-muted);
+    }
+    .feedback-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      resize: vertical;
+      color: var(--text);
+    }
+    .feedback-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .feedback-status {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      min-height: 1.1em;
+    }
+
+    /* ---- Grades (collapsible) ---- */
+    .grades-toggle {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .grades-toggle:hover {
+      color: var(--accent);
+    }
+    .grades-toggle .arrow {
+      margin-right: 0.5rem;
+      transition: transform 0.15s;
+      font-size: 0.75rem;
+    }
+    .grades-toggle .arrow.open {
+      transform: rotate(90deg);
+    }
+    .grades-content {
+      display: none;
+      margin-top: 0.75rem;
+    }
+    .grades-content.open {
+      display: block;
+    }
+    .grades-summary {
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .grade-badge {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .grade-pass { background: var(--green-bg); color: var(--green); }
+    .grade-fail { background: var(--red-bg); color: var(--red); }
+    .assertion-list {
+      list-style: none;
+    }
+    .assertion-item {
+      padding: 0.625rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8125rem;
+    }
+    .assertion-item:last-child { border-bottom: none; }
+    .assertion-status {
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+    .assertion-status.pass { color: var(--green); }
+    .assertion-status.fail { color: var(--red); }
+    .assertion-evidence {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+      padding-left: 1.5rem;
+    }
+
+    /* ---- View tabs ---- */
+    .view-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 2rem;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .view-tab {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.625rem 1.25rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .view-tab:hover { color: var(--text); }
+    .view-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .view-panel { display: none; }
+    .view-panel.active { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+
+    /* ---- Benchmark view ---- */
+    .benchmark-view {
+      padding: 1.5rem 2rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .benchmark-table {
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.8125rem;
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+    .benchmark-table th, .benchmark-table td {
+      padding: 0.625rem 0.75rem;
+      text-align: left;
+      border: 1px solid var(--border);
+    }
+    .benchmark-table th {
+      font-family: 'Poppins', sans-serif;
+      background: var(--header-bg);
+      color: var(--header-text);
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .benchmark-table tr:hover { background: var(--bg); }
+    .benchmark-table tr.benchmark-row-with { background: rgba(33, 150, 243, 0.06); }
+    .benchmark-table tr.benchmark-row-without { background: rgba(255, 193, 7, 0.06); }
+    .benchmark-table tr.benchmark-row-with:hover { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-without:hover { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-table tr.benchmark-row-avg { font-weight: 600; border-top: 2px solid var(--border); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-with { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-without { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-delta-positive { color: var(--green); font-weight: 600; }
+    .benchmark-delta-negative { color: var(--red); font-weight: 600; }
+    .benchmark-notes {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .benchmark-notes h3 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+    }
+    .benchmark-notes ul {
+      list-style: disc;
+      padding-left: 1.25rem;
+    }
+    .benchmark-notes li {
+      font-size: 0.8125rem;
+      line-height: 1.6;
+      margin-bottom: 0.375rem;
+    }
+    .benchmark-empty {
+      color: var(--text-muted);
+      font-style: italic;
+      text-align: center;
+      padding: 3rem;
+    }
+
+    /* ---- Navigation ---- */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .nav-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: all 0.15s;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .done-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .done-btn:hover {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .done-btn.ready {
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+    }
+    .done-btn.ready:hover {
+      background: var(--accent-hover);
+    }
+    /* ---- Done overlay ---- */
+    .done-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    .done-overlay.visible {
+      display: flex;
+    }
+    .done-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 2rem 3rem;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+    }
+    .done-card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .done-card p {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .done-card .btn-row {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .done-card button {
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    .done-card button:hover {
+      background: var(--bg);
+    }
+    /* ---- Toast ---- */
+    .toast {
+      position: fixed;
+      bottom: 5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 0.625rem 1.25rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 200;
+    }
+    .toast.visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" style="height:100vh; display:flex; flex-direction:column;">
+    <div class="header">
+      <div>
+        <h1>Eval Review: <span id="skill-name"></span></h1>
+        <div class="instructions">Review each output and leave feedback below. Navigate with arrow keys or buttons. When done, copy feedback and paste into Claude Code.</div>
+      </div>
+      <div class="progress" id="progress"></div>
+    </div>
+
+    <!-- View tabs (only shown when benchmark data exists) -->
+    <div class="view-tabs" id="view-tabs" style="display:none;">
+      <button class="view-tab active" onclick="switchView('outputs')">Outputs</button>
+      <button class="view-tab" onclick="switchView('benchmark')">Benchmark</button>
+    </div>
+
+    <!-- Outputs panel (qualitative review) -->
+    <div class="view-panel active" id="panel-outputs">
+    <div class="main">
+      <!-- Prompt -->
+      <div class="section">
+        <div class="section-header">Prompt <span class="config-badge" id="config-badge" style="display:none;"></span></div>
+        <div class="section-body">
+          <div class="prompt-text" id="prompt-text"></div>
+        </div>
+      </div>
+
+      <!-- Outputs -->
+      <div class="section">
+        <div class="section-header">Output</div>
+        <div class="section-body" id="outputs-body">
+          <div class="empty-state">No output files found</div>
+        </div>
+      </div>
+
+      <!-- Previous Output (collapsible) -->
+      <div class="section" id="prev-outputs-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="togglePrevOutputs()">
+            <span class="arrow" id="prev-outputs-arrow">&#9654;</span>
+            Previous Output
+          </div>
+        </div>
+        <div class="grades-content" id="prev-outputs-content"></div>
+      </div>
+
+      <!-- Grades (collapsible) -->
+      <div class="section" id="grades-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="toggleGrades()">
+            <span class="arrow" id="grades-arrow">&#9654;</span>
+            Formal Grades
+          </div>
+        </div>
+        <div class="grades-content" id="grades-content"></div>
+      </div>
+
+      <!-- Feedback -->
+      <div class="section">
+        <div class="section-header">Your Feedback</div>
+        <div class="section-body">
+          <textarea
+            class="feedback-textarea"
+            id="feedback"
+            placeholder="What do you think of this output? Any issues, suggestions, or things that look great?"
+          ></textarea>
+          <div class="feedback-status" id="feedback-status"></div>
+          <div class="prev-feedback" id="prev-feedback" style="display:none;">
+            <div class="prev-feedback-label">Previous feedback</div>
+            <div id="prev-feedback-text"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav" id="outputs-nav">
+      <button class="nav-btn" id="prev-btn" onclick="navigate(-1)">&#8592; Previous</button>
+      <button class="done-btn" id="done-btn" onclick="showDoneDialog()">Submit All Reviews</button>
+      <button class="nav-btn" id="next-btn" onclick="navigate(1)">Next &#8594;</button>
+    </div>
+    </div><!-- end panel-outputs -->
+
+    <!-- Benchmark panel (quantitative stats) -->
+    <div class="view-panel" id="panel-benchmark">
+      <div class="benchmark-view" id="benchmark-content">
+        <div class="benchmark-empty">No benchmark data available. Run a benchmark to see quantitative results here.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Done overlay -->
+  <div class="done-overlay" id="done-overlay">
+    <div class="done-card">
+      <h2>Review Complete</h2>
+      <p>Your feedback has been saved. Go back to your Claude Code session and tell Claude you're done reviewing.</p>
+      <div class="btn-row">
+        <button onclick="closeDoneDialog()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ---- Embedded data (injected by generate_review.py) ----
+    const EMBEDDED_DATA = {"skill_name": "game-creation", "runs": [{"id": "eval-build-rpg-with_skill", "prompt": "I want to build a 2D top-down action RPG in Godot, like a simplified Zelda. The player fights slime enemies with a sword. I have pixel art assets from CraftPix (64x64 sprites). Help me plan and get started \u00e2\u20ac\u201d what should we do first?", "eval_id": 0, "outputs": [{"name": "response.md", "type": "text", "content": "Great choice -- a top-down Zelda-like is one of the best genres for a first prototype because the core loop (move, fight, explore) is simple and satisfying. And good news: I have a battle-tested template for exactly this genre, plus lessons from a previous build (\"Forge of Worlds\") that will save us significant time.\n\nLet me walk you through the plan, and then we will tackle Phase 1 together right now.\n\n---\n\n## How This Will Work (5 Phases)\n\n1. **Concept & Planning** (now) -- Define scope, name the game, write a GDD and a CLAUDE.md\n2. **Asset Pipeline** -- Organize your CraftPix sprites, analyze sheet layouts, import into Godot\n3. **Build Core** -- Player movement, slime AI, sword combat, world map, HUD (one entity at a time, testing after each)\n4. **Polish** -- Audio, screen shake, knockback, damage numbers\n5. **Wrap Up** -- Final playtest, cleanup, commit\n\nWe build incrementally: Player first, then slime, then combat, then world, then HUD. Each step gets tested before moving on. This catches bugs early -- in the Forge of Worlds build, this approach caught direction-mapping bugs that would have cascaded into every entity.\n\n---\n\n## What We Should Do First: Phase 1 (Concept & Planning)\n\nBefore writing a single line of code, we need two documents. This takes about 10 minutes and prevents hours of wasted work later.\n\n### Step 1: Scope the Prototype\n\nBased on your description, here is a proposed scope. Tell me what to add or cut:\n\n**MUST HAVE (prototype is incomplete without these):**\n- Player: 8-directional movement with walk/idle animations\n- Sword attack: slash in facing direction with hitbox\n- Slime enemy: wander + chase player when close + contact damage\n- Health system: player and enemies have HP\n- Damage feedback: flash + knockback + invincibility frames (1s blink)\n- Death: slime death fade, player death triggers restart\n- One map: green field with grass, trees, rocks (TileMapLayer)\n- Camera following the player\n- HUD: hearts display\n\n**SHOULD HAVE (after MUST HAVE works):**\n- Background music (chiptune)\n- Sound effects (sword swing, hit, pickup)\n- Heart pickups that restore HP\n\n**EXPLICITLY OUT OF SCOPE (we will not build these):**\n- Inventory or equipment\n- Multiple maps or room transitions\n- Save/load system\n- Menu screens (title, pause, settings)\n- Multiple enemy types\n- Leveling or XP\n\n### Step 2: A Few Questions for You\n\nBefore I draft the GDD and CLAUDE.md, I need to confirm a few things:\n\n1. **Game name** -- Even a working title helps. Something like \"Slime Fields,\" \"Blade of the Wilds,\" or whatever resonates with you. Naming creates engagement and makes the session more fun.\n\n2. **Your CraftPix assets** -- Which specific packs do you have? The CraftPix top-down packs use a specific row convention (DOWN=0, LEFT=1, RIGHT=2, UP=3) and some sheets have non-uniform frame counts. I need to analyze the exact sheets before writing animation code. Common packs for this genre:\n   - Swordsman character (48x48 or 64x64)\n   - Slime mobs pack\n   - Top-down tileset\n\n3. **Viewport size** -- For 64x64 sprites, I recommend a 640x360 viewport with 2x camera zoom. This gives a good field of view without sprites being too small or too large.\n\n4. **Language for code comments** -- Any preference? (English, Portuguese, etc.)\n\n### Step 3: What I Will Create (After Your Answers)\n\nOnce you confirm the scope and answer those questions, I will produce:\n\n1. **GDD.md** -- A one-pager game design document covering:\n   - Elevator pitch and design pillars\n   - Core loop: Explore -> Fight -> Survive -> Explore\n   - Player stats (HP, damage, speed)\n   - Slime AI behavior (wander, chase range, damage)\n   - Reference games and non-goals\n\n2. **CLAUDE.md** -- The technical architecture document covering:\n   - Collision layer assignments (Player=2, Enemies=3, PlayerHitbox=4, EnemyHitbox=5, etc.)\n   - File structure (scenes/, scripts/, assets/)\n   - GDScript conventions\n   - MCP workflow notes and anti-patterns\n   - Sprite sheet conventions for your specific assets\n\n3. **Project setup** -- Copy the `zelda-like-rpg` template (which has a pre-configured `project.godot` with pixel art settings, input maps, and collision layers already defined).\n\n---\n\n## Key Technical Decisions (Already Battle-Tested)\n\nThese come from real build sessions and will save us from common pitfalls:\n\n| Decision | Why |\n|----------|-----|\n| **Area2D for all damage** (not body-to-body collision) | Body collisions cause the player to get pushed around by enemies |\n| **Dual damage detection**: `area_entered` signal + periodic `get_overlapping_areas()` | The signal fires only once on overlap -- if an enemy stays on top of you, damage stops. Periodic polling catches ongoing contact. |\n| **Cycle-based animation speed** (total_time / frame_count) | CraftPix sheets sometimes have different frame counts per direction (e.g., UP idle has 4 frames while others have 12). Fixed per-frame delay makes some directions animate 3x faster. |\n| **CanvasLayer for all UI** | World-space UI text is blurry at low pixel-art resolutions |\n| **Pause game during dialog** | Without pausing, enemies attack while the player reads text |\n| **Short stun (0.3s) + long invincibility (1.0s)** | Blocking all input during hurt state means the player can never escape enemies |\n\n---\n\n## What Happens After Planning\n\nOnce we have the GDD and CLAUDE.md nailed down, the build order is:\n\n```\n1. Organize your CraftPix sprites into assets/sprites/player/, enemies/, etc.\n2. Analyze each sprite sheet (dimensions, frame count, row order)\n3. Import assets: godot --headless --import\n4. Build Player scene -> test movement\n5. Build Slime scene -> test AI behavior\n6. Build combat (hitbox/hurtbox) -> test hitting and dying\n7. Build world (TileMapLayer + boundaries) -> test spawning\n8. Build HUD (CanvasLayer + hearts) -> test HP display\n9. Add audio (music + sword SFX)\n10. Polish and playtest\n```\n\nI will use Godot MCP to create scenes and add nodes, and you will be able to watch nodes materialize in real-time in the editor. The MCP also lets me run the game, capture debug output, and fix issues in rapid 3-second iteration cycles.\n\n---\n\n**So -- what would you like to name the game, and which CraftPix packs do you have downloaded?** Once I have those answers, I will draft both documents and we can start building.\n"}], "grading": {"eval_id": 0, "eval_name": "build-rpg-from-scratch", "config": "with_skill", "expectations": [{"text": "Uses three-tier scope (MUST HAVE / SHOULD HAVE / OUT OF SCOPE)", "passed": true, "evidence": "Has explicit 'MUST HAVE', 'SHOULD HAVE', and 'EXPLICITLY OUT OF SCOPE' sections with detailed feature lists"}, {"text": "Creates GDD.md separate from CLAUDE.md (two distinct documents)", "passed": true, "evidence": "'1. GDD.md \u00e2\u20ac\u201d A one-pager game design document' and '2. CLAUDE.md \u00e2\u20ac\u201d The technical architecture document' listed as separate outputs"}, {"text": "Mentions design pillars or core loop concept", "passed": true, "evidence": "'Core loop: Explore -> Fight -> Survive -> Explore' and 'Elevator pitch and design pillars' both mentioned in GDD output spec"}, {"text": "Mentions delegating to subagents for heavy work", "passed": false, "evidence": "No mention of subagents. Says 'I will use Godot MCP to create scenes' as if doing everything directly."}, {"text": "Specifies incremental build order with testing after each entity", "passed": true, "evidence": "'We build incrementally: Player first, then slime, then combat, then world, then HUD. Each step gets tested before moving on.'"}, {"text": "Includes anti-patterns from real sessions (body collision, area_entered, etc.)", "passed": true, "evidence": "Detailed 'Key Technical Decisions' table with 6 battle-tested patterns including Area2D, dual damage detection, cycle-based animation, CanvasLayer UI, pause during dialog, stun vs invincibility"}, {"text": "Asks user to name the game", "passed": true, "evidence": "'Game name -- Even a working title helps. Something like Slime Fields, Blade of the Wilds...'"}, {"text": "Shows collision layers with explicit bitmask values (not just layer numbers)", "passed": false, "evidence": "Mentions 'Collision layer assignments (Player=2, Enemies=3, PlayerHitbox=4, EnemyHitbox=5)' but these are layer numbers, not bitmask values. Layer 3 has bitmask 4, not 3. Does not show both."}, {"text": "Mentions analyzing sprite sheets before writing animation code", "passed": true, "evidence": "'I need to analyze the exact sheets before writing animation code' and asks about specific CraftPix packs"}]}}, {"id": "eval-build-rpg-without_skill", "prompt": "I want to build a 2D top-down action RPG in Godot, like a simplified Zelda. The player fights slime enemies with a sword. I have pixel art assets from CraftPix (64x64 sprites). Help me plan and get started \u00e2\u20ac\u201d what should we do first?", "eval_id": 0, "outputs": [{"name": "response.md", "type": "text", "content": "Great idea -- a top-down Zelda-like is a perfect scope for a prototype with Claude Code + Godot MCP. Let me lay out a plan and then we can start building step by step.\n\n---\n\n## Project Plan: Top-Down Action RPG\n\n### Architecture Overview\n\nWe need **5 core scenes** to get a playable prototype:\n\n| Scene | Root Node | Purpose |\n|-------|-----------|---------|\n| `player.tscn` | CharacterBody2D | 8-directional movement, sword attack |\n| `slime.tscn` | CharacterBody2D | Enemy AI -- chase, wander, take damage |\n| `game_world.tscn` | Node2D | Main scene, spawns player + enemies |\n| `hud.tscn` | CanvasLayer | Health hearts display |\n| `npc.tscn` | Area2D | (stretch goal) Dialog interaction |\n\n### Combat Design\n\n- **Hitbox/Hurtbox pattern using Area2D** -- never body-to-body collision for damage. The player's sword swing spawns an Area2D hitbox, and enemies have Area2D hurtboxes. This avoids physics conflicts and gives clean damage detection.\n- Supplement `area_entered` signals with periodic `get_overlapping_areas()` checks for contact damage (the signal only fires once on initial overlap).\n\n### Collision Layer Plan\n\n| Layer | Name | Used By |\n|-------|------|---------|\n| 1 | World | Walls, obstacles |\n| 2 | Player | Player body |\n| 3 | Enemy | Enemy bodies |\n| 4 | PlayerHitbox | Sword attack area |\n| 5 | EnemyHurtbox | Enemy damage receiver |\n| 6 | EnemyHitbox | Enemy contact damage area |\n| 7 | PlayerHurtbox | Player damage receiver |\n\n### Sprite Setup Notes (CraftPix 64x64)\n\nSince you have CraftPix top-down sprites, keep in mind:\n- **Row order is DOWN=0, LEFT=1, RIGHT=2, UP=3** -- this matters for directional animation.\n- Player idle UP row sometimes has fewer frames (4 vs 12) -- we normalize by **cycle duration**, not per-frame delay.\n- Slime sheets may differ between Idle (6 columns) and Walk (8 columns), so each animation needs its own SpriteFrames or hframes setting.\n\n---\n\n## Build Order (Step by Step)\n\nHere is the sequence I recommend. Each step produces something testable:\n\n### Step 1: Project Setup\n- Create `project.godot` with pixel art settings (nearest-neighbor filtering, 640x360 viewport with 2x-3x stretch).\n- Configure `.mcp.json` so the Godot MCP server connects.\n- Set up input map: `move_up`, `move_down`, `move_left`, `move_right`, `attack`, `interact`.\n\n### Step 2: Player Scene\n- Create `player.tscn` (CharacterBody2D + AnimatedSprite2D + CollisionShape2D).\n- Write `player.gd` with 8-directional movement, idle/walk animations, and facing direction tracking.\n- Test: player moves around an empty world.\n\n### Step 3: Sword Attack\n- Add attack animation and a sword hitbox (Area2D) that activates briefly during the attack.\n- Add invincibility frames and knockback logic to the player.\n- Test: press attack, see animation, hitbox appears and disappears.\n\n### Step 4: Slime Enemy\n- Create `slime.tscn` (CharacterBody2D + AnimatedSprite2D + hurtbox Area2D + hitbox Area2D).\n- Write `slime.gd` with simple AI: wander randomly, chase player when nearby, deal contact damage.\n- Connect damage signals: player sword hitbox overlaps slime hurtbox = slime takes damage.\n- Test: slime wanders, chases, dies after a few hits.\n\n### Step 5: Game World\n- Create `game_world.tscn` that instances player and a few slimes.\n- Add boundary walls (StaticBody2D with ColorRect or TileMap if we get there).\n- Write `game_world.gd` to manage enemy spawning.\n- Test: full combat loop works.\n\n### Step 6: HUD\n- Create `hud.tscn` (CanvasLayer) showing heart sprites for player HP.\n- Connect to player health signal to update display.\n- Test: hearts decrease when player takes damage.\n\n### Step 7: Polish (stretch goals)\n- NPC with dialog system (pauses game tree, NPC uses `PROCESS_MODE_ALWAYS`).\n- Sound effects.\n- Heart pickups.\n- TileMap for proper terrain.\n\n---\n\n## Workflow We Will Use\n\nFor each step, the pattern is:\n\n```\n1. Write/Edit tool  -->  project.godot, .gd scripts, .tscn tweaks\n2. Bash             -->  godot --headless --import  (after adding new assets)\n3. Godot MCP        -->  create_scene, add_node, load_sprite  (scene structure)\n4. Write/Edit tool  -->  .gd scripts, attach scripts in .tscn, set Vector2/Color properties\n5. Godot MCP        -->  run_project + get_debug_output + stop_project  (test loop)\n```\n\nThe MCP handles scene tree operations well but cannot create GDScript files or set complex property types (Vector2, Color). We fill those gaps with Claude Code's Write/Edit tools.\n\n---\n\n## What to Do First\n\nBefore we write any code, we need to:\n\n1. **Set up the project folder** -- Pick a name and location for the new Godot project.\n2. **Organize your CraftPix assets** -- Put sprite sheets into an `assets/sprites/` folder so we can reference them. I need to know which specific packs you have (player, slime, etc.) and the sheet dimensions.\n3. **Configure MCP** -- Create `.mcp.json` pointing to your godot-mcp server so we can use the Godot tools.\n\nOnce those three things are ready, I will create `project.godot` with the right pixel art settings and input map, then we start building the player scene.\n\n**So -- what would you like to name the project, and can you confirm which CraftPix sprite packs you have (filenames or links)?** That way I can set everything up correctly from the start.\n"}], "grading": {"eval_id": 0, "eval_name": "build-rpg-from-scratch", "config": "without_skill", "expectations": [{"text": "Uses three-tier scope (MUST HAVE / SHOULD HAVE / OUT OF SCOPE)", "passed": false, "evidence": "No formal scope tiers. Has a 'Step 7: Polish (stretch goals)' but no MUST HAVE / SHOULD HAVE / OUT OF SCOPE structure."}, {"text": "Creates GDD.md separate from CLAUDE.md (two distinct documents)", "passed": false, "evidence": "Never mentions GDD or game design document. No mention of CLAUDE.md as a separate deliverable."}, {"text": "Mentions design pillars or core loop concept", "passed": false, "evidence": "No mention of design pillars or core loop anywhere in the response."}, {"text": "Mentions delegating to subagents for heavy work", "passed": false, "evidence": "No mention of subagents or delegation."}, {"text": "Specifies incremental build order with testing after each entity", "passed": true, "evidence": "Clear 7-step build order, each step has 'Test:' instructions (e.g., 'Test: player moves around an empty world')"}, {"text": "Includes anti-patterns from real sessions (body collision, area_entered, etc.)", "passed": true, "evidence": "Mentions hitbox/hurtbox pattern, periodic overlap checks, area_entered limitation, PROCESS_MODE_ALWAYS for dialog"}, {"text": "Asks user to name the game", "passed": true, "evidence": "'what would you like to name the project'"}, {"text": "Shows collision layers with explicit bitmask values (not just layer numbers)", "passed": false, "evidence": "Shows collision layer table with layer numbers 1-7 but no bitmask values"}, {"text": "Mentions analyzing sprite sheets before writing animation code", "passed": true, "evidence": "'Row order is DOWN=0, LEFT=1, RIGHT=2, UP=3', frame count normalization, per-sheet hframes differences"}]}}, {"id": "eval-scope-platformer-with_skill", "prompt": "I'm a data engineer, never made a game before. I want to make a pixel art platformer but I keep thinking of features \u00e2\u20ac\u201d wall jumping, double jump, enemies, bosses, power-ups, collectibles, a level editor, online leaderboards... Can you help me scope this down to something I can actually build in one session with Claude Code and Godot MCP?", "eval_id": 1, "outputs": [{"name": "response.md", "type": "text", "content": "# Scoping Your Pixel Art Platformer\n\nWelcome to game dev! Your background as a data engineer is actually a superpower here -- you already understand state machines, event-driven systems, and tight loops. Let me translate what you're describing into a buildable plan.\n\n## First, Some Game Dev Framing\n\nA game is basically a real-time stream processor running at 60 events/second. Every frame: read input, update state, render. Everything your player character does -- running, jumping, dying -- is a state machine (`enum + match`), exactly like a workflow engine. Collision detection works like security group rules: each object has a \"layer\" (what am I?) and a \"mask\" (what do I detect?). You already know these patterns; they just have different names here.\n\nThe most important concept: **the core loop**. For a platformer, it's:\n\n```\nRun --> Jump --> Land --> (repeat)\n```\n\nThat's it at the moment-to-moment level. If that loop isn't fun, no amount of bosses or leaderboards will fix it. This is like optimizing the critical path in a data pipeline -- if the critical path has bad latency, optimizing side paths doesn't help.\n\n## Your Feature List, Sorted Honestly\n\nHere's your idea list, organized by what actually makes a playable prototype vs. what's scope creep for a first session:\n\n### MUST HAVE (the prototype is incomplete without these)\n1. **Player movement** -- Run left/right with acceleration and deceleration (not instant stop)\n2. **Gravity + jump** -- With \"coyote time\" (can jump briefly after walking off a ledge) and \"jump buffering\" (press jump slightly before landing, it still works). These two invisible tricks are why Mario feels good and amateur platformers feel bad.\n3. **Variable jump height** -- Hold the button = jump higher, tap = short hop. This is table stakes for a platformer.\n4. **Platforms and ground** -- StaticBody2D tiles the player can walk on and jump between\n5. **One enemy type** -- A simple patrol enemy (walks back and forth on a platform). Player dies on side contact, kills it by stomping from above (Area2D hitbox/hurtbox pattern -- never body-to-body collision for damage).\n6. **Death and respawn** -- Player falls off screen or touches enemy = respawn at checkpoint\n7. **One level** -- A hand-designed level that teaches the player to run, jump, avoid the enemy, and reach a goal\n8. **Goal/win condition** -- Reach the end of the level (an Area2D trigger)\n\n### SHOULD HAVE (add only after everything above works)\n- Collectible coins (Area2D pickups with a counter on the HUD)\n- Basic HUD (coin count, lives remaining)\n- Background music + jump/death/coin sound effects (audio transforms a prototype from \"homework assignment\" to \"game\" -- it takes 15 minutes)\n- One-way platforms (can jump up through them, land on top)\n\n### EXPLICITLY OUT OF SCOPE (not for this session)\n- **Wall jumping** -- Requires reworking the entire physics feel; save for session 2\n- **Double jump** -- Same reason; changes the level design requirements\n- **Bosses** -- A boss is an entire game system (phases, patterns, health bar). Way too much for session 1.\n- **Power-ups** -- Each power-up is a new state in the player state machine. Complexity explodes.\n- **Level editor** -- This is a full application, not a game feature. Months of work.\n- **Online leaderboards** -- Networking, auth, backend, database. You could build this in your sleep as a data engineer, but it has nothing to do with making the game fun.\n- **Multiple levels** -- One great level beats five mediocre ones. Nail the feel first.\n\n## Why This Scope Works\n\nYour MUST HAVE list gives you a **complete core loop**:\n\n```\nRun --> Jump over gap --> Avoid enemy --> Reach goal --> Win!\n```\n\nThat's a real game. A short one, sure, but a complete experience with challenge, action, and reward. More importantly, it validates whether YOUR platformer feels fun to play. If it does, session 2 can add wall jumping, double jump, and more levels on a solid foundation. If it doesn't, you'll know before wasting time on leaderboards.\n\n## What the Build Looks Like\n\nWe have a platformer template ready to go with pre-configured collision layers, input maps, and asset source links. The build order would be:\n\n1. **Player** -- CharacterBody2D with gravity, run, jump. Test it. Is it fun to move around? (This is \"finding the fun.\")\n2. **Platforms/World** -- StaticBody2D ground and platforms. Test jumping between them.\n3. **Enemy** -- Simple patrol walker. Test stomping it and dying to it.\n4. **Level** -- Hand-place platforms and enemies into one level with a start and end.\n5. **Polish** -- Death animation, respawn, win trigger, and audio.\n\nEach step gets tested before moving to the next. In the first prototype I built with this workflow, testing after each entity caught direction-mapping bugs early that would have cascaded into every subsequent piece.\n\n## Suggested Game Name\n\nEvery project needs a name -- even a working title creates momentum and makes the session more fun. Some options for a pixel platformer:\n\n- **Pixel Leap** -- simple, says what it is\n- **First Jump** -- meta, since it's your first game\n- **Dash & Drop** -- action-oriented\n\nPick one (or make up your own) and we'll roll with it.\n\n## Next Steps\n\nWhen you're ready, say the word and we'll:\n1. Write a one-pager GDD with the scope above locked in\n2. Set up the project from the platformer template\n3. Source free pixel art assets (the template has curated links to Kenney, CraftPix, and itch.io packs)\n4. Start building -- player movement first\n\nThe whole thing should take one focused session. Scope is sacred -- if it's not on the MUST HAVE list, it doesn't get built until everything else works.\n"}], "grading": {"eval_id": 1, "eval_name": "scope-a-platformer", "config": "with_skill", "expectations": [{"text": "Uses three-tier scope (MUST HAVE / SHOULD HAVE / OUT OF SCOPE)", "passed": true, "evidence": "Has explicit 'MUST HAVE (8 features)', 'SHOULD HAVE (4 features)', and 'EXPLICITLY OUT OF SCOPE (6 features)' sections"}, {"text": "Explains what a core loop is", "passed": true, "evidence": "'The most important concept: the core loop. For a platformer, it's: Run --> Jump --> Land --> (repeat)'"}, {"text": "Identifies core mechanic (movement/jump) as first thing to validate", "passed": true, "evidence": "'If that loop isn't fun, no amount of bosses or leaderboards will fix it' and 'Is it fun to move around? (This is finding the fun.)'"}, {"text": "Provides reasoning for each cut feature (not just 'cut')", "passed": true, "evidence": "Each cut has detailed reasoning: 'Wall jumping \u00e2\u20ac\u201d Requires reworking the entire physics feel', 'Level editor \u00e2\u20ac\u201d This is a full application, not a game feature. Months of work.'"}, {"text": "Uses encouraging/supportive tone for a beginner", "passed": true, "evidence": "'Welcome to game dev! Your background as a data engineer is actually a superpower here'"}, {"text": "Suggests naming the game or asks for a name", "passed": true, "evidence": "Provides 3 suggestions: 'Pixel Leap, First Jump, Dash & Drop' with descriptions"}, {"text": "Bridges game dev concepts to engineering terms (data engineer audience)", "passed": true, "evidence": "'A game is basically a real-time stream processor running at 60 events/second', 'state machine (enum + match), exactly like a workflow engine', 'Collision detection works like security group rules'"}, {"text": "Mentions writing a GDD as a next step", "passed": true, "evidence": "'Write a one-pager GDD with the scope above locked in' listed as next step 1"}]}}, {"id": "eval-scope-platformer-without_skill", "prompt": "I'm a data engineer, never made a game before. I want to make a pixel art platformer but I keep thinking of features \u00e2\u20ac\u201d wall jumping, double jump, enemies, bosses, power-ups, collectibles, a level editor, online leaderboards... Can you help me scope this down to something I can actually build in one session with Claude Code and Godot MCP?", "eval_id": 1, "outputs": [{"name": "response.md", "type": "text", "content": "# Scoping Your First Platformer\n\nGreat instinct asking this before diving in. Feature creep is the number one killer of first game projects, and your list already has enough scope for a commercial release. Let's cut it down to something you can actually finish in one session (roughly 2-4 hours).\n\n## The Core Principle: One Mechanic, One Level, One Goal\n\nA platformer only needs three things to feel like a game:\n\n1. A character that moves and jumps\n2. Platforms to jump between\n3. A reason to reach the end\n\nEverything else is polish. And polish comes after \"it works.\"\n\n## Your One-Session Scope: \"First Jump\"\n\nHere is exactly what we would build:\n\n### Must Have (the prototype)\n\n| Feature | Why it makes the cut |\n|---|---|\n| Player with left/right movement + single jump | This is the genre. Without it, there is no platformer. |\n| Gravity and ground collision | Physics make jumping feel real. |\n| 3-5 static platforms (TileMap or StaticBody2D) | Enough to create a challenge without needing a level editor. |\n| A goal/finish zone (Area2D) | Gives the player a reason to move right.\u00e8\u00a7\u00a6reaching it shows \"You Win!\" |\n| Camera that follows the player | Without this, the player walks off-screen. |\n| One hazard: bottomless pit (KillZone) | Falling = reset to start. Creates stakes with zero AI code. |\n\nThat is 6 items. Each one maps to a clear Godot scene or node. No enemy AI, no inventory system, no networking.\n\n### What Gets Cut and Why\n\n| Feature | Verdict | Reason |\n|---|---|---|\n| Double jump | CUT | Single jump is not even working yet. Add after prototype works. |\n| Wall jumping | CUT | Requires wall detection, state machine changes. Session 2 material. |\n| Enemies | CUT | AI patrol/chase logic is a whole system. Replace with static hazards (spikes, pits). |\n| Bosses | CUT | You need enemies working before you can make a special one. |\n| Power-ups | CUT | Requires pickup system + player state changes. Not needed for \"is this fun?\" |\n| Collectibles | MAYBE (session 2) | Simple Area2D + counter, but it is not core. Skip for now. |\n| Level editor | CUT | You do not have a game to edit levels for yet. |\n| Online leaderboards | CUT | Networking is a project unto itself. Not a platformer problem. |\n\n### The Build Order\n\nThis is the sequence we would follow with Claude Code + Godot MCP:\n\n```\n1. Project setup (project.godot with pixel art settings, input map)\n2. Player scene: CharacterBody2D + Sprite2D + CollisionShape2D\n3. Player script: move_and_slide(), gravity, jump on is_on_floor()\n4. World scene: TileMap or StaticBody2D platforms, background color\n5. Camera2D on the player, set limits\n6. KillZone (Area2D at the bottom) -> respawn player at start\n7. Goal zone (Area2D at the end) -> show \"You Win\" label\n8. Playtest and tweak jump height / gravity / speed until it feels good\n```\n\nStep 8 is where the fun is. Tuning `jump_velocity`, `gravity`, and `speed` until the jump arc feels right is what separates a good platformer from a bad one. You want to spend time here, not debugging a leaderboard API.\n\n## After the Session: Your Expansion Roadmap\n\nOnce the prototype works and feels good, here is the order I would add features in future sessions:\n\n1. **Spikes/hazards** (static Area2D, same pattern as KillZone)\n2. **Collectibles** (coins with a counter on HUD)\n3. **Double jump** (add a jump counter to the player script)\n4. **One simple enemy** (patrol between two points, damage on touch)\n5. **Multiple levels** (scene transitions)\n6. **Wall jump** (wall detection + state changes)\n7. **Power-ups** (requires an inventory/state system)\n8. **Bosses** (requires enemy system + health + patterns)\n9. **Level editor** (requires serialization, UI framework)\n10. **Online leaderboards** (requires backend, auth, networking)\n\nNotice how each item builds on the one before it. You cannot skip ahead without creating a mess.\n\n## Ready to Start?\n\nIf this scope sounds right, we can start building. I will set up the project, create the player scene with movement and jumping, lay out some platforms, and get you to a playable prototype. The whole thing will be about 5-7 scenes and scripts.\n\nOne session. One level. One jump that feels good. That is the goal.\n"}], "grading": {"eval_id": 1, "eval_name": "scope-a-platformer", "config": "without_skill", "expectations": [{"text": "Uses three-tier scope (MUST HAVE / SHOULD HAVE / OUT OF SCOPE)", "passed": false, "evidence": "Has 'Must Have' and 'What Gets Cut and Why' but no SHOULD HAVE tier. Collectibles marked 'MAYBE (session 2)' inline, not as a formal tier."}, {"text": "Explains what a core loop is", "passed": false, "evidence": "No mention of core loop concept anywhere in the response."}, {"text": "Identifies core mechanic (movement/jump) as first thing to validate", "passed": false, "evidence": "Step 8 mentions 'Playtest and tweak jump height/gravity/speed' but doesn't frame it as 'validate the core mechanic before adding features' or 'find the fun'. Tuning is step 8 of 8, not the first priority."}, {"text": "Provides reasoning for each cut feature (not just 'cut')", "passed": true, "evidence": "Each cut has a 'Reason' column: 'Single jump is not even working yet', 'AI patrol/chase logic is a whole system'"}, {"text": "Uses encouraging/supportive tone for a beginner", "passed": true, "evidence": "'Great instinct asking this before diving in'"}, {"text": "Suggests naming the game or asks for a name", "passed": true, "evidence": "Names the project 'First Jump' directly in the heading"}, {"text": "Bridges game dev concepts to engineering terms (data engineer audience)", "passed": false, "evidence": "No engineering analogies. Does not reference the user's data engineer background or bridge concepts."}, {"text": "Mentions writing a GDD as a next step", "passed": false, "evidence": "No mention of GDD or game design document. Goes straight from scoping to 'I will set up the project'."}]}}, {"id": "eval-resume-combat-with_skill", "prompt": "I already have a Godot 4 project with a player character that moves in 8 directions. The player scene has CharacterBody2D with Sprite2D and CollisionShape2D. Now I need to add: (1) a slime enemy with chase AI, (2) a sword attack for the player, and (3) a combat system where both can take damage. What's the plan?", "eval_id": 2, "outputs": [{"name": "response.md", "type": "text", "content": "Great -- you already have the hardest part done (a moving player). Here is the plan for adding the slime enemy, sword attack, and combat system. I will break it into concrete steps following the build order: **Enemy first, then Player combat, then the system that connects them.**\n\n---\n\n## Before We Start: Collision Layer Design\n\nCombat requires a clear collision layer plan. Confusion between layer numbers and bitmask values is a common bug source, so let's define these up front:\n\n| Layer # | Bitmask Value | Name | Used By |\n|---------|--------------|------|---------|\n| 1 | 1 | Walls/Environment | TileMap, boundaries |\n| 2 | 2 | Player Body | Player CharacterBody2D |\n| 3 | 4 | Enemy Body | Slime CharacterBody2D |\n| 4 | 8 | Player Hitbox | Sword Area2D (damages enemies) |\n| 5 | 16 | Enemy Hurtbox | Slime's hurtbox Area2D (detects player attacks) |\n| 6 | 32 | Enemy Hitbox | Slime's contact damage Area2D |\n| 7 | 64 | Player Hurtbox | Player's hurtbox Area2D (detects enemy attacks) |\n\nKey wiring:\n- Player body: layer=2, mask=1 (collides with walls)\n- Enemy body: layer=4, mask=1 (collides with walls, NOT with player body -- avoids push-around bugs)\n- Sword hitbox (Area2D): layer=8, mask=0 (passive, emits nothing)\n- Enemy hurtbox (Area2D): layer=0, mask=8 (detects player sword)\n- Enemy contact hitbox (Area2D): layer=32, mask=0 (passive)\n- Player hurtbox (Area2D): layer=0, mask=32 (detects enemy contact)\n\n**Critical rule:** Never use body-to-body collision for damage. The hitbox/hurtbox pattern with Area2D nodes keeps physics and damage logic cleanly separated.\n\n---\n\n## Step 1: Slime Enemy Scene\n\n**Scene structure:**\n\n```\nSlime (CharacterBody2D)\n+-- Sprite2D\n+-- CollisionShape2D          # physics body (layer 3, mask 1)\n+-- Hurtbox (Area2D)          # detects sword hits (layer 0, mask 8)\n|   +-- CollisionShape2D\n+-- Hitbox (Area2D)           # deals contact damage (layer 32, mask 0)\n    +-- CollisionShape2D\n```\n\n**Script (`slime.gd`) behavior:**\n- **State machine:** `enum State { IDLE, CHASE, HURT, DEAD }`\n- **IDLE:** Stand still, check distance to player each physics frame\n- **CHASE:** When player is within detection range (~120px), move toward player at chase speed (~60 px/s, slower than player)\n- **HURT:** Brief knockback in opposite direction, then return to CHASE\n- **DEAD:** Play death effect, `queue_free()`\n- **Stats:** HP = 3, contact damage = 1, detection range = 120px\n- **Contact damage:** Use `area_entered` on the player's hurtbox AND periodic `get_overlapping_areas()` polling (area_entered fires only once per overlap, so without polling, standing on a slime only hurts once)\n\n**Build and test before moving on.** Run the project, confirm the slime chases the player when close and stops when far. No combat yet -- just AI movement.\n\n---\n\n## Step 2: Sword Attack for the Player\n\n**Add to the player scene:**\n\n```\nPlayer (CharacterBody2D)       # existing\n+-- Sprite2D                   # existing\n+-- CollisionShape2D           # existing\n+-- SwordHitbox (Area2D)       # NEW -- layer 8, mask 0\n|   +-- CollisionShape2D       # sword-sized rectangle, offset in front of player\n+-- Hurtbox (Area2D)           # NEW -- layer 0, mask 32\n    +-- CollisionShape2D       # same size as body collision\n```\n\n**Script changes to `player.gd`:**\n- Add states: `enum State { IDLE, WALK, ATTACK, HURT, DEAD }`\n- **Attack input:** On key press (e.g., `ui_accept` or a custom `attack` action), enter ATTACK state\n- **During ATTACK:** Disable movement, enable the SwordHitbox collision shape (disabled by default), position it in the direction the player faces, hold for ~0.3s, then disable and return to IDLE\n- **Sword positioning:** Offset the SwordHitbox based on `last_direction` -- e.g., facing right = offset `Vector2(24, 0)`, facing up = offset `Vector2(0, -24)`\n- **Stats:** Attack damage = 1, attack cooldown = 0.4s\n\n**Build and test.** Run the project, press attack, confirm the sword hitbox appears in the right direction. No damage dealing yet -- just the attack action working.\n\n---\n\n## Step 3: Combat System (Connecting Damage)\n\nNow wire up the damage signals between the existing pieces.\n\n### Slime Takes Damage (from sword)\n\nIn `slime.gd`:\n- Connect `Hurtbox.area_entered` signal\n- When triggered, check if the area is the player's SwordHitbox\n- Call `take_damage(amount, attacker_position)` -- reduces HP, enters HURT state, applies knockback away from attacker\n- Add invincibility window (~0.5s) to prevent multi-hit from one swing\n- When HP reaches 0, enter DEAD state\n\n### Player Takes Damage (from slime contact)\n\nIn `player.gd`:\n- Connect `Hurtbox.area_entered` signal\n- Additionally, in `_physics_process`, poll `Hurtbox.get_overlapping_areas()` to catch ongoing contact (the `area_entered` signal only fires once per overlap start)\n- Call `take_damage(amount, attacker_position)` -- reduces HP, enters HURT state, brief stun (~0.3s), invincibility for longer (~1.0s) with sprite blink effect\n- **Keep stun short, invincibility long.** If stun matches invincibility, the player can never escape and dies 100% of the time against multiple enemies\n- When HP reaches 0, enter DEAD state (respawn or game over -- your call)\n\n### Player Health\n\n- Player HP = 6 (representing 3 hearts at 2 HP each, common Zelda pattern)\n- Emit a `health_changed(current, maximum)` signal for future HUD integration\n\n### Damage Flow Summary\n\n```\nPlayer presses attack\n  -> SwordHitbox enabled for 0.3s\n  -> Slime Hurtbox detects overlap (area_entered)\n  -> slime.take_damage(1, player.position)\n  -> Slime HP -= 1, knockback, invincibility 0.5s\n  -> If HP <= 0: Slime dies\n\nSlime chases and touches player\n  -> Player Hurtbox detects overlap (area_entered + polling)\n  -> player.take_damage(1, slime.position)\n  -> Player HP -= 1, brief stun 0.3s, invincibility 1.0s, sprite blink\n  -> If HP <= 0: Player dies\n```\n\n**Build and test.** This is the critical moment. Run the project, attack a slime, confirm it takes damage and dies after 3 hits. Walk into a slime, confirm the player takes damage with proper invincibility. Playtest for feel -- does combat feel responsive? Is the detection range right? Tune `@export` values as needed.\n\n---\n\n## Build Order Summary\n\n| Step | What to Build | What to Test | Done When |\n|------|--------------|--------------|-----------|\n| 1 | Slime scene + chase AI | Slime follows player when close, stops when far | AI movement works |\n| 2 | Sword hitbox + attack state | Press attack, hitbox appears in facing direction | Attack animation/state works |\n| 3 | Wire damage both ways | Sword kills slime in 3 hits; slime hurts player on contact | Both can take and deal damage |\n\nEach step gets tested in isolation before moving to the next. This prevents cascading bugs -- if step 3 fails, you know steps 1 and 2 work and the bug is in the wiring.\n\n---\n\n## After Combat Works (Polish)\n\nOnce the core combat loop feels good:\n\n- **HUD** with hearts display (CanvasLayer so it stays on screen)\n- **Audio** -- sword swing SFX, slime hit/death SFX, player hurt SFX (even one sound per action makes a massive difference)\n- **Juice** -- knockback on hit, sprite blink during invincibility, brief screen shake on player damage\n- **Spawn system** -- multiple slimes in the game world\n\nBut none of that matters until the core loop of \"chase + attack + damage\" feels right. Want me to start building step 1?\n"}], "grading": {"eval_id": 2, "eval_name": "resume-combat-system", "config": "with_skill", "expectations": [{"text": "Recommends Area2D hitbox/hurtbox pattern (not body-to-body collision)", "passed": true, "evidence": "'Never use body-to-body collision for damage. The hitbox/hurtbox pattern with Area2D nodes keeps physics and damage logic cleanly separated.'"}, {"text": "Mentions periodic get_overlapping_areas() alongside area_entered", "passed": true, "evidence": "'in _physics_process, poll Hurtbox.get_overlapping_areas() to catch ongoing contact (the area_entered signal only fires once per overlap start)'"}, {"text": "Recommends building and testing incrementally (enemy, then attack, then wiring)", "passed": true, "evidence": "Clear build order table: Step 1 (Slime + AI), Step 2 (Sword hitbox), Step 3 (Wire damage). Each has 'What to Test' and 'Done When' columns."}, {"text": "Includes collision layer table with explicit bitmask values", "passed": true, "evidence": "Full table with 'Layer # | Bitmask Value | Name' showing 1/1, 2/2, 3/4, 4/8, 5/16, 6/32, 7/64 plus detailed wiring (layer=8, mask=0, etc.)"}, {"text": "Separates hurt stun duration from invincibility duration", "passed": true, "evidence": "'brief stun (~0.3s), invincibility for longer (~1.0s) with sprite blink effect' and 'Keep stun short, invincibility long.'"}, {"text": "Provides concrete numeric values (HP, damage, speed, durations)", "passed": true, "evidence": "HP=3 slime, HP=6 player, detection=120px, chase=60px/s, stun=0.3s, invincibility=1.0s, attack duration=0.3s, cooldown=0.4s"}, {"text": "Mentions delegating to subagents for MCP or script writing", "passed": false, "evidence": "No mention of subagents. Acts as if it will implement directly."}, {"text": "Asks user to playtest after implementation", "passed": true, "evidence": "'Playtest for feel -- does combat feel responsive? Is the detection range right? Tune @export values as needed.'"}]}}, {"id": "eval-resume-combat-without_skill", "prompt": "I already have a Godot 4 project with a player character that moves in 8 directions. The player scene has CharacterBody2D with Sprite2D and CollisionShape2D. Now I need to add: (1) a slime enemy with chase AI, (2) a sword attack for the player, and (3) a combat system where both can take damage. What's the plan?", "eval_id": 2, "outputs": [{"name": "response.md", "type": "text", "content": "Great -- you have a solid foundation with the CharacterBody2D player already moving in 8 directions. Here is the plan broken into three phases, each building on the last. I will implement them one at a time so we can test after each step.\n\n---\n\n## Phase 1: Slime Enemy with Chase AI\n\n**New scene: `slime.tscn`**\n\nNode structure:\n```\nCharacterBody2D (Slime)\n  +-- Sprite2D           (slime spritesheet)\n  +-- CollisionShape2D   (physics body - CircleShape2D)\n  +-- Area2D (Hurtbox)   (receives damage)\n  |     +-- CollisionShape2D\n  +-- Area2D (Hitbox)    (deals contact damage to player)\n  |     +-- CollisionShape2D\n  +-- Timer (ChaseTimer) (periodic retarget / state update)\n```\n\n**Script: `slime.gd`**\n\n- **States:** IDLE, CHASE\n- In `_physics_process`: if the player is within a detection radius (~120px), switch to CHASE and move toward the player at a set speed (e.g. 40 px/s). Otherwise, IDLE (wander or stand still).\n- Flip the sprite based on movement direction.\n- Health variable (e.g. `var hp: int = 3`).\n- A `take_damage(amount)` function that decrements HP, flashes the sprite white briefly (modulate), and destroys the slime when HP <= 0.\n- The Hitbox Area2D will be used in Phase 3 to deal contact damage to the player.\n\n**Why Area2D for combat instead of body collision?** Using body-to-body collision between two CharacterBody2D nodes causes physics pushing and unreliable signals. The hitbox/hurtbox pattern with Area2D is the standard Godot approach -- `area_entered` fires cleanly without physics side effects.\n\n---\n\n## Phase 2: Sword Attack for the Player\n\n**Modify: `player.tscn`**\n\nAdd these nodes to the existing player scene:\n```\n(existing CharacterBody2D)\n  +-- ... existing nodes ...\n  +-- Area2D (SwordHitbox)      (deals damage to enemies)\n  |     +-- CollisionShape2D    (rectangular, offset in front of player)\n  +-- AnimationPlayer           (attack animation timing)\n  +-- Timer (AttackCooldown)    (prevents spam, e.g. 0.4s)\n```\n\n**Modify: `player.gd`**\n\n- Add an `attack()` function triggered by an input action (e.g. \"attack\" mapped to Space or Z key).\n- On attack press:\n  1. Check cooldown timer -- if still running, ignore.\n  2. Set `is_attacking = true`, start the cooldown timer.\n  3. Position the SwordHitbox in front of the player based on `last_direction` (the facing direction). For 4 cardinal + 4 diagonal directions, set the CollisionShape2D's `position` accordingly (e.g. facing right = offset `Vector2(20, 0)`, facing up-right = `Vector2(14, -14)`).\n  4. Enable the SwordHitbox collision, wait ~0.15s (via AnimationPlayer or a short timer), then disable it.\n  5. Optionally animate the sprite or play a slash visual effect.\n- The SwordHitbox Area2D will detect overlapping enemy Hurtbox areas and call `take_damage()` on them.\n\n**Input map update:** Add `\"attack\"` action to `project.godot` mapped to the key of your choice.\n\n---\n\n## Phase 3: Combat System (Mutual Damage)\n\n**Player takes damage:**\n\nAdd to `player.tscn`:\n```\n(existing CharacterBody2D)\n  +-- ... existing nodes ...\n  +-- Area2D (PlayerHurtbox)    (receives damage from enemies)\n  |     +-- CollisionShape2D\n```\n\n**Modify: `player.gd`**\n\n- Add `var hp: int = 5` and `var invincible: bool = false`.\n- Add `take_damage(amount)` function:\n  1. If `invincible`, return.\n  2. Decrement HP.\n  3. Set `invincible = true`, start an invincibility timer (~1.0s). Flash/blink the sprite via modulate alpha toggle.\n  4. Apply knockback: brief velocity impulse away from the damage source.\n  5. If HP <= 0, trigger death (reload scene or show game over).\n- Connect the PlayerHurtbox's `area_entered` signal: when a slime's Hitbox overlaps, call `take_damage(1)`.\n- Also add a periodic check using `get_overlapping_areas()` on the PlayerHurtbox -- `area_entered` only fires once on initial overlap, so if the player stays in contact with a slime, the periodic check ensures continued damage ticks (e.g. every 0.5s via a Timer).\n\n**Sword hits enemies:**\n\n- In `player.gd`, connect the SwordHitbox's `area_entered` signal.\n- When it overlaps an area whose parent has a `take_damage` method, call `enemy.take_damage(1)`.\n\n**Collision layer setup in `project.godot`:**\n\n| Layer | Name       | Usage                          |\n|-------|------------|--------------------------------|\n| 1     | Physics    | Player and Slime body collision (walls, environment) |\n| 2     | PlayerHurt | Player's Hurtbox               |\n| 3     | EnemyHurt  | Slime's Hurtbox                |\n| 4     | PlayerAtk  | Sword Hitbox                   |\n| 5     | EnemyAtk   | Slime's Hitbox                 |\n\nMask configuration:\n- **SwordHitbox (layer 4)** masks layer 3 (detects enemy hurtboxes)\n- **Slime Hitbox (layer 5)** masks layer 2 (detects player hurtbox)\n- **PlayerHurtbox (layer 2)** masks layer 5 (detected by enemy attacks)\n- **Slime Hurtbox (layer 3)** masks layer 4 (detected by sword)\n\nThis ensures the sword only hits enemies and slime contact only hits the player -- no friendly fire, no self-detection.\n\n---\n\n## Implementation Order\n\nI recommend we build and test in this order:\n\n1. **Slime scene + chase AI** -- spawn it in the game world, verify it chases the player.\n2. **Sword attack on player** -- verify the hitbox activates and we can see it (enable debug collisions in Godot).\n3. **Wire up damage** -- sword kills slimes, slime contact hurts player, knockback + invincibility frames work.\n\nEach step, we will use `run_project` and `get_debug_output` via the Godot MCP to test without leaving the terminal.\n\nWant me to start with Phase 1 (the slime enemy)?\n"}], "grading": {"eval_id": 2, "eval_name": "resume-combat-system", "config": "without_skill", "expectations": [{"text": "Recommends Area2D hitbox/hurtbox pattern (not body-to-body collision)", "passed": true, "evidence": "'Using body-to-body collision between two CharacterBody2D nodes causes physics pushing and unreliable signals. The hitbox/hurtbox pattern with Area2D is the standard Godot approach.'"}, {"text": "Mentions periodic get_overlapping_areas() alongside area_entered", "passed": true, "evidence": "'add a periodic check using get_overlapping_areas() on the PlayerHurtbox \u00e2\u20ac\u201d area_entered only fires once on initial overlap'"}, {"text": "Recommends building and testing incrementally (enemy, then attack, then wiring)", "passed": true, "evidence": "Three phases: 'Phase 1: Slime Enemy with Chase AI', 'Phase 2: Sword Attack', 'Phase 3: Combat System' with testing after each"}, {"text": "Includes collision layer table with explicit bitmask values", "passed": false, "evidence": "Shows layers 1-5 with names but only layer numbers, no bitmask values. Uses conventional layer assignments without bitmask distinction."}, {"text": "Separates hurt stun duration from invincibility duration", "passed": false, "evidence": "Mentions 'invincibility timer (~1.0s)' and 'knockback: brief velocity impulse' but does not explicitly separate stun from invincibility or warn about the death spiral from blocking input."}, {"text": "Provides concrete numeric values (HP, damage, speed, durations)", "passed": true, "evidence": "'hp: int = 3' for slime, 'hp: int = 5' for player, detection radius 120px, attack cooldown 0.4s, invincibility 1.0s"}, {"text": "Mentions delegating to subagents for MCP or script writing", "passed": false, "evidence": "No mention of subagents."}, {"text": "Asks user to playtest after implementation", "passed": false, "evidence": "Ends with 'Want me to start with Phase 1?' but never asks user to playtest or test the feel."}]}}], "previous_feedback": {}, "previous_outputs": {}, "benchmark": {"metadata": {"skill_name": "game-creation", "skill_path": "D:\\Workspace\\Games\\claude-game-dev\\.claude\\skills\\game-creation", "executor_model": "claude-opus-4-6", "analyzer_model": "claude-opus-4-6", "timestamp": "2026-03-08T19:00:21Z", "evals_run": ["build-rpg-from-scratch", "scope-a-platformer", "resume-combat-system"], "runs_per_configuration": 1}, "runs": [{"eval_name": "build-rpg-from-scratch", "with_skill": {"pass_rate": 0.778, "passed": 7, "total": 9, "time_seconds": 91.7, "tokens": 34534}, "without_skill": {"pass_rate": 0.444, "passed": 4, "total": 9, "time_seconds": 55.9, "tokens": 15433}}, {"eval_name": "scope-a-platformer", "with_skill": {"pass_rate": 1.0, "passed": 8, "total": 8, "time_seconds": 84.9, "tokens": 30819}, "without_skill": {"pass_rate": 0.375, "passed": 3, "total": 8, "time_seconds": 48.9, "tokens": 14990}}, {"eval_name": "resume-combat-system", "with_skill": {"pass_rate": 0.875, "passed": 7, "total": 8, "time_seconds": 84.3, "tokens": 30680}, "without_skill": {"pass_rate": 0.5, "passed": 4, "total": 8, "time_seconds": 62.2, "tokens": 15666}}], "run_summary": {"with_skill": {"pass_rate": 0.88, "time_seconds": 86.9, "tokens": 32011}, "without_skill": {"pass_rate": 0.44, "time_seconds": 55.7, "tokens": 15363}, "delta": {"pass_rate": "+44pp", "time_seconds": "+31.2s", "tokens": "+16648"}}, "notes": ["Subagent delegation assertion fails on ALL 3 with_skill runs. The eval format (planning response) doesn't create a context where agents naturally mention delegation. Consider reframing or removing.", "Scope-platformer has highest delta (+62.5pp) \u00e2\u20ac\u201d Phase 1 guidance is the skill's biggest value-add.", "Without-skill runs pass hitbox/hurtbox assertions in eval-2 from project CLAUDE.md context (partially non-discriminating).", "Collision bitmask assertion passes on eval-2 (with_skill) but fails on eval-0 (with_skill) \u00e2\u20ac\u201d inconsistent application.", "Token cost ~2x with skill (32k vs 15k) from reference file reading."]}};
+
+    // ---- State ----
+    let feedbackMap = {};  // run_id -> feedback text
+    let currentIndex = 0;
+    let visitedRuns = new Set();
+
+    // ---- Init ----
+    async function init() {
+      // Load saved feedback from server — but only if this isn't a fresh
+      // iteration (indicated by previous_feedback being present). When
+      // previous feedback exists, the feedback.json on disk is stale from
+      // the prior iteration and should not pre-fill the textareas.
+      const hasPrevious = Object.keys(EMBEDDED_DATA.previous_feedback || {}).length > 0
+        || Object.keys(EMBEDDED_DATA.previous_outputs || {}).length > 0;
+      if (!hasPrevious) {
+        try {
+          const resp = await fetch("/api/feedback");
+          const data = await resp.json();
+          if (data.reviews) {
+            for (const r of data.reviews) feedbackMap[r.run_id] = r.feedback;
+          }
+        } catch { /* first run, no feedback yet */ }
+      }
+
+      document.getElementById("skill-name").textContent = EMBEDDED_DATA.skill_name;
+      showRun(0);
+
+      // Wire up feedback auto-save
+      const textarea = document.getElementById("feedback");
+      let saveTimeout = null;
+      textarea.addEventListener("input", () => {
+        clearTimeout(saveTimeout);
+        document.getElementById("feedback-status").textContent = "";
+        saveTimeout = setTimeout(() => saveCurrentFeedback(), 800);
+      });
+    }
+
+    // ---- Navigation ----
+    function navigate(delta) {
+      const newIndex = currentIndex + delta;
+      if (newIndex >= 0 && newIndex < EMBEDDED_DATA.runs.length) {
+        saveCurrentFeedback();
+        showRun(newIndex);
+      }
+    }
+
+    function updateNavButtons() {
+      document.getElementById("prev-btn").disabled = currentIndex === 0;
+      document.getElementById("next-btn").disabled =
+        currentIndex === EMBEDDED_DATA.runs.length - 1;
+    }
+
+    // ---- Show a run ----
+    function showRun(index) {
+      currentIndex = index;
+      const run = EMBEDDED_DATA.runs[index];
+
+      // Progress
+      document.getElementById("progress").textContent =
+        `${index + 1} of ${EMBEDDED_DATA.runs.length}`;
+
+      // Prompt
+      document.getElementById("prompt-text").textContent = run.prompt;
+
+      // Config badge
+      const badge = document.getElementById("config-badge");
+      const configMatch = run.id.match(/(with_skill|without_skill|new_skill|old_skill)/);
+      if (configMatch) {
+        const config = configMatch[1];
+        const isBaseline = config === "without_skill" || config === "old_skill";
+        badge.textContent = config.replace(/_/g, " ");
+        badge.className = "config-badge " + (isBaseline ? "config-baseline" : "config-primary");
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
+      }
+
+      // Outputs
+      renderOutputs(run);
+
+      // Previous outputs
+      renderPrevOutputs(run);
+
+      // Grades
+      renderGrades(run);
+
+      // Previous feedback
+      const prevFb = (EMBEDDED_DATA.previous_feedback || {})[run.id];
+      const prevEl = document.getElementById("prev-feedback");
+      if (prevFb) {
+        document.getElementById("prev-feedback-text").textContent = prevFb;
+        prevEl.style.display = "block";
+      } else {
+        prevEl.style.display = "none";
+      }
+
+      // Feedback
+      document.getElementById("feedback").value = feedbackMap[run.id] || "";
+      document.getElementById("feedback-status").textContent = "";
+
+      updateNavButtons();
+
+      // Track visited runs and promote done button when all visited
+      visitedRuns.add(index);
+      const doneBtn = document.getElementById("done-btn");
+      if (visitedRuns.size >= EMBEDDED_DATA.runs.length) {
+        doneBtn.classList.add("ready");
+      }
+
+      // Scroll main content to top
+      document.querySelector(".main").scrollTop = 0;
+    }
+
+    // ---- Render outputs ----
+    function renderOutputs(run) {
+      const container = document.getElementById("outputs-body");
+      container.innerHTML = "";
+
+      const outputs = run.outputs || [];
+      if (outputs.length === 0) {
+        container.innerHTML = '<div class="empty-state">No output files</div>';
+        return;
+      }
+
+      for (const file of outputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        // Always show file header with download link
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const content = document.createElement("div");
+        content.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          content.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          content.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          content.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(content, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          content.appendChild(a);
+        } else if (file.type === "error") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          pre.style.color = "var(--red)";
+          content.appendChild(pre);
+        }
+
+        fileDiv.appendChild(content);
+        container.appendChild(fileDiv);
+      }
+    }
+
+    // ---- XLSX rendering via SheetJS ----
+    function renderXlsx(container, b64Data) {
+      try {
+        const raw = Uint8Array.from(atob(b64Data), c => c.charCodeAt(0));
+        const wb = XLSX.read(raw, { type: "array" });
+
+        for (let i = 0; i < wb.SheetNames.length; i++) {
+          const sheetName = wb.SheetNames[i];
+          const ws = wb.Sheets[sheetName];
+
+          if (wb.SheetNames.length > 1) {
+            const sheetLabel = document.createElement("div");
+            sheetLabel.style.cssText =
+              "font-weight:600; font-size:0.8rem; color:#b0aea5; margin-top:0.5rem; margin-bottom:0.25rem;";
+            sheetLabel.textContent = "Sheet: " + sheetName;
+            container.appendChild(sheetLabel);
+          }
+
+          const htmlStr = XLSX.utils.sheet_to_html(ws, { editable: false });
+          const wrapper = document.createElement("div");
+          wrapper.innerHTML = htmlStr;
+          container.appendChild(wrapper);
+        }
+      } catch (err) {
+        container.textContent = "Error rendering spreadsheet: " + err.message;
+      }
+    }
+
+    // ---- Grades ----
+    function renderGrades(run) {
+      const section = document.getElementById("grades-section");
+      const content = document.getElementById("grades-content");
+
+      if (!run.grading) {
+        section.style.display = "none";
+        return;
+      }
+
+      const grading = run.grading;
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("grades-arrow").classList.remove("open");
+
+      const summary = grading.summary || {};
+      const expectations = grading.expectations || [];
+
+      let html = '<div style="padding: 1rem;">';
+
+      // Summary line
+      const passRate = summary.pass_rate != null
+        ? Math.round(summary.pass_rate * 100) + "%"
+        : "?";
+      const badgeClass = summary.pass_rate >= 0.8 ? "grade-pass" : summary.pass_rate >= 0.5 ? "" : "grade-fail";
+      html += '<div class="grades-summary">';
+      html += '<span class="grade-badge ' + badgeClass + '">' + passRate + '</span>';
+      html += '<span>' + (summary.passed || 0) + ' passed, ' + (summary.failed || 0) + ' failed of ' + (summary.total || 0) + '</span>';
+      html += '</div>';
+
+      // Assertions list
+      html += '<ul class="assertion-list">';
+      for (const exp of expectations) {
+        const statusClass = exp.passed ? "pass" : "fail";
+        const statusIcon = exp.passed ? "\u2713" : "\u2717";
+        html += '<li class="assertion-item">';
+        html += '<span class="assertion-status ' + statusClass + '">' + statusIcon + '</span>';
+        html += '<span>' + escapeHtml(exp.text) + '</span>';
+        if (exp.evidence) {
+          html += '<div class="assertion-evidence">' + escapeHtml(exp.evidence) + '</div>';
+        }
+        html += '</li>';
+      }
+      html += '</ul>';
+
+      html += '</div>';
+      content.innerHTML = html;
+    }
+
+    function toggleGrades() {
+      const content = document.getElementById("grades-content");
+      const arrow = document.getElementById("grades-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Previous outputs (collapsible) ----
+    function renderPrevOutputs(run) {
+      const section = document.getElementById("prev-outputs-section");
+      const content = document.getElementById("prev-outputs-content");
+      const prevOutputs = (EMBEDDED_DATA.previous_outputs || {})[run.id];
+
+      if (!prevOutputs || prevOutputs.length === 0) {
+        section.style.display = "none";
+        return;
+      }
+
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("prev-outputs-arrow").classList.remove("open");
+
+      // Render the files into the content area
+      content.innerHTML = "";
+      const wrapper = document.createElement("div");
+      wrapper.style.padding = "1rem";
+
+      for (const file of prevOutputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const fc = document.createElement("div");
+        fc.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          fc.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          fc.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          fc.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(fc, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          fc.appendChild(a);
+        }
+
+        fileDiv.appendChild(fc);
+        wrapper.appendChild(fileDiv);
+      }
+
+      content.appendChild(wrapper);
+    }
+
+    function togglePrevOutputs() {
+      const content = document.getElementById("prev-outputs-content");
+      const arrow = document.getElementById("prev-outputs-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Feedback (saved to server -> feedback.json) ----
+    function saveCurrentFeedback() {
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // Build reviews array from map
+      const reviews = [];
+      for (const [run_id, feedback] of Object.entries(feedbackMap)) {
+        if (feedback.trim()) {
+          reviews.push({ run_id, feedback, timestamp: new Date().toISOString() });
+        }
+      }
+
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviews, status: "in_progress" }),
+      }).then(() => {
+        document.getElementById("feedback-status").textContent = "Saved";
+      }).catch(() => {
+        // Static mode or server unavailable — no-op on auto-save,
+        // feedback will be downloaded on final submit
+        document.getElementById("feedback-status").textContent = "Will download on submit";
+      });
+    }
+
+    // ---- Done ----
+    function showDoneDialog() {
+      // Save current textarea to feedbackMap (but don't POST yet)
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // POST once with status: complete — include ALL runs so the model
+      // can distinguish "no feedback" (looks good) from "not reviewed"
+      const reviews = [];
+      const ts = new Date().toISOString();
+      for (const r of EMBEDDED_DATA.runs) {
+        reviews.push({ run_id: r.id, feedback: feedbackMap[r.id] || "", timestamp: ts });
+      }
+      const payload = JSON.stringify({ reviews, status: "complete" }, null, 2);
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+      }).then(() => {
+        document.getElementById("done-overlay").classList.add("visible");
+      }).catch(() => {
+        // Server not available (static mode) — download as file
+        const blob = new Blob([payload], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "feedback.json";
+        a.click();
+        URL.revokeObjectURL(url);
+        document.getElementById("done-overlay").classList.add("visible");
+      });
+    }
+
+    function closeDoneDialog() {
+      // Reset status back to in_progress
+      saveCurrentFeedback();
+      document.getElementById("done-overlay").classList.remove("visible");
+    }
+
+    // ---- Toast ----
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("visible");
+      setTimeout(() => toast.classList.remove("visible"), 2000);
+    }
+
+    // ---- Keyboard nav ----
+    document.addEventListener("keydown", (e) => {
+      // Don't capture when typing in textarea
+      if (e.target.tagName === "TEXTAREA") return;
+
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        navigate(-1);
+      } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        navigate(1);
+      }
+    });
+
+    // ---- Util ----
+    function getDownloadUri(file) {
+      if (file.data_uri) return file.data_uri;
+      if (file.data_b64) return "data:application/octet-stream;base64," + file.data_b64;
+      if (file.type === "text") return "data:text/plain;charset=utf-8," + encodeURIComponent(file.content);
+      return "#";
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ---- View switching ----
+    function switchView(view) {
+      document.querySelectorAll(".view-tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".view-panel").forEach(p => p.classList.remove("active"));
+      document.querySelector(`[onclick="switchView('${view}')"]`).classList.add("active");
+      document.getElementById("panel-" + view).classList.add("active");
+    }
+
+    // ---- Benchmark rendering ----
+    function renderBenchmark() {
+      const data = EMBEDDED_DATA.benchmark;
+      if (!data) return;
+
+      // Show the tabs
+      document.getElementById("view-tabs").style.display = "flex";
+
+      const container = document.getElementById("benchmark-content");
+      const summary = data.run_summary || {};
+      const metadata = data.metadata || {};
+      const notes = data.notes || [];
+
+      let html = "";
+
+      // Header
+      html += "<h2 style='font-family: Poppins, sans-serif; margin-bottom: 0.5rem;'>Benchmark Results</h2>";
+      html += "<p style='color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;'>";
+      if (metadata.skill_name) html += "<strong>" + escapeHtml(metadata.skill_name) + "</strong> &mdash; ";
+      if (metadata.timestamp) html += metadata.timestamp + " &mdash; ";
+      if (metadata.evals_run) html += "Evals: " + metadata.evals_run.join(", ") + " &mdash; ";
+      html += (metadata.runs_per_configuration || "?") + " runs per configuration";
+      html += "</p>";
+
+      // Summary table
+      html += '<table class="benchmark-table">';
+
+      function fmtStat(stat, pct) {
+        if (!stat) return "—";
+        const suffix = pct ? "%" : "";
+        const m = pct ? (stat.mean * 100).toFixed(0) : stat.mean.toFixed(1);
+        const s = pct ? (stat.stddev * 100).toFixed(0) : stat.stddev.toFixed(1);
+        return m + suffix + " ± " + s + suffix;
+      }
+
+      function deltaClass(val) {
+        if (!val) return "";
+        const n = parseFloat(val);
+        if (n > 0) return "benchmark-delta-positive";
+        if (n < 0) return "benchmark-delta-negative";
+        return "";
+      }
+
+      // Discover config names dynamically (everything except "delta")
+      const configs = Object.keys(summary).filter(k => k !== "delta");
+      const configA = configs[0] || "config_a";
+      const configB = configs[1] || "config_b";
+      const labelA = configA.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const labelB = configB.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const a = summary[configA] || {};
+      const b = summary[configB] || {};
+      const delta = summary.delta || {};
+
+      html += "<thead><tr><th>Metric</th><th>" + escapeHtml(labelA) + "</th><th>" + escapeHtml(labelB) + "</th><th>Delta</th></tr></thead>";
+      html += "<tbody>";
+
+      html += "<tr><td><strong>Pass Rate</strong></td>";
+      html += "<td>" + fmtStat(a.pass_rate, true) + "</td>";
+      html += "<td>" + fmtStat(b.pass_rate, true) + "</td>";
+      html += '<td class="' + deltaClass(delta.pass_rate) + '">' + (delta.pass_rate || "—") + "</td></tr>";
+
+      // Time (only show row if data exists)
+      if (a.time_seconds || b.time_seconds) {
+        html += "<tr><td><strong>Time (s)</strong></td>";
+        html += "<td>" + fmtStat(a.time_seconds, false) + "</td>";
+        html += "<td>" + fmtStat(b.time_seconds, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.time_seconds) + '">' + (delta.time_seconds ? delta.time_seconds + "s" : "—") + "</td></tr>";
+      }
+
+      // Tokens (only show row if data exists)
+      if (a.tokens || b.tokens) {
+        html += "<tr><td><strong>Tokens</strong></td>";
+        html += "<td>" + fmtStat(a.tokens, false) + "</td>";
+        html += "<td>" + fmtStat(b.tokens, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.tokens) + '">' + (delta.tokens || "—") + "</td></tr>";
+      }
+
+      html += "</tbody></table>";
+
+      // Per-eval breakdown (if runs data available)
+      const runs = data.runs || [];
+      if (runs.length > 0) {
+        const evalIds = [...new Set(runs.map(r => r.eval_id))].sort((a, b) => a - b);
+
+        html += "<h3 style='font-family: Poppins, sans-serif; margin-bottom: 0.75rem;'>Per-Eval Breakdown</h3>";
+
+        const hasTime = runs.some(r => r.result && r.result.time_seconds != null);
+        const hasErrors = runs.some(r => r.result && r.result.errors > 0);
+
+        for (const evalId of evalIds) {
+          const evalRuns = runs.filter(r => r.eval_id === evalId);
+          const evalName = evalRuns[0] && evalRuns[0].eval_name ? evalRuns[0].eval_name : "Eval " + evalId;
+
+          html += "<h4 style='font-family: Poppins, sans-serif; margin: 1rem 0 0.5rem; color: var(--text);'>" + escapeHtml(evalName) + "</h4>";
+          html += '<table class="benchmark-table">';
+          html += "<thead><tr><th>Config</th><th>Run</th><th>Pass Rate</th>";
+          if (hasTime) html += "<th>Time (s)</th>";
+          if (hasErrors) html += "<th>Crashes During Execution</th>";
+          html += "</tr></thead>";
+          html += "<tbody>";
+
+          // Group by config and render with average rows
+          const configGroups = [...new Set(evalRuns.map(r => r.configuration))];
+          for (let ci = 0; ci < configGroups.length; ci++) {
+            const config = configGroups[ci];
+            const configRuns = evalRuns.filter(r => r.configuration === config);
+            if (configRuns.length === 0) continue;
+
+            const rowClass = ci === 0 ? "benchmark-row-with" : "benchmark-row-without";
+            const configLabel = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+
+            for (const run of configRuns) {
+              const r = run.result || {};
+              const prClass = r.pass_rate >= 0.8 ? "benchmark-delta-positive" : r.pass_rate < 0.5 ? "benchmark-delta-negative" : "";
+              html += '<tr class="' + rowClass + '">';
+              html += "<td>" + configLabel + "</td>";
+              html += "<td>" + run.run_number + "</td>";
+              html += '<td class="' + prClass + '">' + ((r.pass_rate || 0) * 100).toFixed(0) + "% (" + (r.passed || 0) + "/" + (r.total || 0) + ")</td>";
+              if (hasTime) html += "<td>" + (r.time_seconds != null ? r.time_seconds.toFixed(1) : "—") + "</td>";
+              if (hasErrors) html += "<td>" + (r.errors || 0) + "</td>";
+              html += "</tr>";
+            }
+
+            // Average row
+            const rates = configRuns.map(r => (r.result || {}).pass_rate || 0);
+            const avgRate = rates.reduce((a, b) => a + b, 0) / rates.length;
+            const avgPrClass = avgRate >= 0.8 ? "benchmark-delta-positive" : avgRate < 0.5 ? "benchmark-delta-negative" : "";
+            html += '<tr class="benchmark-row-avg ' + rowClass + '">';
+            html += "<td>" + configLabel + "</td>";
+            html += "<td>Avg</td>";
+            html += '<td class="' + avgPrClass + '">' + (avgRate * 100).toFixed(0) + "%</td>";
+            if (hasTime) {
+              const times = configRuns.map(r => (r.result || {}).time_seconds).filter(t => t != null);
+              html += "<td>" + (times.length ? (times.reduce((a, b) => a + b, 0) / times.length).toFixed(1) : "—") + "</td>";
+            }
+            if (hasErrors) html += "<td></td>";
+            html += "</tr>";
+          }
+          html += "</tbody></table>";
+
+          // Per-assertion detail for this eval
+          const runsWithExpectations = {};
+          for (const config of configGroups) {
+            runsWithExpectations[config] = evalRuns.filter(r => r.configuration === config && r.expectations && r.expectations.length > 0);
+          }
+          const hasAnyExpectations = Object.values(runsWithExpectations).some(runs => runs.length > 0);
+          if (hasAnyExpectations) {
+            // Collect all unique assertion texts across all configs
+            const allAssertions = [];
+            const seen = new Set();
+            for (const config of configGroups) {
+              for (const run of runsWithExpectations[config]) {
+                for (const exp of (run.expectations || [])) {
+                  if (!seen.has(exp.text)) {
+                    seen.add(exp.text);
+                    allAssertions.push(exp.text);
+                  }
+                }
+              }
+            }
+
+            html += '<table class="benchmark-table" style="margin-top: 0.5rem;">';
+            html += "<thead><tr><th>Assertion</th>";
+            for (const config of configGroups) {
+              const label = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+              html += "<th>" + escapeHtml(label) + "</th>";
+            }
+            html += "</tr></thead><tbody>";
+
+            for (const assertionText of allAssertions) {
+              html += "<tr><td>" + escapeHtml(assertionText) + "</td>";
+
+              for (const config of configGroups) {
+                html += "<td>";
+                for (const run of runsWithExpectations[config]) {
+                  const exp = (run.expectations || []).find(e => e.text === assertionText);
+                  if (exp) {
+                    const cls = exp.passed ? "benchmark-delta-positive" : "benchmark-delta-negative";
+                    const icon = exp.passed ? "\u2713" : "\u2717";
+                    html += '<span class="' + cls + '" title="Run ' + run.run_number + ': ' + escapeHtml(exp.evidence || "") + '">' + icon + "</span> ";
+                  } else {
+                    html += "— ";
+                  }
+                }
+                html += "</td>";
+              }
+              html += "</tr>";
+            }
+            html += "</tbody></table>";
+          }
+        }
+      }
+
+      // Notes
+      if (notes.length > 0) {
+        html += '<div class="benchmark-notes">';
+        html += "<h3>Analysis Notes</h3>";
+        html += "<ul>";
+        for (const note of notes) {
+          html += "<li>" + escapeHtml(note) + "</li>";
+        }
+        html += "</ul></div>";
+      }
+
+      container.innerHTML = html;
+    }
+
+    // ---- Start ----
+    init();
+    renderBenchmark();
+  </script>
+</body>
+</html>

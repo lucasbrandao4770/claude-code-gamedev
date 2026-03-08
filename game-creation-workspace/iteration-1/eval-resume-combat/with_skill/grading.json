@@ -1,0 +1,15 @@
+{
+  "eval_id": 2,
+  "eval_name": "resume-combat-system",
+  "config": "with_skill",
+  "expectations": [
+    {"text": "Recommends Area2D hitbox/hurtbox pattern (not body-to-body collision)", "passed": true, "evidence": "'Never use body-to-body collision for damage. The hitbox/hurtbox pattern with Area2D nodes keeps physics and damage logic cleanly separated.'"},
+    {"text": "Mentions periodic get_overlapping_areas() alongside area_entered", "passed": true, "evidence": "'in _physics_process, poll Hurtbox.get_overlapping_areas() to catch ongoing contact (the area_entered signal only fires once per overlap start)'"},
+    {"text": "Recommends building and testing incrementally (enemy, then attack, then wiring)", "passed": true, "evidence": "Clear build order table: Step 1 (Slime + AI), Step 2 (Sword hitbox), Step 3 (Wire damage). Each has 'What to Test' and 'Done When' columns."},
+    {"text": "Includes collision layer table with explicit bitmask values", "passed": true, "evidence": "Full table with 'Layer # | Bitmask Value | Name' showing 1/1, 2/2, 3/4, 4/8, 5/16, 6/32, 7/64 plus detailed wiring (layer=8, mask=0, etc.)"},
+    {"text": "Separates hurt stun duration from invincibility duration", "passed": true, "evidence": "'brief stun (~0.3s), invincibility for longer (~1.0s) with sprite blink effect' and 'Keep stun short, invincibility long.'"},
+    {"text": "Provides concrete numeric values (HP, damage, speed, durations)", "passed": true, "evidence": "HP=3 slime, HP=6 player, detection=120px, chase=60px/s, stun=0.3s, invincibility=1.0s, attack duration=0.3s, cooldown=0.4s"},
+    {"text": "Mentions delegating to subagents for MCP or script writing", "passed": false, "evidence": "No mention of subagents. Acts as if it will implement directly."},
+    {"text": "Asks user to playtest after implementation", "passed": true, "evidence": "'Playtest for feel -- does combat feel responsive? Is the detection range right? Tune @export values as needed.'"}
+  ]
+}

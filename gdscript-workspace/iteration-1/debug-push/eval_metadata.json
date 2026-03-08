@@ -1,0 +1,13 @@
+{
+  "eval_id": 2,
+  "eval_name": "debug-push",
+  "prompt": "My player and slime enemies are both CharacterBody2D nodes. When a slime walks into my player, it pushes the player across the map instead of dealing damage. The slime has a CollisionShape2D on its body. How do I fix this so the slime deals damage instead of pushing?",
+  "assertions": [
+    {"text": "Identifies body-to-body CharacterBody2D collision as root cause of pushing", "type": "correctness"},
+    {"text": "Recommends removing enemy layer from player collision mask (or vice versa)", "type": "correctness"},
+    {"text": "Recommends Area2D hitbox/hurtbox pattern for damage detection", "type": "correctness"},
+    {"text": "Mentions area_entered fires only once on overlap start", "type": "correctness"},
+    {"text": "Recommends get_overlapping_areas() for continuous contact damage", "type": "correctness"},
+    {"text": "Shows correct collision layer/mask configuration with code", "type": "quality"}
+  ]
+}

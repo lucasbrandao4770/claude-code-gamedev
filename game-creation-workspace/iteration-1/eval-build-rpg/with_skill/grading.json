@@ -1,0 +1,16 @@
+{
+  "eval_id": 0,
+  "eval_name": "build-rpg-from-scratch",
+  "config": "with_skill",
+  "expectations": [
+    {"text": "Uses three-tier scope (MUST HAVE / SHOULD HAVE / OUT OF SCOPE)", "passed": true, "evidence": "Has explicit 'MUST HAVE', 'SHOULD HAVE', and 'EXPLICITLY OUT OF SCOPE' sections with detailed feature lists"},
+    {"text": "Creates GDD.md separate from CLAUDE.md (two distinct documents)", "passed": true, "evidence": "'1. GDD.md — A one-pager game design document' and '2. CLAUDE.md — The technical architecture document' listed as separate outputs"},
+    {"text": "Mentions design pillars or core loop concept", "passed": true, "evidence": "'Core loop: Explore -> Fight -> Survive -> Explore' and 'Elevator pitch and design pillars' both mentioned in GDD output spec"},
+    {"text": "Mentions delegating to subagents for heavy work", "passed": false, "evidence": "No mention of subagents. Says 'I will use Godot MCP to create scenes' as if doing everything directly."},
+    {"text": "Specifies incremental build order with testing after each entity", "passed": true, "evidence": "'We build incrementally: Player first, then slime, then combat, then world, then HUD. Each step gets tested before moving on.'"},
+    {"text": "Includes anti-patterns from real sessions (body collision, area_entered, etc.)", "passed": true, "evidence": "Detailed 'Key Technical Decisions' table with 6 battle-tested patterns including Area2D, dual damage detection, cycle-based animation, CanvasLayer UI, pause during dialog, stun vs invincibility"},
+    {"text": "Asks user to name the game", "passed": true, "evidence": "'Game name -- Even a working title helps. Something like Slime Fields, Blade of the Wilds...'"},
+    {"text": "Shows collision layers with explicit bitmask values (not just layer numbers)", "passed": false, "evidence": "Mentions 'Collision layer assignments (Player=2, Enemies=3, PlayerHitbox=4, EnemyHitbox=5)' but these are layer numbers, not bitmask values. Layer 3 has bitmask 4, not 3. Does not show both."},
+    {"text": "Mentions analyzing sprite sheets before writing animation code", "passed": true, "evidence": "'I need to analyze the exact sheets before writing animation code' and asks about specific CraftPix packs"}
+  ]
+}

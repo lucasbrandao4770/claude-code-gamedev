@@ -1,0 +1,44 @@
+{
+  "metadata": {
+    "skill_name": "game-creation",
+    "skill_path": "D:\\Workspace\\Games\\claude-game-dev\\.claude\\skills\\game-creation",
+    "executor_model": "claude-opus-4-6",
+    "analyzer_model": "claude-opus-4-6",
+    "timestamp": "2026-03-08T19:00:21Z",
+    "evals_run": ["build-rpg-from-scratch", "scope-a-platformer", "resume-combat-system"],
+    "runs_per_configuration": 1
+  },
+  "runs": [
+    {
+      "eval_name": "build-rpg-from-scratch",
+      "with_skill": {"pass_rate": 0.778, "passed": 7, "total": 9, "time_seconds": 91.7, "tokens": 34534},
+      "without_skill": {"pass_rate": 0.444, "passed": 4, "total": 9, "time_seconds": 55.9, "tokens": 15433}
+    },
+    {
+      "eval_name": "scope-a-platformer",
+      "with_skill": {"pass_rate": 1.0, "passed": 8, "total": 8, "time_seconds": 84.9, "tokens": 30819},
+      "without_skill": {"pass_rate": 0.375, "passed": 3, "total": 8, "time_seconds": 48.9, "tokens": 14990}
+    },
+    {
+      "eval_name": "resume-combat-system",
+      "with_skill": {"pass_rate": 0.875, "passed": 7, "total": 8, "time_seconds": 84.3, "tokens": 30680},
+      "without_skill": {"pass_rate": 0.5, "passed": 4, "total": 8, "time_seconds": 62.2, "tokens": 15666}
+    }
+  ],
+  "run_summary": {
+    "with_skill": {"pass_rate": 0.88, "time_seconds": 86.9, "tokens": 32011},
+    "without_skill": {"pass_rate": 0.44, "time_seconds": 55.7, "tokens": 15363},
+    "delta": {
+      "pass_rate": "+44pp",
+      "time_seconds": "+31.2s",
+      "tokens": "+16648"
+    }
+  },
+  "notes": [
+    "Subagent delegation assertion fails on ALL 3 with_skill runs. The eval format (planning response) doesn't create a context where agents naturally mention delegation. Consider reframing or removing.",
+    "Scope-platformer has highest delta (+62.5pp) — Phase 1 guidance is the skill's biggest value-add.",
+    "Without-skill runs pass hitbox/hurtbox assertions in eval-2 from project CLAUDE.md context (partially non-discriminating).",
+    "Collision bitmask assertion passes on eval-2 (with_skill) but fails on eval-0 (with_skill) — inconsistent application.",
+    "Token cost ~2x with skill (32k vs 15k) from reference file reading."
+  ]
+}

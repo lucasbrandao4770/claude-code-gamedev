@@ -1,0 +1,16 @@
+{
+  "eval_id": 1,
+  "configuration": "with_skill",
+  "expectations": [
+    {"text": "Uses enum for state machine", "passed": true, "evidence": "enum State { IDLE, WANDER, CHASE, HURT, DEAD } on line 9"},
+    {"text": "Type hints on ALL function signatures", "passed": true, "evidence": "All functions typed: _physics_process(delta: float) -> void, take_damage(amount: int) -> void, etc."},
+    {"text": "Uses @export with grouping", "passed": true, "evidence": "@export_category('Slime'), @export_group('Movement'), @export_group('Combat')"},
+    {"text": "Contact damage uses get_overlapping_areas() polling", "passed": true, "evidence": "_process_contact_damage() polls contact_hitbox.get_overlapping_areas() with damage_tick_cooldown timer (L145-160)"},
+    {"text": "No Godot 3.x syntax", "passed": true, "evidence": "All 4.x: CharacterBody2D, @export, signal.connect(callable), create_tween()"},
+    {"text": "Death tween stored in typed variable", "passed": true, "evidence": "var tween: Tween = create_tween() on line 174"},
+    {"text": "Uses tabs for indentation", "passed": true, "evidence": "Tab indentation throughout"},
+    {"text": "Correct code ordering", "passed": true, "evidence": "signal (L7) > enum (L9) > const (L11) > exports (L13-28) > vars (L30-36) > onready (L38-41) > _ready (L44) > _physics_process (L60) > public (L78) > private (L109+)"},
+    {"text": "No await in _physics_process", "passed": true, "evidence": "await in take_damage (L96, standalone coroutine) and _die (L176), not in _physics_process"},
+    {"text": "Uses match for state dispatch", "passed": true, "evidence": "match current_state: on line 61 with State.IDLE/WANDER/CHASE/HURT/DEAD branches"}
+  ]
+}

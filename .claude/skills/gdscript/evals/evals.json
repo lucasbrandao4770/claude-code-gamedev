@@ -1,0 +1,23 @@
+{
+  "skill_name": "gdscript",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "Create a player.gd script for a top-down 2D RPG in Godot 4. The player should move in 8 directions using WASD, have a sword attack on mouse click that creates a hitbox in the facing direction, and take damage from enemies with knockback and invincibility frames. Include health management with a max of 6 HP.",
+      "expected_output": "A complete GDScript file with: correct code ordering (signals > enums > constants > exports > vars > onready > _ready > _physics_process > methods), type hints on all signatures, @export groups for tuning, @onready for node refs, movement in _physics_process using Input.get_vector, no Godot 3.x syntax, contact damage via area_entered + overlap polling, cycle-based animation timing",
+      "files": []
+    },
+    {
+      "id": 1,
+      "prompt": "Write a slime enemy script (slime.gd) for Godot 4. The slime should wander randomly when idle, chase the player when it enters a detection zone, deal continuous contact damage, and die with a fade-out effect when HP reaches 0. It needs a simple state machine.",
+      "expected_output": "A GDScript file with: enum State machine (IDLE/WANDER/CHASE/HURT/DEAD), typed state variable, detection via Area2D signals, contact damage using BOTH area_entered AND get_overlapping_areas polling, @export vars for speed/hp/damage, proper code ordering, no await in _physics_process, tween for death fade using create_tween() stored in variable",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "My player and slime enemies are both CharacterBody2D nodes. When a slime walks into my player, it pushes the player across the map instead of dealing damage. The slime has a CollisionShape2D on its body. How do I fix this so the slime deals damage instead of pushing?",
+      "expected_output": "Diagnosis: body-to-body collision between CharacterBody2D nodes causes physics pushing via move_and_slide(). Fix: remove enemy body layer from player's collision_mask so they don't physically collide. Use Area2D hitbox/hurtbox pattern for damage detection instead. Show the collision layer/mask setup and the Area2D signal + overlap polling pattern for contact damage.",
+      "files": []
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/player/Swordsman_lvl1/With_shadow/Swordsman_lvl1_Idle_with_shadow.png" id="1_8afob"]
+[ext_resource type="Script" path="res://scripts/player/player.gd" id="2_script"]
+
+[sub_resource type="RectangleShape2D" id="body_shape"]
+size = Vector2(10, 10)
+
+[sub_resource type="RectangleShape2D" id="sword_shape"]
+size = Vector2(14, 8)
+
+[sub_resource type="RectangleShape2D" id="hurt_shape"]
+size = Vector2(10, 12)
+
+[sub_resource type="CircleShape2D" id="detection_shape"]
+radius = 80.0
+
+[node name="Player" type="CharacterBody2D"]
+script = ExtResource("2_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_8afob")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 4)
+shape = SubResource("body_shape")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position_smoothing_enabled = true
+
+[node name="SwordHitBox" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SwordHitBox"]
+shape = SubResource("sword_shape")
+disabled = true
+
+[node name="HurtBox" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HurtBox"]
+shape = SubResource("hurt_shape")
+
+[node name="DetectionZone" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DetectionZone"]
+shape = SubResource("detection_shape")
+
+[connection signal="body_entered" from="DetectionZone" to="." method="_on_detection_zone_body_entered"]

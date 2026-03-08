@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eval Review</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #faf9f5;
+      --surface: #ffffff;
+      --border: #e8e6dc;
+      --text: #141413;
+      --text-muted: #b0aea5;
+      --accent: #d97757;
+      --accent-hover: #c4613f;
+      --green: #788c5d;
+      --green-bg: #eef2e8;
+      --red: #c44;
+      --red-bg: #fceaea;
+      --header-bg: #141413;
+      --header-text: #faf9f5;
+      --radius: 6px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lora', Georgia, serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .header h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .header .instructions {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      margin-top: 0.25rem;
+    }
+    .header .progress {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      text-align: right;
+    }
+
+    /* ---- Main content ---- */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* ---- Sections ---- */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      flex-shrink: 0;
+    }
+    .section-header {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .section-body {
+      padding: 1rem;
+    }
+
+    /* ---- Config badge ---- */
+    .config-badge {
+      display: inline-block;
+      padding: 0.2rem 0.625rem;
+      border-radius: 9999px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-left: 0.75rem;
+      vertical-align: middle;
+    }
+    .config-badge.config-primary {
+      background: rgba(33, 150, 243, 0.12);
+      color: #1976d2;
+    }
+    .config-badge.config-baseline {
+      background: rgba(255, 193, 7, 0.15);
+      color: #f57f17;
+    }
+
+    /* ---- Prompt ---- */
+    .prompt-text {
+      white-space: pre-wrap;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+    }
+
+    /* ---- Outputs ---- */
+    .output-file {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .output-file + .output-file {
+      margin-top: 1rem;
+    }
+    .output-file-header {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .output-file-header .dl-btn {
+      font-size: 0.7rem;
+      color: var(--accent);
+      text-decoration: none;
+      cursor: pointer;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+    .output-file-header .dl-btn:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+    .output-file-content {
+      padding: 0.75rem;
+      overflow-x: auto;
+    }
+    .output-file-content pre {
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    .output-file-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    .output-file-content iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+    }
+    .output-file-content table {
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+      width: 100%;
+    }
+    .output-file-content table td,
+    .output-file-content table th {
+      border: 1px solid var(--border);
+      padding: 0.375rem 0.5rem;
+      text-align: left;
+    }
+    .output-file-content table th {
+      background: var(--bg);
+      font-weight: 600;
+    }
+    .output-file-content .download-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    .output-file-content .download-link:hover {
+      background: var(--border);
+    }
+    .empty-state {
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    /* ---- Feedback ---- */
+    .prev-feedback {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.625rem 0.75rem;
+      margin-top: 0.75rem;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .prev-feedback-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.25rem;
+      color: var(--text-muted);
+    }
+    .feedback-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      resize: vertical;
+      color: var(--text);
+    }
+    .feedback-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .feedback-status {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      min-height: 1.1em;
+    }
+
+    /* ---- Grades (collapsible) ---- */
+    .grades-toggle {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .grades-toggle:hover {
+      color: var(--accent);
+    }
+    .grades-toggle .arrow {
+      margin-right: 0.5rem;
+      transition: transform 0.15s;
+      font-size: 0.75rem;
+    }
+    .grades-toggle .arrow.open {
+      transform: rotate(90deg);
+    }
+    .grades-content {
+      display: none;
+      margin-top: 0.75rem;
+    }
+    .grades-content.open {
+      display: block;
+    }
+    .grades-summary {
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .grade-badge {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .grade-pass { background: var(--green-bg); color: var(--green); }
+    .grade-fail { background: var(--red-bg); color: var(--red); }
+    .assertion-list {
+      list-style: none;
+    }
+    .assertion-item {
+      padding: 0.625rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8125rem;
+    }
+    .assertion-item:last-child { border-bottom: none; }
+    .assertion-status {
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+    .assertion-status.pass { color: var(--green); }
+    .assertion-status.fail { color: var(--red); }
+    .assertion-evidence {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+      padding-left: 1.5rem;
+    }
+
+    /* ---- View tabs ---- */
+    .view-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 2rem;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .view-tab {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.625rem 1.25rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .view-tab:hover { color: var(--text); }
+    .view-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .view-panel { display: none; }
+    .view-panel.active { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+
+    /* ---- Benchmark view ---- */
+    .benchmark-view {
+      padding: 1.5rem 2rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .benchmark-table {
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.8125rem;
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+    .benchmark-table th, .benchmark-table td {
+      padding: 0.625rem 0.75rem;
+      text-align: left;
+      border: 1px solid var(--border);
+    }
+    .benchmark-table th {
+      font-family: 'Poppins', sans-serif;
+      background: var(--header-bg);
+      color: var(--header-text);
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .benchmark-table tr:hover { background: var(--bg); }
+    .benchmark-table tr.benchmark-row-with { background: rgba(33, 150, 243, 0.06); }
+    .benchmark-table tr.benchmark-row-without { background: rgba(255, 193, 7, 0.06); }
+    .benchmark-table tr.benchmark-row-with:hover { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-without:hover { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-table tr.benchmark-row-avg { font-weight: 600; border-top: 2px solid var(--border); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-with { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-without { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-delta-positive { color: var(--green); font-weight: 600; }
+    .benchmark-delta-negative { color: var(--red); font-weight: 600; }
+    .benchmark-notes {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .benchmark-notes h3 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+    }
+    .benchmark-notes ul {
+      list-style: disc;
+      padding-left: 1.25rem;
+    }
+    .benchmark-notes li {
+      font-size: 0.8125rem;
+      line-height: 1.6;
+      margin-bottom: 0.375rem;
+    }
+    .benchmark-empty {
+      color: var(--text-muted);
+      font-style: italic;
+      text-align: center;
+      padding: 3rem;
+    }
+
+    /* ---- Navigation ---- */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .nav-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: all 0.15s;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .done-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .done-btn:hover {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .done-btn.ready {
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+    }
+    .done-btn.ready:hover {
+      background: var(--accent-hover);
+    }
+    /* ---- Done overlay ---- */
+    .done-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    .done-overlay.visible {
+      display: flex;
+    }
+    .done-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 2rem 3rem;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+    }
+    .done-card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .done-card p {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .done-card .btn-row {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .done-card button {
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    .done-card button:hover {
+      background: var(--bg);
+    }
+    /* ---- Toast ---- */
+    .toast {
+      position: fixed;
+      bottom: 5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 0.625rem 1.25rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 200;
+    }
+    .toast.visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" style="height:100vh; display:flex; flex-direction:column;">
+    <div class="header">
+      <div>
+        <h1>Eval Review: <span id="skill-name"></span></h1>
+        <div class="instructions">Review each output and leave feedback below. Navigate with arrow keys or buttons. When done, copy feedback and paste into Claude Code.</div>
+      </div>
+      <div class="progress" id="progress"></div>
+    </div>
+
+    <!-- View tabs (only shown when benchmark data exists) -->
+    <div class="view-tabs" id="view-tabs" style="display:none;">
+      <button class="view-tab active" onclick="switchView('outputs')">Outputs</button>
+      <button class="view-tab" onclick="switchView('benchmark')">Benchmark</button>
+    </div>
+
+    <!-- Outputs panel (qualitative review) -->
+    <div class="view-panel active" id="panel-outputs">
+    <div class="main">
+      <!-- Prompt -->
+      <div class="section">
+        <div class="section-header">Prompt <span class="config-badge" id="config-badge" style="display:none;"></span></div>
+        <div class="section-body">
+          <div class="prompt-text" id="prompt-text"></div>
+        </div>
+      </div>
+
+      <!-- Outputs -->
+      <div class="section">
+        <div class="section-header">Output</div>
+        <div class="section-body" id="outputs-body">
+          <div class="empty-state">No output files found</div>
+        </div>
+      </div>
+
+      <!-- Previous Output (collapsible) -->
+      <div class="section" id="prev-outputs-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="togglePrevOutputs()">
+            <span class="arrow" id="prev-outputs-arrow">&#9654;</span>
+            Previous Output
+          </div>
+        </div>
+        <div class="grades-content" id="prev-outputs-content"></div>
+      </div>
+
+      <!-- Grades (collapsible) -->
+      <div class="section" id="grades-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="toggleGrades()">
+            <span class="arrow" id="grades-arrow">&#9654;</span>
+            Formal Grades
+          </div>
+        </div>
+        <div class="grades-content" id="grades-content"></div>
+      </div>
+
+      <!-- Feedback -->
+      <div class="section">
+        <div class="section-header">Your Feedback</div>
+        <div class="section-body">
+          <textarea
+            class="feedback-textarea"
+            id="feedback"
+            placeholder="What do you think of this output? Any issues, suggestions, or things that look great?"
+          ></textarea>
+          <div class="feedback-status" id="feedback-status"></div>
+          <div class="prev-feedback" id="prev-feedback" style="display:none;">
+            <div class="prev-feedback-label">Previous feedback</div>
+            <div id="prev-feedback-text"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav" id="outputs-nav">
+      <button class="nav-btn" id="prev-btn" onclick="navigate(-1)">&#8592; Previous</button>
+      <button class="done-btn" id="done-btn" onclick="showDoneDialog()">Submit All Reviews</button>
+      <button class="nav-btn" id="next-btn" onclick="navigate(1)">Next &#8594;</button>
+    </div>
+    </div><!-- end panel-outputs -->
+
+    <!-- Benchmark panel (quantitative stats) -->
+    <div class="view-panel" id="panel-benchmark">
+      <div class="benchmark-view" id="benchmark-content">
+        <div class="benchmark-empty">No benchmark data available. Run a benchmark to see quantitative results here.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Done overlay -->
+  <div class="done-overlay" id="done-overlay">
+    <div class="done-card">
+      <h2>Review Complete</h2>
+      <p>Your feedback has been saved. Go back to your Claude Code session and tell Claude you're done reviewing.</p>
+      <div class="btn-row">
+        <button onclick="closeDoneDialog()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ---- Embedded data (injected by generate_review.py) ----
+    const EMBEDDED_DATA = {"skill_name": "godot-mcp", "runs": [{"id": "mcp-workflow-sequence-with_skill", "prompt": "I want to create a new enemy scene for my 2D RPG using the Godot MCP tools. It's a skeleton that chases the player and deals contact damage. What MCP calls do I need to make, and in what order?", "eval_id": 0, "outputs": [{"name": "response.md", "type": "text", "content": "# Creating a Skeleton Enemy Scene with Godot MCP\n\nHere is the complete sequence of MCP calls and supporting tool operations you need, in the exact order they should be executed. I am breaking this into phases so you can see why each step matters.\n\n---\n\n## Phase 1: Asset Preparation (Before Any MCP Calls)\n\nBefore touching MCP, get your skeleton sprite sheets into the project:\n\n1. **Place your skeleton sprite files** into the project's asset folder (e.g., `assets/sprites/enemies/skeleton/`).\n\n2. **Run the headless import** via Bash:\n   ```bash\n   godot --headless --path <your_project_path> --import\n   ```\n   This is the single most critical step. If you skip it, `load_sprite` will fail with \"No loader found for resource\" because Godot does not recognize raw files on disk as resources until they have been imported. Every new asset file requires this.\n\n---\n\n## Phase 2: Build the Scene Tree with MCP\n\nNow use the MCP tools to create the scene and add nodes. The skeleton needs a `CharacterBody2D` root (for physics movement and `move_and_slide()`), plus child nodes for visuals, collision, damage dealing, damage receiving, and player detection.\n\n### Step 1 -- Create the scene\n\n```\ncreate_scene(\n  projectPath = \"<your_project_path>\",\n  scenePath = \"scenes/enemies/skeleton.tscn\",\n  rootNodeType = \"CharacterBody2D\"\n)\n```\n\n### Step 2 -- Add the Sprite2D\n\n```\nadd_node(\n  projectPath = \"<your_project_path>\",\n  scenePath = \"scenes/enemies/skeleton.tscn\",\n  nodeType = \"Sprite2D\",\n  nodeName = \"Sprite2D\",\n  parentNodePath = \"root\"\n)\n```\n\n### Step 3 -- Add the body CollisionShape2D\n\n```\nadd_node(\n  projectPath = \"<your_project_path>\",\n  scenePath = \"scenes/enemies/skeleton.tscn\",\n  nodeType = \"CollisionShape2D\",\n  nodeName = \"CollisionShape2D\",\n  parentNodePath = \"root\"\n)\n```\n\n**Important:** MCP cannot set the `shape` property (it is a sub-resource, not a simple type). The shape will be defined later by editing the .tscn file directly or by assigning it in `_ready()`.\n\n### Step 4 -- Add the HurtBox (receives damage from player's sword)\n\n```\nadd_node(\n  projectPath = \"<your_project_path>\",\n  scenePath = \"scenes/enemies/skeleton.tscn\",\n  nodeType = \"Area2D\",\n  nodeName = \"HurtBox\",\n  parentNodePath = \"root\"\n)\n```\n\n### Step 5 -- Add CollisionShape2D inside HurtBox\n\n```\nadd_node(\n  projectPath = \"<your_project_path>\",\n  scenePath = \"scenes/enemies/skeleton.tscn\",\n  nodeType = \"CollisionShape2D\",\n  nodeName = \"CollisionShape2D\",\n  parentNodePath = \"root/HurtBox\"\n)\n```\n\n### Step 6 -- Add the ContactHitBox (deals contact damage to the player)\n\n```\nadd_node(\n  projectPath = \"<your_project_path>\",\n  scenePath = \"scenes/enemies/skeleton.tscn\",\n  nodeType = \"Area2D\",\n  nodeName = \"ContactHitBox\",\n  parentNodePath = \"root\"\n)\n```\n\n### Step 7 -- Add CollisionShape2D inside ContactHitBox\n\n```\nadd_node(\n  projectPath = \"<your_project_path>\",\n  scenePath = \"scenes/enemies/skeleton.tscn\",\n  nodeType = \"CollisionShape2D\",\n  nodeName = \"CollisionShape2D\",\n  parentNodePath = \"root/ContactHitBox\"\n)\n```\n\n### Step 8 -- Add the DetectionZone (detects the player for chase behavior)\n\n```\nadd_node(\n  projectPath = \"<your_project_path>\",\n  scenePath = \"scenes/enemies/skeleton.tscn\",\n  nodeType = \"Area2D\",\n  nodeName = \"DetectionZone\",\n  parentNodePath = \"root\"\n)\n```\n\n### Step 9 -- Add CollisionShape2D inside DetectionZone\n\n```\nadd_node(\n  projectPath = \"<your_project_path>\",\n  scenePath = \"scenes/enemies/skeleton.tscn\",\n  nodeType = \"CollisionShape2D\",\n  nodeName = \"CollisionShape2D\",\n  parentNodePath = \"root/DetectionZone\"\n)\n```\n\n### Step 10 -- Load the sprite texture\n\n```\nload_sprite(\n  projectPath = \"<your_project_path>\",\n  scenePath = \"scenes/enemies/skeleton.tscn\",\n  nodePath = \"root/Sprite2D\",\n  texturePath = \"res://assets/sprites/enemies/skeleton/skeleton_idle.png\"\n)\n```\n\nThis only works because you ran `godot --headless --import` in Phase 1. If you added the sprite file after that import step, you need to run the import again before this call.\n\n---\n\n## Phase 3: What MCP Cannot Do (Use Write and Edit Tools)\n\nMCP has built the node tree and assigned the sprite, but several critical pieces are beyond its capabilities. You need Claude Code's Write and Edit tools for these:\n\n### A. Write the GDScript (`scripts/enemies/skeleton.gd`)\n\nMCP cannot create GDScript files. Use the **Write tool** to create the script with:\n- Chase AI: use the `DetectionZone`'s `body_entered`/`body_exited` signals to track the player, then move toward them in `_physics_process()` using `move_and_slide()`\n- Contact damage: add the `ContactHitBox` to the `\"enemy_hitbox\"` group so the player's hurtbox can detect it\n- Damage reception: connect `HurtBox.area_entered` to a `take_damage()` function\n- Collision layers set in `_ready()`: body on layer 3 (value 4), mask layer 1 (value 1); DetectionZone masks layer 2 (player); ContactHitBox on layer 5 (value 16); HurtBox masks layer 4 (value 8)\n\n### B. Edit the .tscn to attach the script and define collision shapes\n\nUse the **Edit tool** to patch `skeleton.tscn`. You need to add:\n\n1. An `[ext_resource]` entry for the script:\n   ```\n   [ext_resource type=\"Script\" path=\"res://scripts/enemies/skeleton.gd\" id=\"2_script\"]\n   ```\n\n2. `[sub_resource]` blocks for each collision shape:\n   ```\n   [sub_resource type=\"CircleShape2D\" id=\"body_shape\"]\n   radius = 6.0\n\n   [sub_resource type=\"CircleShape2D\" id=\"hurt_shape\"]\n   radius = 7.0\n\n   [sub_resource type=\"CircleShape2D\" id=\"contact_shape\"]\n   radius = 7.0\n\n   [sub_resource type=\"CircleShape2D\" id=\"detect_shape\"]\n   radius = 80.0\n   ```\n\n3. Property assignments on the nodes:\n   - Root node: `script = ExtResource(\"2_script\")`\n   - Each `CollisionShape2D`: `shape = SubResource(\"<id>\")`\n   - Body collision position: `position = Vector2(0, 4)` (MCP silently drops Vector2 values, so this must be in the .tscn)\n\n### C. Set collision layers\n\nYou can either set these in the .tscn file or in `_ready()` in the script. Setting them in `_ready()` is often simpler because MCP can set integer properties but cannot set sub-resources. The existing slime in this project uses `_ready()` for all collision layer configuration, which is a proven pattern.\n\n---\n\n## Phase 4: Debug Loop with MCP\n\nOnce the script and .tscn edits are in place, use the MCP debug loop:\n\n### Step 11 -- Run the project\n\n```\nrun_project(\n  projectPath = \"<your_project_path>\"\n)\n```\n\n### Step 12 -- Check for errors\n\n```\nget_debug_output()\n```\n\nThis returns `{output: [...], errors: [...]}`. Look at the `errors` array for script errors, missing resources, or collision issues.\n\n### Step 13 -- Stop the project\n\n```\nstop_project()\n```\n\n### Step 14 -- Fix and repeat\n\nEdit your script or .tscn based on the errors, then go back to Step 11. This run/check/stop/fix cycle is the core MCP debug workflow.\n\n---\n\n## Summary: Complete Call Sequence\n\n| Order | Tool | Call | Purpose |\n|-------|------|------|---------|\n| 0 | Bash | `godot --headless --path <project> --import` | Import skeleton sprite assets |\n| 1 | MCP | `create_scene(..., rootNodeType=\"CharacterBody2D\")` | Create skeleton.tscn |\n| 2 | MCP | `add_node(nodeType=\"Sprite2D\", ...)` | Visual representation |\n| 3 | MCP | `add_node(nodeType=\"CollisionShape2D\", parent=\"root\")` | Physics body shape |\n| 4 | MCP | `add_node(nodeType=\"Area2D\", nodeName=\"HurtBox\")` | Receives sword damage |\n| 5 | MCP | `add_node(nodeType=\"CollisionShape2D\", parent=\"root/HurtBox\")` | HurtBox shape |\n| 6 | MCP | `add_node(nodeType=\"Area2D\", nodeName=\"ContactHitBox\")` | Deals contact damage |\n| 7 | MCP | `add_node(nodeType=\"CollisionShape2D\", parent=\"root/ContactHitBox\")` | ContactHitBox shape |\n| 8 | MCP | `add_node(nodeType=\"Area2D\", nodeName=\"DetectionZone\")` | Player detection for chase AI |\n| 9 | MCP | `add_node(nodeType=\"CollisionShape2D\", parent=\"root/DetectionZone\")` | DetectionZone shape |\n| 10 | MCP | `load_sprite(...)` | Assign skeleton texture |\n| 11 | Write | Create `skeleton.gd` | AI, damage, collision layers |\n| 12 | Edit | Patch `skeleton.tscn` | Attach script, add sub-resources, set Vector2 properties |\n| 13 | MCP | `run_project(...)` | Test in-engine |\n| 14 | MCP | `get_debug_output()` | Read errors |\n| 15 | MCP | `stop_project()` | Clean up |\n| 16 | -- | Fix and repeat from 13 | Iterate until working |\n\n---\n\n## Key Gotchas to Watch For\n\n- **Never call `load_sprite` before `godot --headless --import`** on new assets. It will fail silently or with a cryptic \"no loader found\" error.\n- **MCP silently drops Vector2, Color, and sub-resource properties** passed via `add_node`. Always set these in the .tscn file or in `_ready()`.\n- **MCP cannot attach scripts to nodes.** You must edit the .tscn to add the `[ext_resource]` and `script = ExtResource(...)` lines.\n- **Use Area2D for all damage interactions**, not body-to-body collision. Body-to-body causes pushing behavior instead of damage.\n- **Use both `area_entered` signal AND periodic `get_overlapping_areas()` checks** for contact damage. The signal only fires once on initial overlap, so sustained contact needs the periodic check.\n- **Do not use `update_project_uids`** -- it is broken (double-prefixes paths with `res://`).\n"}], "grading": {"eval_id": 0, "eval_name": "mcp-workflow-sequence", "configuration": "with_skill", "expectations": [{"text": "Mentions headless import step before load_sprite", "passed": true, "evidence": "Phase 1 prominently covers headless import: 'godot --headless --path <your_project_path> --import' with emphasis 'This is the single most critical step.'"}, {"text": "Uses correct create_scene param: scenePath (not sceneName/scene_name)", "passed": true, "evidence": "create_scene(projectPath=..., scenePath='scenes/enemies/skeleton.tscn', rootNodeType='CharacterBody2D')"}, {"text": "Uses correct load_sprite param: nodePath (not nodeName/node_name)", "passed": true, "evidence": "load_sprite(projectPath=..., scenePath=..., nodePath='root/Sprite2D', texturePath='res://...')"}, {"text": "Does not invent fictional load_sprite params (hframes/vframes)", "passed": true, "evidence": "load_sprite only uses projectPath, scenePath, nodePath, texturePath \u00e2\u20ac\u201d no fictional params"}, {"text": "Warns that Vector2/complex properties are silently dropped by add_node", "passed": true, "evidence": "Multiple mentions: 'MCP silently drops Vector2 values, so this must be in the .tscn' and 'MCP silently drops Vector2, Color, and sub-resource properties'"}, {"text": "Shows stop_project and get_debug_output with no parameters", "passed": true, "evidence": "get_debug_output() and stop_project() shown with empty parens in Phase 4"}, {"text": "Explicitly lists what MCP cannot do (scripts, shapes, sub-scenes)", "passed": true, "evidence": "Phase 3 titled 'What MCP Cannot Do' covers GDScript, script attachment, collision shapes, and sub-scenes"}]}}, {"id": "mcp-workflow-sequence-without_skill", "prompt": "I want to create a new enemy scene for my 2D RPG using the Godot MCP tools. It's a skeleton that chases the player and deals contact damage. What MCP calls do I need to make, and in what order?", "eval_id": 0, "outputs": [{"name": "response.md", "type": "text", "content": "# Creating a Skeleton Enemy Scene with Godot MCP\n\nHere is the full sequence of MCP calls and Claude Code tool calls you need, in order. The MCP can handle scene structure (creating scenes, adding nodes, loading sprites), but it **cannot** write GDScript, attach scripts to nodes, set complex properties like `Vector2`, or instance sub-scenes. Those gaps are filled by Claude Code's Write and Edit tools.\n\n---\n\n## Phase 1: Import Assets\n\nBefore the MCP can reference any sprite sheets, Godot needs to import them.\n\n1. **Place your skeleton sprite sheets** (e.g., `skeleton_walk.png`, `skeleton_idle.png`) into your project's asset directory (e.g., `res://assets/enemies/`).\n\n2. **Run headless import** so Godot generates `.import` metadata:\n\n```bash\ngodot --headless --import\n```\n\nThis is mandatory. If you skip it, `load_sprite` will fail because Godot won't recognize the new image files.\n\n---\n\n## Phase 2: Build the Scene Tree with MCP\n\n### Step 1 \u00e2\u20ac\u201d Create the scene\n\n```\nMCP: create_scene\n  - scene_name: \"skeleton\"\n  - root_type: \"CharacterBody2D\"\n```\n\nThis gives you `skeleton.tscn` with a `CharacterBody2D` root node (the standard base for enemies that move and collide with the world).\n\n### Step 2 \u00e2\u20ac\u201d Add child nodes for visuals and physics\n\n```\nMCP: add_node\n  - scene_path: \"res://scenes/skeleton.tscn\"   (or wherever create_scene put it)\n  - node_name: \"AnimatedSprite2D\"\n  - node_type: \"AnimatedSprite2D\"\n  - parent: \"Skeleton\"                          (the root node name)\n```\n\n```\nMCP: add_node\n  - scene_path: \"res://scenes/skeleton.tscn\"\n  - node_name: \"CollisionShape2D\"\n  - node_type: \"CollisionShape2D\"\n  - parent: \"Skeleton\"\n```\n\nThis `CollisionShape2D` is for the **body** collision (wall/world interaction). You will set its shape manually later via Edit.\n\n### Step 3 \u00e2\u20ac\u201d Add the damage hitbox (Area2D + its own CollisionShape2D)\n\n**Critical rule:** Use `Area2D` for damage detection, never body-to-body collision. This is the hitbox/hurtbox pattern.\n\n```\nMCP: add_node\n  - scene_path: \"res://scenes/skeleton.tscn\"\n  - node_name: \"HurtboxArea\"\n  - node_type: \"Area2D\"\n  - parent: \"Skeleton\"\n```\n\n```\nMCP: add_node\n  - scene_path: \"res://scenes/skeleton.tscn\"\n  - node_name: \"HurtboxShape\"\n  - node_type: \"CollisionShape2D\"\n  - parent: \"Skeleton/HurtboxArea\"\n```\n\n### Step 4 \u00e2\u20ac\u201d (Optional) Add a detection range for chasing\n\nIf you want the skeleton to only chase the player when they are within a certain radius:\n\n```\nMCP: add_node\n  - scene_path: \"res://scenes/skeleton.tscn\"\n  - node_name: \"DetectionZone\"\n  - node_type: \"Area2D\"\n  - parent: \"Skeleton\"\n```\n\n```\nMCP: add_node\n  - scene_path: \"res://scenes/skeleton.tscn\"\n  - node_name: \"DetectionShape\"\n  - node_type: \"CollisionShape2D\"\n  - parent: \"Skeleton/DetectionZone\"\n```\n\n### Step 5 \u00e2\u20ac\u201d Load sprites\n\n```\nMCP: load_sprite\n  - scene_path: \"res://scenes/skeleton.tscn\"\n  - node_name: \"AnimatedSprite2D\"\n  - sprite_path: \"res://assets/enemies/skeleton_walk.png\"\n  - hframes: 6       (adjust to your sheet's column count)\n  - vframes: 4       (adjust to your sheet's row count)\n```\n\nRepeat for additional animations if you have separate sheets (idle, attack, death). If your sprite sheets use the CraftPix top-down convention, the row order is: DOWN=0, LEFT=1, RIGHT=2, UP=3.\n\n---\n\n## Phase 3: Write the GDScript (Claude Code Write tool)\n\nThe MCP **cannot** create GDScript files. Use the Write tool to create `skeleton.gd`:\n\n```gdscript\nextends CharacterBody2D\n\n@export var speed: float = 60.0\n@export var chase_range: float = 150.0\n@export var damage: int = 1\n\nvar player: Node2D = null\n\nfunc _ready():\n    # Find the player in the scene tree\n    player = get_tree().get_first_node_in_group(\"player\")\n\nfunc _physics_process(delta):\n    if player == null:\n        return\n\n    var distance = global_position.distance_to(player.global_position)\n    if distance <= chase_range:\n        var direction = (player.global_position - global_position).normalized()\n        velocity = direction * speed\n        _update_animation(direction)\n    else:\n        velocity = Vector2.ZERO\n        $AnimatedSprite2D.stop()\n\n    move_and_slide()\n\nfunc _update_animation(direction: Vector2):\n    # Adapt row selection to your sprite sheet layout\n    $AnimatedSprite2D.play()\n    if abs(direction.x) > abs(direction.y):\n        if direction.x > 0:\n            $AnimatedSprite2D.frame = 2 * $AnimatedSprite2D.sprite_frames.get_frame_count(\"default\")  # RIGHT row\n        else:\n            $AnimatedSprite2D.frame = 1 * $AnimatedSprite2D.sprite_frames.get_frame_count(\"default\")  # LEFT row\n    else:\n        if direction.y > 0:\n            $AnimatedSprite2D.frame = 0  # DOWN row\n        else:\n            $AnimatedSprite2D.frame = 3 * $AnimatedSprite2D.sprite_frames.get_frame_count(\"default\")  # UP row\n\nfunc _on_hurtbox_area_area_entered(area):\n    if area.is_in_group(\"player_hurtbox\"):\n        area.get_parent().take_damage(damage)\n```\n\n**Important for contact damage:** The `area_entered` signal only fires once when overlapping begins. For continuous contact damage, also add a periodic check using `get_overlapping_areas()` in `_physics_process` or on a Timer.\n\n---\n\n## Phase 4: Attach the Script and Set Complex Properties (Claude Code Edit tool)\n\nThe MCP **cannot** attach scripts or set `Vector2`/`Color` properties. You must edit the `.tscn` file directly.\n\nUse the **Edit tool** on `skeleton.tscn` to:\n\n1. **Attach the script** to the root node by adding `script = ExtResource(\"X_xxxxx\")` (where the ext_resource is declared for `skeleton.gd`).\n\n2. **Set collision shapes** \u00e2\u20ac\u201d add `RectangleShape2D` or `CircleShape2D` sub-resources with their `size` or `radius` properties.\n\n3. **Set collision layers and masks** \u00e2\u20ac\u201d for example, put the skeleton body on the \"enemies\" layer and the HurtboxArea on the \"enemy_damage\" layer, masking the \"player_hurtbox\" layer.\n\n4. **Connect signals** \u00e2\u20ac\u201d wire `HurtboxArea.area_entered` to the script's `_on_hurtbox_area_area_entered` method (or connect in `_ready()` via code).\n\nExample edits you would make in the `.tscn` file:\n\n- Add an `[ext_resource]` entry pointing to `skeleton.gd`\n- On the root node's section, add `script = ExtResource(\"id_of_script\")`\n- Add `[sub_resource]` entries for the collision shapes with their dimensions\n- On each `CollisionShape2D` node, set `shape = SubResource(\"id_of_shape\")`\n\n---\n\n## Phase 5: Instance in the World and Test (MCP + Edit)\n\nThe MCP **cannot** instance sub-scenes into other scenes. To place the skeleton in your game world:\n\n1. **Edit tool** on your `game_world.tscn` to add an `[ext_resource]` for `skeleton.tscn` and add an `[node]` entry that instances it, setting its `position` property.\n\n2. **Run and debug** with MCP:\n\n```\nMCP: run_project\n```\n\n```\nMCP: get_debug_output\n```\n\nCheck for errors, fix them, then:\n\n```\nMCP: stop_project\n```\n\nRepeat the run/debug/stop cycle until the skeleton behaves correctly.\n\n---\n\n## Summary: Call Sequence at a Glance\n\n| Step | Tool | Call |\n|------|------|------|\n| 1 | Bash | `godot --headless --import` (after adding sprite files) |\n| 2 | MCP | `create_scene` (CharacterBody2D root) |\n| 3 | MCP | `add_node` x4-6 (AnimatedSprite2D, CollisionShape2D, HurtboxArea, HurtboxShape, optionally DetectionZone + DetectionShape) |\n| 4 | MCP | `load_sprite` (bind sprite sheet to AnimatedSprite2D) |\n| 5 | Write | Create `skeleton.gd` with chase AI and damage logic |\n| 6 | Edit | Attach script to root node in `.tscn` |\n| 7 | Edit | Set collision shapes, layers/masks, and Vector2 properties in `.tscn` |\n| 8 | Edit | Instance skeleton into `game_world.tscn` |\n| 9 | MCP | `run_project` + `get_debug_output` + `stop_project` (debug loop) |\n\nThe key takeaway: **MCP handles scene structure and sprites; Claude Code handles scripts, complex properties, and sub-scene instancing.** Knowing where each tool's boundary is prevents wasted time on calls that silently fail.\n"}], "grading": {"eval_id": 0, "eval_name": "mcp-workflow-sequence", "configuration": "without_skill", "expectations": [{"text": "Mentions headless import step before load_sprite", "passed": true, "evidence": "Phase 1 covers 'godot --headless --import' as mandatory step"}, {"text": "Uses correct create_scene param: scenePath (not sceneName/scene_name)", "passed": false, "evidence": "Uses 'scene_name: skeleton' and 'root_type: CharacterBody2D' \u00e2\u20ac\u201d neither is the correct param name (should be scenePath and rootNodeType)"}, {"text": "Uses correct load_sprite param: nodePath (not nodeName/node_name)", "passed": false, "evidence": "Uses 'node_name: AnimatedSprite2D' \u00e2\u20ac\u201d the correct param is nodePath with a path like 'root/Sprite2D'"}, {"text": "Does not invent fictional load_sprite params (hframes/vframes)", "passed": false, "evidence": "Shows 'hframes: 6' and 'vframes: 4' as load_sprite params \u00e2\u20ac\u201d these don't exist in the actual tool"}, {"text": "Warns that Vector2/complex properties are silently dropped by add_node", "passed": true, "evidence": "Phase 4: 'The MCP cannot attach scripts or set Vector2/Color properties'"}, {"text": "Shows stop_project and get_debug_output with no parameters", "passed": false, "evidence": "Shows tools without clear parameter notation \u00e2\u20ac\u201d doesn't demonstrate the no-params interface"}, {"text": "Explicitly lists what MCP cannot do (scripts, shapes, sub-scenes)", "passed": true, "evidence": "Phases 3-5 clearly delineate what MCP can't do: scripts, complex properties, instancing, signal connections"}]}}, {"id": "load-sprite-error-diagnosis-with_skill", "prompt": "I'm getting 'No loader found for resource' when calling load_sprite to load my player sprite. The PNG file exists at assets/sprites/player/idle.png in my project folder. What's going wrong?", "eval_id": 1, "outputs": [{"name": "response.md", "type": "text", "content": "# Diagnosis: \"No loader found for resource\" on `load_sprite`\n\n## Root Cause\n\nThe PNG file exists on disk, but Godot does not know about it yet. Godot requires an **import step** before any file on disk becomes a usable resource. Until that import runs, the engine has no registered loader for the file, which is exactly what the error message is telling you.\n\nThis is the single most common `load_sprite` failure when using the Godot MCP.\n\n## The Fix\n\nRun the headless import **before** calling `load_sprite`:\n\n```bash\ngodot --headless --path <your-project-folder> --import\n```\n\nFor example, if your project is at `D:/Workspace/Games/my-project`:\n\n```bash\n\"D:/Games/Steam/steamapps/common/Godot Engine/godot.windows.opt.tools.64.exe\" --headless --path \"D:/Workspace/Games/my-project\" --import\n```\n\nThis tells Godot to scan the project directory, detect new asset files (PNGs, WAVs, fonts, etc.), and generate the corresponding `.import` sidecar files. After this completes, you will see a file like `assets/sprites/player/idle.png.import` appear next to your PNG.\n\nOnce the import finishes, retry the `load_sprite` call:\n\n```\nload_sprite(\n  projectPath=\"D:/Workspace/Games/my-project\",\n  scenePath=\"res://scenes/player/player.tscn\",\n  nodePath=\"root/Sprite2D\",\n  texturePath=\"res://assets/sprites/player/idle.png\"\n)\n```\n\n## Why This Happens\n\nThe Godot MCP's `load_sprite` tool works by telling the Godot engine to load a resource at a `res://` path. Godot's resource system only recognizes files that have been imported -- raw files on disk without a matching `.import` file are invisible to the engine. The MCP cannot perform this import step on its own.\n\n## The Correct Workflow Order\n\nAlways follow this sequence when adding new assets:\n\n1. Place asset files into your project folder (e.g., copy PNGs into `assets/sprites/`)\n2. Run `godot --headless --path <project> --import`\n3. **Then** call `load_sprite` via MCP\n\nThis applies every time you add **any** new asset file -- not just the first time. If you later add more sprites, audio files, or fonts, you need to run the headless import again before using them through MCP.\n\n## Quick Checklist If It Still Fails\n\n- **Verify the `texturePath` uses `res://` prefix**: it should be `res://assets/sprites/player/idle.png`, not an absolute filesystem path.\n- **Verify the file path casing matches exactly**: Godot on Windows can be case-sensitive for resource paths depending on how the import was registered.\n- **Check that the `.import` file was generated**: look for `assets/sprites/player/idle.png.import` in your project folder after running the headless import. If it is missing, the import did not pick up the file (double-check that `project.godot` exists in the root of the path you passed to `--path`).\n- **Verify the Sprite2D node exists**: `load_sprite` assigns a texture to an existing node. The node at `nodePath` must already exist in the scene (created via `add_node` beforehand).\n"}], "grading": {"eval_id": 1, "eval_name": "load-sprite-error-diagnosis", "configuration": "with_skill", "expectations": [{"text": "Identifies headless import as the root cause (not just one of many)", "passed": true, "evidence": "Root Cause section: 'Godot requires an import step before any file on disk becomes a usable resource... This is the single most common load_sprite failure'"}, {"text": "Provides exact fix command with --path flag: godot --headless --path <project> --import", "passed": true, "evidence": "Shows 'godot --headless --path <your-project-folder> --import' with concrete example using actual project path"}, {"text": "Explains WHY it happens (Godot resource system / .import sidecar files)", "passed": true, "evidence": "'Godot's resource system only recognizes files that have been imported -- raw files on disk without a matching .import file are invisible to the engine'"}, {"text": "Mentions that this applies to ALL new assets, not just first time", "passed": true, "evidence": "'This applies every time you add any new asset file -- not just the first time. If you later add more sprites, audio files, or fonts, you need to run the headless import again'"}]}}, {"id": "load-sprite-error-diagnosis-without_skill", "prompt": "I'm getting 'No loader found for resource' when calling load_sprite to load my player sprite. The PNG file exists at assets/sprites/player/idle.png in my project folder. What's going wrong?", "eval_id": 1, "outputs": [{"name": "response.md", "type": "text", "content": "# Diagnosing \"No loader found for resource\" with `load_sprite`\n\nThe error **\"No loader found for resource\"** means Godot cannot find the **imported** version of your PNG file. The raw PNG exists on disk, but Godot has not yet processed it into its internal resource format. Here is the most likely cause and how to fix it, along with other things to check.\n\n---\n\n## Most Likely Cause: Missing Import Step\n\nWhen you add a new asset file (PNG, WAV, etc.) to a Godot project, Godot must **import** it before it can be used as a resource. The Godot editor does this automatically when it is open and detects new files, but when working via MCP (headless, without the editor open), this import does not happen on its own.\n\n**Fix:** Run the headless import command before calling `load_sprite`:\n\n```bash\ngodot --headless --import\n```\n\nOr with the full Steam path if that is how Godot is installed:\n\n```bash\n\"D:/Games/Steam/steamapps/common/Godot Engine/godot.windows.opt.tools.64.exe\" --headless --import\n```\n\nThis tells Godot to scan the project for new or changed assets and generate the corresponding `.import` sidecar files and the binary resources in the `.godot/imported/` directory. After this completes, `load_sprite` should work.\n\n---\n\n## Other Things to Check\n\n### 1. Incorrect Path Format\n\nThe MCP `load_sprite` tool expects a **`res://` path**, not a filesystem path. Make sure you are passing:\n\n```\nres://assets/sprites/player/idle.png\n```\n\nNot:\n\n```\nassets/sprites/player/idle.png\nC:/Users/.../project/assets/sprites/player/idle.png\n```\n\n### 2. File is Outside the Project Root\n\nGodot can only load resources that are inside the project directory (the folder containing `project.godot`). Verify that `assets/sprites/player/idle.png` is actually inside the same directory tree as your `project.godot` file.\n\n### 3. File Extension or Casing Issues\n\n- Ensure the file is actually a `.png` and not misnamed (e.g., `.PNG` uppercase can sometimes cause issues depending on the OS and how the path is referenced).\n- Check for typos in the path: `idle.png` vs `Idle.png`, `player` vs `Player`, etc.\n\n### 4. Corrupted or Unsupported PNG\n\nIf the PNG file is corrupted, has an unusual color profile, or is not a standard PNG (e.g., it is actually a JPEG renamed to `.png`), Godot's importer may fail silently and produce no `.import` file. Try opening the image in an image editor and re-saving it as a standard PNG.\n\n### 5. The `.import` File Exists but is Stale\n\nIf you replaced the PNG with a different file of the same name, the cached import may be stale. Delete the corresponding `.import` file (e.g., `assets/sprites/player/idle.png.import`) and the cached entry in `.godot/imported/`, then re-run `godot --headless --import`.\n\n---\n\n## Recommended Workflow\n\nWhenever you add new asset files to a Godot project while working with the MCP, follow this sequence:\n\n1. Place the asset file in the project directory\n2. Run `godot --headless --import` (via Bash tool)\n3. Verify the `.import` sidecar file was created next to your asset\n4. Call `load_sprite` with the `res://` path\n\nThis ensures Godot has processed the asset before the MCP tries to reference it.\n"}], "grading": {"eval_id": 1, "eval_name": "load-sprite-error-diagnosis", "configuration": "without_skill", "expectations": [{"text": "Identifies headless import as the root cause (not just one of many)", "passed": true, "evidence": "Section titled 'Most Likely Cause: Missing Import Step' \u00e2\u20ac\u201d correctly identifies it as primary cause, not just a bullet"}, {"text": "Provides exact fix command with --path flag: godot --headless --path <project> --import", "passed": false, "evidence": "Primary fix shows 'godot --headless --import' without --path flag. Steam example also omits --path. Only later mentions '--path .' in the workflow section"}, {"text": "Explains WHY it happens (Godot resource system / .import sidecar files)", "passed": true, "evidence": "'Godot must import it before it can be used as a resource... generate the corresponding .import sidecar files and the binary resources in the .godot/imported/ directory'"}, {"text": "Mentions that this applies to ALL new assets, not just first time", "passed": true, "evidence": "'Whenever you add new asset files to a Godot project while working with the MCP, follow this sequence'"}]}}, {"id": "project-setup-from-scratch-with_skill", "prompt": "I'm starting a fresh Godot 4.x project and want to use godot-mcp to build it. I have sprite sheets downloaded already. Walk me through setting everything up from scratch, including MCP configuration.", "eval_id": 2, "outputs": [{"name": "response.md", "type": "text", "content": "# Setting Up a Fresh Godot 4.x Project with godot-mcp\n\nHere is a complete walkthrough for going from zero to a working Claude Code + Godot MCP workflow with your sprite sheets ready to use.\n\n---\n\n## Prerequisites\n\nBefore we start, make sure you have:\n\n- **Godot 4.x** installed (Steam, standalone, or Scoop -- any install method works)\n- **Node.js** (v18+) installed -- the MCP server runs on Node\n- **Claude Code** CLI installed and working\n- Your sprite sheets downloaded and ready to place\n\n---\n\n## Step 1: Clone and Build godot-mcp\n\nThe MCP server is the bridge between Claude Code and the Godot engine. Clone it and build it once:\n\n```bash\n# Pick a location for MCP servers (outside your game project)\ncd D:/Workspace/mcps\ngit clone https://github.com/Coding-Solo/godot-mcp.git\ncd godot-mcp\nnpm install\nnpm run build\n```\n\nAfter this, the built server lives at `D:/Workspace/mcps/godot-mcp/build/index.js`. You will reference this path in your project configuration.\n\n---\n\n## Step 2: Find Your Godot Executable Path\n\nYou need the full path to your Godot binary. Common locations:\n\n| Install Method | Typical Path |\n|---|---|\n| Steam | `D:/Games/Steam/steamapps/common/Godot Engine/godot.windows.opt.tools.64.exe` |\n| Standalone (Windows) | `C:/Godot/Godot_v4.x-stable_win64.exe` |\n| Scoop | `C:/Users/<you>/scoop/apps/godot/current/godot.exe` |\n| Linux | `/usr/bin/godot` or `~/.local/bin/godot` |\n| macOS | `/Applications/Godot.app/Contents/MacOS/Godot` |\n\nNote: Steam names the Godot 4.x binary `godot.windows.opt.tools.64.exe` -- this is not an old version indicator, it is the correct binary for Godot 4.x on Steam.\n\nTest it works by running:\n\n```bash\n\"/path/to/your/godot\" --version\n```\n\nYou should see something like `4.6.1.stable`.\n\n---\n\n## Step 3: Create Your Project Folder and Structure\n\nCreate a new folder for your game project and set up the directory structure:\n\n```bash\nmkdir -p my-game-project\ncd my-game-project\n\n# Create the folder structure\nmkdir -p assets/sprites/player\nmkdir -p assets/sprites/enemies\nmkdir -p assets/sprites/items\nmkdir -p assets/sprites/ui\nmkdir -p assets/tilesets\nmkdir -p assets/audio/sfx\nmkdir -p assets/audio/music\nmkdir -p assets/fonts\nmkdir -p scenes/player\nmkdir -p scenes/enemies\nmkdir -p scenes/pickups\nmkdir -p scenes/ui\nmkdir -p scenes/world\nmkdir -p scripts/player\nmkdir -p scripts/enemies\nmkdir -p scripts/components\nmkdir -p scripts/autoloads\nmkdir -p resources\n```\n\n---\n\n## Step 4: Create `project.godot`\n\nEvery Godot project needs a `project.godot` file at its root. This file defines the project name, window settings, input mappings, collision layers, and rendering configuration.\n\nCreate `project.godot` in your project root with at minimum:\n\n```ini\nconfig_version=5\n\n[application]\n\nconfig/name=\"My Game\"\nconfig/features=PackedStringArray(\"4.6\")\n\n[display]\n\nwindow/size/viewport_width=640\nwindow/size/viewport_height=360\nwindow/size/window_width_override=1280\nwindow/size/window_height_override=720\nwindow/stretch/mode=\"viewport\"\n\n[rendering]\n\ntextures/canvas_textures/default_texture_filter=0\n```\n\nKey settings explained:\n- **Viewport 640x360 with 1280x720 window**: gives you a nice 2x pixel-perfect scale for 16-bit style games\n- **Stretch mode \"viewport\"**: pixel art stays crisp at any window size\n- **`default_texture_filter=0`**: sets Nearest filtering globally so pixel art does not get blurry\n\nYou will likely want to add input mappings (WASD, attack, interact) and collision layer names. If you are building a top-down RPG, you can copy these sections from one of the templates in this repo (e.g., `templates/zelda-like-rpg/project.godot`) which has WASD + arrow keys, attack (Space), interact (E), and named collision layers already configured.\n\n---\n\n## Step 5: Place Your Sprite Sheets\n\nCopy your downloaded sprite sheets into the `assets/` folders:\n\n```\nassets/\n  sprites/\n    player/\n      idle.png\n      walk.png\n      attack.png\n    enemies/\n      slime_idle.png\n      slime_walk.png\n    ui/\n      hearts.png\n```\n\n**Important:** After placing new assets, you MUST run the headless import before MCP can use them. This is the number one source of failures -- Godot does not recognize files on disk as resources until they have been imported.\n\n```bash\n\"/path/to/your/godot\" --headless --path \"/path/to/my-game-project\" --import\n```\n\nThis generates `.import` sidecar files next to each asset. These files (along with `.uid` files) should be committed to git.\n\n---\n\n## Step 6: Configure MCP for Your Project\n\nCreate a `.mcp.json` file in your project root. This tells Claude Code how to launch the godot-mcp server:\n\n```json\n{\n  \"mcpServers\": {\n    \"godot\": {\n      \"command\": \"node\",\n      \"args\": [\"D:/Workspace/mcps/godot-mcp/build/index.js\"],\n      \"env\": {\n        \"GODOT_PATH\": \"D:/Games/Steam/steamapps/common/Godot Engine/godot.windows.opt.tools.64.exe\"\n      }\n    }\n  }\n}\n```\n\nReplace both paths with your actual paths:\n- `args` -- the path to the built `index.js` from Step 1\n- `GODOT_PATH` -- the path to your Godot executable from Step 2\n\n**Do not commit `.mcp.json` to git** -- it contains machine-specific paths. Instead, create a `.mcp.json.example` with placeholder paths and add `.mcp.json` to your `.gitignore`:\n\n```json\n{\n  \"mcpServers\": {\n    \"godot\": {\n      \"command\": \"node\",\n      \"args\": [\"<PATH_TO_GODOT_MCP>/build/index.js\"],\n      \"env\": {\n        \"GODOT_PATH\": \"<PATH_TO_GODOT_EXECUTABLE>\"\n      }\n    }\n  }\n}\n```\n\n---\n\n## Step 7: Verify MCP Connectivity\n\nStart Claude Code from your project directory:\n\n```bash\ncd my-game-project\nclaude\n```\n\nThen ask Claude to verify the MCP connection by calling `get_godot_version`. If the MCP is configured correctly, it will return your Godot version (e.g., `v4.6.1.stable`). If this fails, double-check your paths in `.mcp.json`.\n\nYou can also call `get_project_info` with your project path to confirm the MCP can see your project and its assets.\n\n---\n\n## Step 8: Set Up Git (Recommended)\n\nInitialize git and configure it for Godot:\n\n```bash\ncd my-game-project\ngit init\n```\n\nCreate a `.gitignore` appropriate for Godot:\n\n```\n# Godot 4.x ignores\n.godot/\n*.tmp\n*.log\n\n# MCP config (machine-specific paths)\n.mcp.json\n\n# OS files\n.DS_Store\nThumbs.db\n```\n\n**Critical:** Do NOT ignore these files -- they must be committed:\n- `.uid` files (Godot 4.4+ requirement for stable resource references)\n- `.import` files (not reliably regenerated across machines)\n\n---\n\n## The Workflow: How MCP and Claude Code Work Together\n\nWith everything set up, here is the workflow sequence you will follow. Each step uses the right tool for the job, because MCP and Claude Code each have things they can and cannot do.\n\n```\n 1. Write tool    --> project.godot (already done in Step 4)\n 2. Place assets  --> copy sprites, audio, fonts into assets/ folders\n 3. Bash          --> godot --headless --path <project> --import\n 4. MCP           --> create_scene (one per entity: player, enemy, HUD, world)\n 5. MCP           --> add_node (build node trees: Sprite2D, CollisionShape2D, etc.)\n 6. MCP           --> load_sprite (assign textures to Sprite2D nodes)\n 7. Write tool    --> create .gd scripts (MCP cannot create GDScript files)\n 8. Edit tool     --> patch .tscn files (attach scripts, set Vector2 properties, add sub-resources)\n 9. MCP           --> run_project (launches the game)\n10. MCP           --> get_debug_output (read errors and print statements)\n11. MCP           --> stop_project (clean shutdown)\n12. Fix           --> edit scripts or scenes, then repeat from step 9\n```\n\n### What MCP Can Do\n\n- Create scenes with any root node type (`create_scene`)\n- Add nodes to scene trees with simple properties like strings, integers, booleans (`add_node`)\n- Load sprite textures onto Sprite2D nodes (`load_sprite`)\n- Save/duplicate scenes (`save_scene`)\n- Run the game, capture debug output, and stop it (`run_project`, `get_debug_output`, `stop_project`)\n- Launch the Godot editor (`launch_editor`)\n\n### What MCP Cannot Do (Use Claude Code's Write/Edit Tools Instead)\n\n- **Create GDScript files** -- use the Write tool\n- **Create or modify project.godot** -- use the Write tool\n- **Attach scripts to scene nodes** -- edit the `.tscn` file to add `[ext_resource]` and `script = ExtResource(\"id\")` entries\n- **Set Vector2, Color, Rect2, or other complex properties** -- these are silently dropped by `add_node`; set them in the `.tscn` file directly or in `_ready()`\n- **Define collision shapes** -- add `[sub_resource type=\"CircleShape2D\"]` blocks in the `.tscn` file\n- **Instance sub-scenes** -- use `preload().instantiate()` in GDScript\n\n---\n\n## Quick Sanity Check\n\nBefore you start building, verify everything is ready:\n\n1. Run `get_godot_version` via MCP -- confirms MCP server is connected\n2. Run `get_project_info` via MCP -- confirms your project is detected and shows asset counts\n3. Run `godot --headless --path <project> --import` -- confirms assets are imported (look for `.import` files next to your sprites)\n\nIf all three pass, you are ready to start building scenes. Ask Claude to create your first scene (e.g., a player CharacterBody2D with Sprite2D, CollisionShape2D, and Camera2D), and the MCP workflow will take it from there.\n\n---\n\n## Common Gotchas\n\n| Problem | Cause | Fix |\n|---|---|---|\n| `load_sprite` returns \"No loader found for resource\" | Assets not imported | Run `godot --headless --path <project> --import` |\n| Vector2 properties (position, scale) are ignored | MCP silently drops complex types | Set them in the `.tscn` file or in `_ready()` |\n| Script not attached to node | MCP cannot attach scripts | Edit the `.tscn` to add `[ext_resource]` + `script = ExtResource(...)` |\n| Collision shapes missing | MCP cannot create sub-resources | Add `[sub_resource type=\"RectangleShape2D\"]` blocks in the `.tscn` |\n| `update_project_uids` fails | Known bug: double-prefixes `res://` | Do not use this tool; manage UIDs manually or via the editor |\n| Pixel art looks blurry | Wrong texture filter | Set `default_texture_filter=0` in project.godot `[rendering]` section |\n"}], "grading": {"eval_id": 2, "eval_name": "project-setup-from-scratch", "configuration": "with_skill", "expectations": [{"text": "Covers GODOT_PATH env var in .mcp.json config", "passed": true, "evidence": ".mcp.json example includes 'env': {'GODOT_PATH': '...'} and Step 2 explains finding the Godot executable"}, {"text": "Shows complete .mcp.json configuration example", "passed": true, "evidence": "Step 6 shows full .mcp.json with mcpServers.godot.command, args, and env.GODOT_PATH, plus .mcp.json.example for git"}, {"text": "Includes headless import step for assets", "passed": true, "evidence": "Step 5 prominently covers import: 'you MUST run the headless import before MCP can use them. This is the number one source of failures'"}, {"text": "Mentions get_godot_version as connectivity verification", "passed": true, "evidence": "Step 7: 'ask Claude to verify the MCP connection by calling get_godot_version' and Quick Sanity Check section"}, {"text": "Instructs to commit .uid and .import files to git", "passed": true, "evidence": "Step 8: 'Critical: Do NOT ignore these files -- they must be committed: .uid files... .import files'"}, {"text": "Clearly lists what MCP can vs cannot do", "passed": true, "evidence": "Full section 'What MCP Can Do' and 'What MCP Cannot Do' with 6 bullet points each"}]}}, {"id": "project-setup-from-scratch-without_skill", "prompt": "I'm starting a fresh Godot 4.x project and want to use godot-mcp to build it. I have sprite sheets downloaded already. Walk me through setting everything up from scratch, including MCP configuration.", "eval_id": 2, "outputs": [{"name": "response.md", "type": "text", "content": "# Setting Up a Fresh Godot 4.x Project with godot-mcp\n\nHere is a complete walkthrough to go from zero to a working Claude Code + Godot MCP setup.\n\n---\n\n## Prerequisites\n\nBefore starting, make sure you have:\n\n1. **Godot 4.x** installed (Steam, standalone, or Scoop -- any distribution works)\n2. **Node.js 18+** installed (needed to run the MCP server)\n3. **Git** installed\n4. **Claude Code** CLI installed and authenticated\n\nFind your Godot executable path -- you will need it. Examples:\n- Steam: `D:/Games/Steam/steamapps/common/Godot Engine/godot.windows.opt.tools.64.exe`\n- Standalone: `C:/Godot/Godot_v4.4-stable_win64.exe`\n- Linux: `/usr/bin/godot` or wherever you installed it\n\n---\n\n## Step 1: Clone and Build godot-mcp\n\nThe MCP server bridges Claude Code and Godot. Clone it somewhere permanent outside your game project:\n\n```bash\n# Pick a location for your MCP servers\nmkdir -p ~/mcps && cd ~/mcps\n\n# Clone the repo\ngit clone https://github.com/Coding-Solo/godot-mcp.git\ncd godot-mcp\n\n# Install dependencies and build\nnpm install\nnpm run build\n```\n\nAfter this, note the absolute path to `build/index.js` inside the cloned repo. For example:\n`D:/Workspace/mcps/godot-mcp/build/index.js`\n\n---\n\n## Step 2: Create Your Godot Project Folder\n\nCreate a folder for your game and initialize it:\n\n```bash\nmkdir -p ~/games/my-game\ncd ~/games/my-game\ngit init\n```\n\n---\n\n## Step 3: Create `project.godot`\n\nEvery Godot project needs a `project.godot` file at its root. You can either:\n\n**Option A: Open Godot, create a new project pointing to your folder** -- this generates the file automatically.\n\n**Option B: Write it by hand** (useful when working headlessly with Claude Code). Here is a minimal starter for a 2D pixel art game:\n\n```ini\n; Engine configuration file.\n; It's best edited using the editor UI and not directly,\n; but it can also be manually edited.\n\nconfig_version=5\n\n[application]\n\nconfig/name=\"My Game\"\nconfig/features=PackedStringArray(\"4.4\", \"GL Compatibility\")\nrun/main_scene=\"\"\n\n[display]\n\nwindow/size/viewport_width=640\nwindow/size/viewport_height=360\nwindow/stretch/mode=\"viewport\"\nwindow/stretch/aspect=\"keep\"\n\n[rendering]\n\ntextures/canvas_textures/default_texture_filter=0\nrenderer/rendering_method=\"gl_compatibility\"\n```\n\nKey settings for pixel art:\n- `default_texture_filter=0` sets Nearest filtering globally (crisp pixels, no blurring)\n- `window/stretch/mode=\"viewport\"` ensures pixel-perfect scaling\n- Viewport size of 640x360 gives a good 16:9 pixel art canvas\n\n---\n\n## Step 4: Set Up the MCP Configuration\n\nCreate a `.mcp.json` file in your project root:\n\n```json\n{\n  \"mcpServers\": {\n    \"godot\": {\n      \"command\": \"node\",\n      \"args\": [\"<ABSOLUTE_PATH_TO>/godot-mcp/build/index.js\"],\n      \"env\": {\n        \"GODOT_PATH\": \"<ABSOLUTE_PATH_TO_GODOT_EXECUTABLE>\"\n      }\n    }\n  }\n}\n```\n\nReplace the placeholders with your actual paths. Example on Windows:\n\n```json\n{\n  \"mcpServers\": {\n    \"godot\": {\n      \"command\": \"node\",\n      \"args\": [\"D:/Workspace/mcps/godot-mcp/build/index.js\"],\n      \"env\": {\n        \"GODOT_PATH\": \"D:/Games/Steam/steamapps/common/Godot Engine/godot.windows.opt.tools.64.exe\"\n      }\n    }\n  }\n}\n```\n\n**Important:** Use forward slashes in paths, even on Windows. This avoids escape character issues in JSON.\n\n---\n\n## Step 5: Organize Your Sprite Sheets\n\nCreate a clean asset directory structure and place your downloaded sprites:\n\n```\nmy-game/\n  assets/\n    sprites/\n      player/\n        player_idle.png\n        player_walk.png\n      enemies/\n        slime_idle.png\n        slime_walk.png\n      ui/\n        hearts.png\n      npc/\n        npc_knight.png\n    tilesets/\n    audio/\n      sfx/\n      music/\n    fonts/\n  scenes/\n  scripts/\n  project.godot\n  .mcp.json\n```\n\n---\n\n## Step 6: Import Assets into Godot\n\nAfter placing sprite files in the `assets/` folder, Godot needs to generate `.import` sidecar files before the MCP can reference them. Run:\n\n```bash\n# Replace with your actual Godot path\n\"/path/to/godot\" --headless --import --path .\n```\n\nThe `--path .` tells Godot to use the current directory as the project root. This command:\n- Scans for new asset files\n- Generates `.import` files alongside each asset\n- Generates `.uid` files (Godot 4.4+)\n- Exits when done\n\n**You must run this every time you add new asset files.** The MCP's `load_sprite` tool will fail if the asset has not been imported first.\n\n---\n\n## Step 7: Set Up `.gitignore`\n\nCreate a `.gitignore` appropriate for Godot:\n\n```gitignore\n# Godot 4.x ignores\n.godot/\n\n# OS files\n.DS_Store\nThumbs.db\n\n# MCP config (contains local paths)\n.mcp.json\n```\n\n**Do NOT ignore these** -- they must be committed:\n- `*.uid` files (required by Godot 4.4+, not regenerable consistently)\n- `*.import` files (not reliably regenerable across machines)\n\n---\n\n## Step 8: Start Claude Code\n\nLaunch Claude Code from your project root:\n\n```bash\ncd ~/games/my-game\nclaude\n```\n\nClaude Code will detect the `.mcp.json` and start the godot-mcp server automatically. You should see the MCP tools become available.\n\n---\n\n## Step 9: Verify the MCP Connection\n\nAsk Claude Code to check the connection:\n\n> \"Get the Godot version and project info to confirm MCP is working.\"\n\nThis will call `get_godot_version` and `get_project_info`. If both return valid data, your setup is complete.\n\n---\n\n## The Development Workflow\n\nWith everything set up, here is the pattern you will follow when building with Claude Code + godot-mcp:\n\n### What the MCP Can Do\n- **create_scene** -- create new `.tscn` scene files\n- **add_node** -- add child nodes to existing scenes\n- **load_sprite** -- assign a texture to a Sprite2D node\n- **run_project / stop_project** -- launch and stop the game\n- **get_debug_output** -- capture print statements and errors from the running game\n- **save_scene** -- save changes to a scene\n- **get_project_info** -- inspect project structure\n- **launch_editor** -- open the Godot editor\n\n### What the MCP Cannot Do (Claude Code fills the gap)\n- **Create GDScript files** -- use Claude Code's Write tool\n- **Create `project.godot`** -- use Claude Code's Write tool\n- **Attach scripts to nodes** -- use Claude Code's Edit tool on the `.tscn` file\n- **Set Vector2, Color, or complex properties** -- set these in `.tscn` files directly or in `_ready()`\n- **Instance sub-scenes** -- edit the `.tscn` file directly\n\n### Typical Build Cycle\n\n```\n1. Write tool    --> project.godot (if not created yet)\n2. Bash          --> godot --headless --import (after adding new assets)\n3. MCP           --> create_scene + add_node + load_sprite (build scene tree)\n4. Write tool    --> .gd scripts (game logic)\n5. Edit tool     --> .tscn files (attach scripts, set complex properties)\n6. MCP           --> run_project (test it)\n7. MCP           --> get_debug_output (check for errors)\n8. MCP           --> stop_project (stop the game)\n9. Iterate       --> Edit scripts/scenes, re-run\n```\n\n---\n\n## Tips and Gotchas\n\n1. **Always run `godot --headless --import` after adding new asset files.** The MCP cannot use assets that Godot has not imported yet.\n\n2. **Use Area2D for damage detection, not body-to-body collision.** CharacterBody2D collisions cause pushing/sliding. Use the hitbox/hurtbox pattern with Area2D nodes instead.\n\n3. **Supplement `area_entered` with periodic overlap checks.** The `area_entered` signal only fires once when two areas first overlap. For continuous contact damage (like a slime sitting on the player), also poll `get_overlapping_areas()` on a timer.\n\n4. **Set complex properties in code or `.tscn`, not via MCP.** The `add_node` tool drops Vector2, Color, and other complex property types silently. Set them in your `_ready()` function or edit the `.tscn` file directly.\n\n5. **Commit `.uid` and `.import` files to git.** These are required for the project to work on other machines.\n\n6. **Keep `.mcp.json` out of git.** It contains absolute paths specific to your machine. Create a `.mcp.json.example` with placeholder paths for others to reference.\n\n7. **For pixel art, use Nearest filtering.** Set `rendering/textures/canvas_textures/default_texture_filter=0` in `project.godot` to avoid blurry sprites.\n\n8. **Normalize animation speed by cycle duration, not per-frame delay.** Different sprite sheets have different frame counts. Define a total cycle duration (e.g., 0.6 seconds) and divide by frame count to get the per-frame delay. This keeps animations visually consistent regardless of frame count.\n\n---\n\n## Quick Reference: Input Map Setup\n\nIf your game needs input actions (movement, attack, interact), add them to `project.godot` under `[input]`:\n\n```ini\n[input]\n\nmove_up={\n\"deadzone\": 0.5,\n\"events\": [Object(InputEventKey,\"resource_local_to_scene\":false,\"resource_name\":\"\",\"device\":-1,\"window_id\":0,\"alt_pressed\":false,\"shift_pressed\":false,\"ctrl_pressed\":false,\"meta_pressed\":false,\"pressed\":false,\"keycode\":0,\"physical_keycode\":87,\"key_label\":0,\"unicode\":119,\"location\":0,\"echo\":false,\"script\":null)]\n}\nmove_down={...}\nmove_left={...}\nmove_right={...}\nattack={...}\ninteract={...}\n```\n\nThis is verbose in raw format. It is often easier to open the Godot editor (`launch_editor` via MCP), set up inputs in the UI, save, and then continue headlessly.\n\n---\n\nYou are now ready to start building. Tell Claude Code what game you want to make, describe your sprites, and start the build cycle.\n"}], "grading": {"eval_id": 2, "eval_name": "project-setup-from-scratch", "configuration": "without_skill", "expectations": [{"text": "Covers GODOT_PATH env var in .mcp.json config", "passed": true, "evidence": ".mcp.json example includes 'env': {'GODOT_PATH': '...'}"}, {"text": "Shows complete .mcp.json configuration example", "passed": true, "evidence": "Step 4 shows full .mcp.json with placeholder and concrete Windows example"}, {"text": "Includes headless import step for assets", "passed": true, "evidence": "Step 6: 'godot --headless --import --path .' with explanation of what it does"}, {"text": "Mentions get_godot_version as connectivity verification", "passed": true, "evidence": "Step 9: 'call get_godot_version and get_project_info. If both return valid data, your setup is complete.'"}, {"text": "Instructs to commit .uid and .import files to git", "passed": true, "evidence": "Step 7: 'Do NOT ignore these -- they must be committed: *.uid files... *.import files'"}, {"text": "Clearly lists what MCP can vs cannot do", "passed": true, "evidence": "'What the MCP Can Do' and 'What the MCP Cannot Do' sections with clear delineation"}]}}], "previous_feedback": {}, "previous_outputs": {}, "benchmark": {"metadata": {"skill_name": "godot-mcp", "skill_path": "D:\\Workspace\\Games\\claude-game-dev\\.claude\\skills\\godot-mcp\\SKILL.md", "executor_model": "claude-opus-4-6", "analyzer_model": "claude-opus-4-6", "timestamp": "2026-03-08T18:00:00Z", "evals_run": [0, 1, 2], "runs_per_configuration": 1}, "runs": [{"eval_id": 0, "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 7, "failed": 0, "total": 7, "time_seconds": 95.5, "tokens": 33688}, "expectations": [{"text": "Mentions headless import step before load_sprite", "passed": true, "evidence": "Phase 1 prominently covers headless import with emphasis 'This is the single most critical step.'"}, {"text": "Uses correct create_scene param: scenePath", "passed": true, "evidence": "create_scene(projectPath=..., scenePath='scenes/enemies/skeleton.tscn', rootNodeType='CharacterBody2D')"}, {"text": "Uses correct load_sprite param: nodePath", "passed": true, "evidence": "load_sprite(... nodePath='root/Sprite2D', texturePath='res://...')"}, {"text": "Does not invent fictional load_sprite params", "passed": true, "evidence": "load_sprite only uses projectPath, scenePath, nodePath, texturePath"}, {"text": "Warns about Vector2 silent drop", "passed": true, "evidence": "'MCP silently drops Vector2, Color, and sub-resource properties'"}, {"text": "Shows stop_project/get_debug_output with no params", "passed": true, "evidence": "get_debug_output() and stop_project() shown with empty parens"}, {"text": "Lists what MCP cannot do", "passed": true, "evidence": "Phase 3 titled 'What MCP Cannot Do' covers scripts, shapes, sub-scenes"}], "notes": []}, {"eval_id": 0, "configuration": "without_skill", "run_number": 1, "result": {"pass_rate": 0.4286, "passed": 3, "failed": 4, "total": 7, "time_seconds": 63.9, "tokens": 17442}, "expectations": [{"text": "Mentions headless import step before load_sprite", "passed": true, "evidence": "Phase 1 covers 'godot --headless --import' as mandatory step"}, {"text": "Uses correct create_scene param: scenePath", "passed": false, "evidence": "Uses 'scene_name: skeleton' and 'root_type: CharacterBody2D' \u00e2\u20ac\u201d not the actual param names"}, {"text": "Uses correct load_sprite param: nodePath", "passed": false, "evidence": "Uses 'node_name: AnimatedSprite2D' \u00e2\u20ac\u201d correct param is nodePath"}, {"text": "Does not invent fictional load_sprite params", "passed": false, "evidence": "Shows 'hframes: 6' and 'vframes: 4' as load_sprite params \u00e2\u20ac\u201d these don't exist"}, {"text": "Warns about Vector2 silent drop", "passed": true, "evidence": "'The MCP cannot attach scripts or set Vector2/Color properties'"}, {"text": "Shows stop_project/get_debug_output with no params", "passed": false, "evidence": "Doesn't demonstrate the no-params interface"}, {"text": "Lists what MCP cannot do", "passed": true, "evidence": "Phases 3-5 clearly delineate what MCP can't do"}], "notes": []}, {"eval_id": 1, "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 4, "failed": 0, "total": 4, "time_seconds": 40.6, "tokens": 17691}, "expectations": [{"text": "Identifies headless import as root cause", "passed": true, "evidence": "'This is the single most common load_sprite failure when using the Godot MCP.'"}, {"text": "Provides fix command with --path flag", "passed": true, "evidence": "'godot --headless --path <your-project-folder> --import' with concrete example"}, {"text": "Explains WHY it happens", "passed": true, "evidence": "'raw files on disk without a matching .import file are invisible to the engine'"}, {"text": "Applies to ALL new assets", "passed": true, "evidence": "'This applies every time you add any new asset file -- not just the first time.'"}], "notes": []}, {"eval_id": 1, "configuration": "without_skill", "run_number": 1, "result": {"pass_rate": 0.75, "passed": 3, "failed": 1, "total": 4, "time_seconds": 38.1, "tokens": 14669}, "expectations": [{"text": "Identifies headless import as root cause", "passed": true, "evidence": "'Most Likely Cause: Missing Import Step' \u00e2\u20ac\u201d correctly identifies it as primary cause"}, {"text": "Provides fix command with --path flag", "passed": false, "evidence": "Primary fix shows 'godot --headless --import' without --path flag"}, {"text": "Explains WHY it happens", "passed": true, "evidence": "'generate the corresponding .import sidecar files and the binary resources'"}, {"text": "Applies to ALL new assets", "passed": true, "evidence": "'Whenever you add new asset files... follow this sequence'"}], "notes": []}, {"eval_id": 2, "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 6, "failed": 0, "total": 6, "time_seconds": 112.0, "tokens": 32395}, "expectations": [{"text": "Covers GODOT_PATH env var", "passed": true, "evidence": ".mcp.json includes GODOT_PATH and Step 2 explains finding Godot"}, {"text": "Shows complete .mcp.json config", "passed": true, "evidence": "Step 6 shows full .mcp.json plus .mcp.json.example pattern"}, {"text": "Includes headless import step", "passed": true, "evidence": "Step 5: 'you MUST run the headless import... number one source of failures'"}, {"text": "get_godot_version connectivity check", "passed": true, "evidence": "Step 7 + Quick Sanity Check both mention get_godot_version"}, {"text": "Commit .uid and .import to git", "passed": true, "evidence": "Step 8: 'Critical: Do NOT ignore these files'"}, {"text": "Lists MCP can vs cannot do", "passed": true, "evidence": "Full 'What MCP Can Do' and 'What MCP Cannot Do' sections"}], "notes": []}, {"eval_id": 2, "configuration": "without_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 6, "failed": 0, "total": 6, "time_seconds": 94.0, "tokens": 24531}, "expectations": [{"text": "Covers GODOT_PATH env var", "passed": true, "evidence": ".mcp.json includes GODOT_PATH"}, {"text": "Shows complete .mcp.json config", "passed": true, "evidence": "Step 4 shows full .mcp.json with Windows example"}, {"text": "Includes headless import step", "passed": true, "evidence": "Step 6: 'godot --headless --import --path .'"}, {"text": "get_godot_version connectivity check", "passed": true, "evidence": "Step 9: 'call get_godot_version and get_project_info'"}, {"text": "Commit .uid and .import to git", "passed": true, "evidence": "'Do NOT ignore these -- they must be committed'"}, {"text": "Lists MCP can vs cannot do", "passed": true, "evidence": "'What the MCP Can Do' and 'What the MCP Cannot Do' sections"}], "notes": []}], "run_summary": {"with_skill": {"pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0}, "time_seconds": {"mean": 82.7, "stddev": 37.1, "min": 40.6, "max": 112.0}, "tokens": {"mean": 27925, "stddev": 8687, "min": 17691, "max": 33688}}, "without_skill": {"pass_rate": {"mean": 0.7262, "stddev": 0.2892, "min": 0.4286, "max": 1.0}, "time_seconds": {"mean": 65.3, "stddev": 28.1, "min": 38.1, "max": 94.0}, "tokens": {"mean": 18881, "stddev": 5057, "min": 14669, "max": 24531}}, "delta": {"pass_rate": "+0.27", "time_seconds": "+17.4", "tokens": "+9044"}}, "notes": ["Eval 2 (project-setup) is non-discriminating: both configs pass all assertions because CLAUDE.md provides similar context", "Biggest skill value is in Eval 0 (workflow sequence): +57% pass rate due to correct parameter names and no fictional params", "Eval 1 shows moderate value: skill ensures --path flag in import command", "With-skill uses ~48% more tokens and ~27% more time due to reading the skill file", "The without-skill baseline benefits from project CLAUDE.md which already documents some MCP workflow patterns"]}};
+
+    // ---- State ----
+    let feedbackMap = {};  // run_id -> feedback text
+    let currentIndex = 0;
+    let visitedRuns = new Set();
+
+    // ---- Init ----
+    async function init() {
+      // Load saved feedback from server — but only if this isn't a fresh
+      // iteration (indicated by previous_feedback being present). When
+      // previous feedback exists, the feedback.json on disk is stale from
+      // the prior iteration and should not pre-fill the textareas.
+      const hasPrevious = Object.keys(EMBEDDED_DATA.previous_feedback || {}).length > 0
+        || Object.keys(EMBEDDED_DATA.previous_outputs || {}).length > 0;
+      if (!hasPrevious) {
+        try {
+          const resp = await fetch("/api/feedback");
+          const data = await resp.json();
+          if (data.reviews) {
+            for (const r of data.reviews) feedbackMap[r.run_id] = r.feedback;
+          }
+        } catch { /* first run, no feedback yet */ }
+      }
+
+      document.getElementById("skill-name").textContent = EMBEDDED_DATA.skill_name;
+      showRun(0);
+
+      // Wire up feedback auto-save
+      const textarea = document.getElementById("feedback");
+      let saveTimeout = null;
+      textarea.addEventListener("input", () => {
+        clearTimeout(saveTimeout);
+        document.getElementById("feedback-status").textContent = "";
+        saveTimeout = setTimeout(() => saveCurrentFeedback(), 800);
+      });
+    }
+
+    // ---- Navigation ----
+    function navigate(delta) {
+      const newIndex = currentIndex + delta;
+      if (newIndex >= 0 && newIndex < EMBEDDED_DATA.runs.length) {
+        saveCurrentFeedback();
+        showRun(newIndex);
+      }
+    }
+
+    function updateNavButtons() {
+      document.getElementById("prev-btn").disabled = currentIndex === 0;
+      document.getElementById("next-btn").disabled =
+        currentIndex === EMBEDDED_DATA.runs.length - 1;
+    }
+
+    // ---- Show a run ----
+    function showRun(index) {
+      currentIndex = index;
+      const run = EMBEDDED_DATA.runs[index];
+
+      // Progress
+      document.getElementById("progress").textContent =
+        `${index + 1} of ${EMBEDDED_DATA.runs.length}`;
+
+      // Prompt
+      document.getElementById("prompt-text").textContent = run.prompt;
+
+      // Config badge
+      const badge = document.getElementById("config-badge");
+      const configMatch = run.id.match(/(with_skill|without_skill|new_skill|old_skill)/);
+      if (configMatch) {
+        const config = configMatch[1];
+        const isBaseline = config === "without_skill" || config === "old_skill";
+        badge.textContent = config.replace(/_/g, " ");
+        badge.className = "config-badge " + (isBaseline ? "config-baseline" : "config-primary");
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
+      }
+
+      // Outputs
+      renderOutputs(run);
+
+      // Previous outputs
+      renderPrevOutputs(run);
+
+      // Grades
+      renderGrades(run);
+
+      // Previous feedback
+      const prevFb = (EMBEDDED_DATA.previous_feedback || {})[run.id];
+      const prevEl = document.getElementById("prev-feedback");
+      if (prevFb) {
+        document.getElementById("prev-feedback-text").textContent = prevFb;
+        prevEl.style.display = "block";
+      } else {
+        prevEl.style.display = "none";
+      }
+
+      // Feedback
+      document.getElementById("feedback").value = feedbackMap[run.id] || "";
+      document.getElementById("feedback-status").textContent = "";
+
+      updateNavButtons();
+
+      // Track visited runs and promote done button when all visited
+      visitedRuns.add(index);
+      const doneBtn = document.getElementById("done-btn");
+      if (visitedRuns.size >= EMBEDDED_DATA.runs.length) {
+        doneBtn.classList.add("ready");
+      }
+
+      // Scroll main content to top
+      document.querySelector(".main").scrollTop = 0;
+    }
+
+    // ---- Render outputs ----
+    function renderOutputs(run) {
+      const container = document.getElementById("outputs-body");
+      container.innerHTML = "";
+
+      const outputs = run.outputs || [];
+      if (outputs.length === 0) {
+        container.innerHTML = '<div class="empty-state">No output files</div>';
+        return;
+      }
+
+      for (const file of outputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        // Always show file header with download link
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const content = document.createElement("div");
+        content.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          content.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          content.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          content.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(content, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          content.appendChild(a);
+        } else if (file.type === "error") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          pre.style.color = "var(--red)";
+          content.appendChild(pre);
+        }
+
+        fileDiv.appendChild(content);
+        container.appendChild(fileDiv);
+      }
+    }
+
+    // ---- XLSX rendering via SheetJS ----
+    function renderXlsx(container, b64Data) {
+      try {
+        const raw = Uint8Array.from(atob(b64Data), c => c.charCodeAt(0));
+        const wb = XLSX.read(raw, { type: "array" });
+
+        for (let i = 0; i < wb.SheetNames.length; i++) {
+          const sheetName = wb.SheetNames[i];
+          const ws = wb.Sheets[sheetName];
+
+          if (wb.SheetNames.length > 1) {
+            const sheetLabel = document.createElement("div");
+            sheetLabel.style.cssText =
+              "font-weight:600; font-size:0.8rem; color:#b0aea5; margin-top:0.5rem; margin-bottom:0.25rem;";
+            sheetLabel.textContent = "Sheet: " + sheetName;
+            container.appendChild(sheetLabel);
+          }
+
+          const htmlStr = XLSX.utils.sheet_to_html(ws, { editable: false });
+          const wrapper = document.createElement("div");
+          wrapper.innerHTML = htmlStr;
+          container.appendChild(wrapper);
+        }
+      } catch (err) {
+        container.textContent = "Error rendering spreadsheet: " + err.message;
+      }
+    }
+
+    // ---- Grades ----
+    function renderGrades(run) {
+      const section = document.getElementById("grades-section");
+      const content = document.getElementById("grades-content");
+
+      if (!run.grading) {
+        section.style.display = "none";
+        return;
+      }
+
+      const grading = run.grading;
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("grades-arrow").classList.remove("open");
+
+      const summary = grading.summary || {};
+      const expectations = grading.expectations || [];
+
+      let html = '<div style="padding: 1rem;">';
+
+      // Summary line
+      const passRate = summary.pass_rate != null
+        ? Math.round(summary.pass_rate * 100) + "%"
+        : "?";
+      const badgeClass = summary.pass_rate >= 0.8 ? "grade-pass" : summary.pass_rate >= 0.5 ? "" : "grade-fail";
+      html += '<div class="grades-summary">';
+      html += '<span class="grade-badge ' + badgeClass + '">' + passRate + '</span>';
+      html += '<span>' + (summary.passed || 0) + ' passed, ' + (summary.failed || 0) + ' failed of ' + (summary.total || 0) + '</span>';
+      html += '</div>';
+
+      // Assertions list
+      html += '<ul class="assertion-list">';
+      for (const exp of expectations) {
+        const statusClass = exp.passed ? "pass" : "fail";
+        const statusIcon = exp.passed ? "\u2713" : "\u2717";
+        html += '<li class="assertion-item">';
+        html += '<span class="assertion-status ' + statusClass + '">' + statusIcon + '</span>';
+        html += '<span>' + escapeHtml(exp.text) + '</span>';
+        if (exp.evidence) {
+          html += '<div class="assertion-evidence">' + escapeHtml(exp.evidence) + '</div>';
+        }
+        html += '</li>';
+      }
+      html += '</ul>';
+
+      html += '</div>';
+      content.innerHTML = html;
+    }
+
+    function toggleGrades() {
+      const content = document.getElementById("grades-content");
+      const arrow = document.getElementById("grades-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Previous outputs (collapsible) ----
+    function renderPrevOutputs(run) {
+      const section = document.getElementById("prev-outputs-section");
+      const content = document.getElementById("prev-outputs-content");
+      const prevOutputs = (EMBEDDED_DATA.previous_outputs || {})[run.id];
+
+      if (!prevOutputs || prevOutputs.length === 0) {
+        section.style.display = "none";
+        return;
+      }
+
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("prev-outputs-arrow").classList.remove("open");
+
+      // Render the files into the content area
+      content.innerHTML = "";
+      const wrapper = document.createElement("div");
+      wrapper.style.padding = "1rem";
+
+      for (const file of prevOutputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const fc = document.createElement("div");
+        fc.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          fc.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          fc.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          fc.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(fc, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          fc.appendChild(a);
+        }
+
+        fileDiv.appendChild(fc);
+        wrapper.appendChild(fileDiv);
+      }
+
+      content.appendChild(wrapper);
+    }
+
+    function togglePrevOutputs() {
+      const content = document.getElementById("prev-outputs-content");
+      const arrow = document.getElementById("prev-outputs-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Feedback (saved to server -> feedback.json) ----
+    function saveCurrentFeedback() {
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // Build reviews array from map
+      const reviews = [];
+      for (const [run_id, feedback] of Object.entries(feedbackMap)) {
+        if (feedback.trim()) {
+          reviews.push({ run_id, feedback, timestamp: new Date().toISOString() });
+        }
+      }
+
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviews, status: "in_progress" }),
+      }).then(() => {
+        document.getElementById("feedback-status").textContent = "Saved";
+      }).catch(() => {
+        // Static mode or server unavailable — no-op on auto-save,
+        // feedback will be downloaded on final submit
+        document.getElementById("feedback-status").textContent = "Will download on submit";
+      });
+    }
+
+    // ---- Done ----
+    function showDoneDialog() {
+      // Save current textarea to feedbackMap (but don't POST yet)
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // POST once with status: complete — include ALL runs so the model
+      // can distinguish "no feedback" (looks good) from "not reviewed"
+      const reviews = [];
+      const ts = new Date().toISOString();
+      for (const r of EMBEDDED_DATA.runs) {
+        reviews.push({ run_id: r.id, feedback: feedbackMap[r.id] || "", timestamp: ts });
+      }
+      const payload = JSON.stringify({ reviews, status: "complete" }, null, 2);
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+      }).then(() => {
+        document.getElementById("done-overlay").classList.add("visible");
+      }).catch(() => {
+        // Server not available (static mode) — download as file
+        const blob = new Blob([payload], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "feedback.json";
+        a.click();
+        URL.revokeObjectURL(url);
+        document.getElementById("done-overlay").classList.add("visible");
+      });
+    }
+
+    function closeDoneDialog() {
+      // Reset status back to in_progress
+      saveCurrentFeedback();
+      document.getElementById("done-overlay").classList.remove("visible");
+    }
+
+    // ---- Toast ----
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("visible");
+      setTimeout(() => toast.classList.remove("visible"), 2000);
+    }
+
+    // ---- Keyboard nav ----
+    document.addEventListener("keydown", (e) => {
+      // Don't capture when typing in textarea
+      if (e.target.tagName === "TEXTAREA") return;
+
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        navigate(-1);
+      } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        navigate(1);
+      }
+    });
+
+    // ---- Util ----
+    function getDownloadUri(file) {
+      if (file.data_uri) return file.data_uri;
+      if (file.data_b64) return "data:application/octet-stream;base64," + file.data_b64;
+      if (file.type === "text") return "data:text/plain;charset=utf-8," + encodeURIComponent(file.content);
+      return "#";
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ---- View switching ----
+    function switchView(view) {
+      document.querySelectorAll(".view-tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".view-panel").forEach(p => p.classList.remove("active"));
+      document.querySelector(`[onclick="switchView('${view}')"]`).classList.add("active");
+      document.getElementById("panel-" + view).classList.add("active");
+    }
+
+    // ---- Benchmark rendering ----
+    function renderBenchmark() {
+      const data = EMBEDDED_DATA.benchmark;
+      if (!data) return;
+
+      // Show the tabs
+      document.getElementById("view-tabs").style.display = "flex";
+
+      const container = document.getElementById("benchmark-content");
+      const summary = data.run_summary || {};
+      const metadata = data.metadata || {};
+      const notes = data.notes || [];
+
+      let html = "";
+
+      // Header
+      html += "<h2 style='font-family: Poppins, sans-serif; margin-bottom: 0.5rem;'>Benchmark Results</h2>";
+      html += "<p style='color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;'>";
+      if (metadata.skill_name) html += "<strong>" + escapeHtml(metadata.skill_name) + "</strong> &mdash; ";
+      if (metadata.timestamp) html += metadata.timestamp + " &mdash; ";
+      if (metadata.evals_run) html += "Evals: " + metadata.evals_run.join(", ") + " &mdash; ";
+      html += (metadata.runs_per_configuration || "?") + " runs per configuration";
+      html += "</p>";
+
+      // Summary table
+      html += '<table class="benchmark-table">';
+
+      function fmtStat(stat, pct) {
+        if (!stat) return "—";
+        const suffix = pct ? "%" : "";
+        const m = pct ? (stat.mean * 100).toFixed(0) : stat.mean.toFixed(1);
+        const s = pct ? (stat.stddev * 100).toFixed(0) : stat.stddev.toFixed(1);
+        return m + suffix + " ± " + s + suffix;
+      }
+
+      function deltaClass(val) {
+        if (!val) return "";
+        const n = parseFloat(val);
+        if (n > 0) return "benchmark-delta-positive";
+        if (n < 0) return "benchmark-delta-negative";
+        return "";
+      }
+
+      // Discover config names dynamically (everything except "delta")
+      const configs = Object.keys(summary).filter(k => k !== "delta");
+      const configA = configs[0] || "config_a";
+      const configB = configs[1] || "config_b";
+      const labelA = configA.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const labelB = configB.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const a = summary[configA] || {};
+      const b = summary[configB] || {};
+      const delta = summary.delta || {};
+
+      html += "<thead><tr><th>Metric</th><th>" + escapeHtml(labelA) + "</th><th>" + escapeHtml(labelB) + "</th><th>Delta</th></tr></thead>";
+      html += "<tbody>";
+
+      html += "<tr><td><strong>Pass Rate</strong></td>";
+      html += "<td>" + fmtStat(a.pass_rate, true) + "</td>";
+      html += "<td>" + fmtStat(b.pass_rate, true) + "</td>";
+      html += '<td class="' + deltaClass(delta.pass_rate) + '">' + (delta.pass_rate || "—") + "</td></tr>";
+
+      // Time (only show row if data exists)
+      if (a.time_seconds || b.time_seconds) {
+        html += "<tr><td><strong>Time (s)</strong></td>";
+        html += "<td>" + fmtStat(a.time_seconds, false) + "</td>";
+        html += "<td>" + fmtStat(b.time_seconds, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.time_seconds) + '">' + (delta.time_seconds ? delta.time_seconds + "s" : "—") + "</td></tr>";
+      }
+
+      // Tokens (only show row if data exists)
+      if (a.tokens || b.tokens) {
+        html += "<tr><td><strong>Tokens</strong></td>";
+        html += "<td>" + fmtStat(a.tokens, false) + "</td>";
+        html += "<td>" + fmtStat(b.tokens, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.tokens) + '">' + (delta.tokens || "—") + "</td></tr>";
+      }
+
+      html += "</tbody></table>";
+
+      // Per-eval breakdown (if runs data available)
+      const runs = data.runs || [];
+      if (runs.length > 0) {
+        const evalIds = [...new Set(runs.map(r => r.eval_id))].sort((a, b) => a - b);
+
+        html += "<h3 style='font-family: Poppins, sans-serif; margin-bottom: 0.75rem;'>Per-Eval Breakdown</h3>";
+
+        const hasTime = runs.some(r => r.result && r.result.time_seconds != null);
+        const hasErrors = runs.some(r => r.result && r.result.errors > 0);
+
+        for (const evalId of evalIds) {
+          const evalRuns = runs.filter(r => r.eval_id === evalId);
+          const evalName = evalRuns[0] && evalRuns[0].eval_name ? evalRuns[0].eval_name : "Eval " + evalId;
+
+          html += "<h4 style='font-family: Poppins, sans-serif; margin: 1rem 0 0.5rem; color: var(--text);'>" + escapeHtml(evalName) + "</h4>";
+          html += '<table class="benchmark-table">';
+          html += "<thead><tr><th>Config</th><th>Run</th><th>Pass Rate</th>";
+          if (hasTime) html += "<th>Time (s)</th>";
+          if (hasErrors) html += "<th>Crashes During Execution</th>";
+          html += "</tr></thead>";
+          html += "<tbody>";
+
+          // Group by config and render with average rows
+          const configGroups = [...new Set(evalRuns.map(r => r.configuration))];
+          for (let ci = 0; ci < configGroups.length; ci++) {
+            const config = configGroups[ci];
+            const configRuns = evalRuns.filter(r => r.configuration === config);
+            if (configRuns.length === 0) continue;
+
+            const rowClass = ci === 0 ? "benchmark-row-with" : "benchmark-row-without";
+            const configLabel = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+
+            for (const run of configRuns) {
+              const r = run.result || {};
+              const prClass = r.pass_rate >= 0.8 ? "benchmark-delta-positive" : r.pass_rate < 0.5 ? "benchmark-delta-negative" : "";
+              html += '<tr class="' + rowClass + '">';
+              html += "<td>" + configLabel + "</td>";
+              html += "<td>" + run.run_number + "</td>";
+              html += '<td class="' + prClass + '">' + ((r.pass_rate || 0) * 100).toFixed(0) + "% (" + (r.passed || 0) + "/" + (r.total || 0) + ")</td>";
+              if (hasTime) html += "<td>" + (r.time_seconds != null ? r.time_seconds.toFixed(1) : "—") + "</td>";
+              if (hasErrors) html += "<td>" + (r.errors || 0) + "</td>";
+              html += "</tr>";
+            }
+
+            // Average row
+            const rates = configRuns.map(r => (r.result || {}).pass_rate || 0);
+            const avgRate = rates.reduce((a, b) => a + b, 0) / rates.length;
+            const avgPrClass = avgRate >= 0.8 ? "benchmark-delta-positive" : avgRate < 0.5 ? "benchmark-delta-negative" : "";
+            html += '<tr class="benchmark-row-avg ' + rowClass + '">';
+            html += "<td>" + configLabel + "</td>";
+            html += "<td>Avg</td>";
+            html += '<td class="' + avgPrClass + '">' + (avgRate * 100).toFixed(0) + "%</td>";
+            if (hasTime) {
+              const times = configRuns.map(r => (r.result || {}).time_seconds).filter(t => t != null);
+              html += "<td>" + (times.length ? (times.reduce((a, b) => a + b, 0) / times.length).toFixed(1) : "—") + "</td>";
+            }
+            if (hasErrors) html += "<td></td>";
+            html += "</tr>";
+          }
+          html += "</tbody></table>";
+
+          // Per-assertion detail for this eval
+          const runsWithExpectations = {};
+          for (const config of configGroups) {
+            runsWithExpectations[config] = evalRuns.filter(r => r.configuration === config && r.expectations && r.expectations.length > 0);
+          }
+          const hasAnyExpectations = Object.values(runsWithExpectations).some(runs => runs.length > 0);
+          if (hasAnyExpectations) {
+            // Collect all unique assertion texts across all configs
+            const allAssertions = [];
+            const seen = new Set();
+            for (const config of configGroups) {
+              for (const run of runsWithExpectations[config]) {
+                for (const exp of (run.expectations || [])) {
+                  if (!seen.has(exp.text)) {
+                    seen.add(exp.text);
+                    allAssertions.push(exp.text);
+                  }
+                }
+              }
+            }
+
+            html += '<table class="benchmark-table" style="margin-top: 0.5rem;">';
+            html += "<thead><tr><th>Assertion</th>";
+            for (const config of configGroups) {
+              const label = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+              html += "<th>" + escapeHtml(label) + "</th>";
+            }
+            html += "</tr></thead><tbody>";
+
+            for (const assertionText of allAssertions) {
+              html += "<tr><td>" + escapeHtml(assertionText) + "</td>";
+
+              for (const config of configGroups) {
+                html += "<td>";
+                for (const run of runsWithExpectations[config]) {
+                  const exp = (run.expectations || []).find(e => e.text === assertionText);
+                  if (exp) {
+                    const cls = exp.passed ? "benchmark-delta-positive" : "benchmark-delta-negative";
+                    const icon = exp.passed ? "\u2713" : "\u2717";
+                    html += '<span class="' + cls + '" title="Run ' + run.run_number + ': ' + escapeHtml(exp.evidence || "") + '">' + icon + "</span> ";
+                  } else {
+                    html += "— ";
+                  }
+                }
+                html += "</td>";
+              }
+              html += "</tr>";
+            }
+            html += "</tbody></table>";
+          }
+        }
+      }
+
+      // Notes
+      if (notes.length > 0) {
+        html += '<div class="benchmark-notes">';
+        html += "<h3>Analysis Notes</h3>";
+        html += "<ul>";
+        for (const note of notes) {
+          html += "<li>" + escapeHtml(note) + "</li>";
+        }
+        html += "</ul></div>";
+      }
+
+      container.innerHTML = html;
+    }
+
+    // ---- Start ----
+    init();
+    renderBenchmark();
+  </script>
+</body>
+</html>

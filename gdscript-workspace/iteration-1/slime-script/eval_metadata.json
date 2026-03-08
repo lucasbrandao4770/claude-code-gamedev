@@ -1,0 +1,17 @@
+{
+  "eval_id": 1,
+  "eval_name": "slime-script",
+  "prompt": "Write a slime enemy script (slime.gd) for Godot 4. The slime should wander randomly when idle, chase the player when it enters a detection zone, deal continuous contact damage, and die with a fade-out effect when HP reaches 0. It needs a simple state machine.",
+  "assertions": [
+    {"text": "Uses enum for state machine", "type": "correctness"},
+    {"text": "Type hints on ALL function signatures (params + return type)", "type": "correctness"},
+    {"text": "Uses @export with grouping for tuning variables", "type": "quality"},
+    {"text": "Contact damage uses get_overlapping_areas() polling (not just area_entered)", "type": "correctness"},
+    {"text": "No Godot 3.x syntax", "type": "correctness"},
+    {"text": "Death tween stored in typed variable (var tween: Tween = create_tween())", "type": "quality"},
+    {"text": "Uses tabs for indentation", "type": "style"},
+    {"text": "Correct code ordering: signals > enums > constants > exports > vars > onready", "type": "style"},
+    {"text": "No await in _physics_process", "type": "correctness"},
+    {"text": "Uses match for state dispatch in _physics_process", "type": "quality"}
+  ]
+}

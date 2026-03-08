@@ -1,0 +1,15 @@
+{
+  "eval_id": 1,
+  "eval_name": "scope-a-platformer",
+  "prompt": "I'm a data engineer, never made a game before. I want to make a pixel art platformer but I keep thinking of features — wall jumping, double jump, enemies, bosses, power-ups, collectibles, a level editor, online leaderboards... Can you help me scope this down to something I can actually build in one session with Claude Code and Godot MCP?",
+  "assertions": [
+    {"text": "Uses three-tier scope (MUST HAVE / SHOULD HAVE / OUT OF SCOPE)", "type": "content"},
+    {"text": "Explains what a core loop is", "type": "content"},
+    {"text": "Identifies core mechanic (movement/jump) as first thing to validate", "type": "content"},
+    {"text": "Provides reasoning for each cut feature (not just 'cut')", "type": "content"},
+    {"text": "Uses encouraging/supportive tone for a beginner", "type": "content"},
+    {"text": "Suggests naming the game or asks for a name", "type": "content"},
+    {"text": "Bridges game dev concepts to engineering terms (data engineer audience)", "type": "content"},
+    {"text": "Mentions writing a GDD as a next step", "type": "content"}
+  ]
+}

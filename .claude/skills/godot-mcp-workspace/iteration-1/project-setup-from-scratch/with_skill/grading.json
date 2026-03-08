@@ -1,0 +1,37 @@
+{
+  "eval_id": 2,
+  "eval_name": "project-setup-from-scratch",
+  "configuration": "with_skill",
+  "expectations": [
+    {
+      "text": "Covers GODOT_PATH env var in .mcp.json config",
+      "passed": true,
+      "evidence": ".mcp.json example includes 'env': {'GODOT_PATH': '...'} and Step 2 explains finding the Godot executable"
+    },
+    {
+      "text": "Shows complete .mcp.json configuration example",
+      "passed": true,
+      "evidence": "Step 6 shows full .mcp.json with mcpServers.godot.command, args, and env.GODOT_PATH, plus .mcp.json.example for git"
+    },
+    {
+      "text": "Includes headless import step for assets",
+      "passed": true,
+      "evidence": "Step 5 prominently covers import: 'you MUST run the headless import before MCP can use them. This is the number one source of failures'"
+    },
+    {
+      "text": "Mentions get_godot_version as connectivity verification",
+      "passed": true,
+      "evidence": "Step 7: 'ask Claude to verify the MCP connection by calling get_godot_version' and Quick Sanity Check section"
+    },
+    {
+      "text": "Instructs to commit .uid and .import files to git",
+      "passed": true,
+      "evidence": "Step 8: 'Critical: Do NOT ignore these files -- they must be committed: .uid files... .import files'"
+    },
+    {
+      "text": "Clearly lists what MCP can vs cannot do",
+      "passed": true,
+      "evidence": "Full section 'What MCP Can Do' and 'What MCP Cannot Do' with 6 bullet points each"
+    }
+  ]
+}

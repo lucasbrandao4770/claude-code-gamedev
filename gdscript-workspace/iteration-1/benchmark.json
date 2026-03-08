@@ -1,0 +1,46 @@
+{
+  "skill_name": "gdscript",
+  "iteration": 1,
+  "configurations": [
+    {
+      "name": "with_skill",
+      "results": [
+        {"eval_name": "player-script", "pass_rate": 1.0, "passed": 10, "total": 10, "tokens": 30683, "duration_seconds": 98.1},
+        {"eval_name": "slime-script", "pass_rate": 1.0, "passed": 10, "total": 10, "tokens": 33647, "duration_seconds": 92.8},
+        {"eval_name": "debug-push", "pass_rate": 1.0, "passed": 6, "total": 6, "tokens": 31948, "duration_seconds": 91.8}
+      ],
+      "aggregate": {
+        "mean_pass_rate": 1.0,
+        "stddev_pass_rate": 0.0,
+        "mean_tokens": 32093,
+        "mean_duration_seconds": 94.2
+      }
+    },
+    {
+      "name": "without_skill",
+      "results": [
+        {"eval_name": "player-script", "pass_rate": 0.6, "passed": 6, "total": 10, "tokens": 16221, "duration_seconds": 47.8},
+        {"eval_name": "slime-script", "pass_rate": 0.7, "passed": 7, "total": 10, "tokens": 16157, "duration_seconds": 52.6},
+        {"eval_name": "debug-push", "pass_rate": 1.0, "passed": 6, "total": 6, "tokens": 16057, "duration_seconds": 57.3}
+      ],
+      "aggregate": {
+        "mean_pass_rate": 0.767,
+        "stddev_pass_rate": 0.17,
+        "mean_tokens": 16145,
+        "mean_duration_seconds": 52.6
+      }
+    }
+  ],
+  "delta": {
+    "pass_rate": "+23.3pp (100% vs 76.7%)",
+    "tokens": "+99% (32k vs 16k)",
+    "duration": "+79% (94s vs 53s)"
+  },
+  "analyst_notes": [
+    "The skill provides the biggest lift on CODE GENERATION (evals 0-1), where it enforces style conventions the baseline misses: @export grouping, code ordering, @onready, and dual damage detection.",
+    "The DEBUGGING eval (eval 2) shows no difference — both versions correctly diagnose body collision and recommend Area2D. This pattern is well-known enough that Claude gets it right without the skill.",
+    "The skill roughly doubles token usage and time. The extra tokens come from reading the skill file and following more detailed conventions. This is acceptable cost for significantly higher code quality.",
+    "Non-discriminating assertions: 'tabs for indentation', 'no Godot 3.x syntax', 'no await in _physics_process', 'match for state dispatch' — Claude gets these right regardless. The skill's value is in the 4-5 assertions the baseline fails.",
+    "Key discriminating assertions (skill helps): @export grouping, code ordering, @onready, dual damage detection (area_entered + overlap polling), correct contact damage architecture (Area2D not body)."
+  ]
+}

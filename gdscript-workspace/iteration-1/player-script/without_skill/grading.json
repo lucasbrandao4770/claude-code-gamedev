@@ -1,0 +1,16 @@
+{
+  "eval_id": 0,
+  "configuration": "without_skill",
+  "expectations": [
+    {"text": "Uses tabs for indentation", "passed": true, "evidence": "File uses tab indentation throughout"},
+    {"text": "Type hints on ALL function signatures", "passed": true, "evidence": "Most functions typed: _ready() -> void, take_damage(amount: int, from_direction: Vector2) -> void, etc. Variable types also mostly explicit."},
+    {"text": "Correct code ordering", "passed": false, "evidence": "Signals declared at lines 43-44, AFTER @export vars (L7-23) and state vars (L27-39). Should be: signals first after extends."},
+    {"text": "Uses @export with grouping", "passed": false, "evidence": "Uses flat @export with comments (# Movement, # Combat) instead of @export_group()/@export_category()"},
+    {"text": "Uses @onready for node references", "passed": false, "evidence": "Uses var sprite: Sprite2D = null then get_node_or_null() in _ready(). Creates timers programmatically in _ready() instead of @onready."},
+    {"text": "Movement in _physics_process", "passed": true, "evidence": "_physics_process handles movement on line 68"},
+    {"text": "Uses Input.get_vector() or Input.get_axis()", "passed": false, "evidence": "Uses Input.get_axis() (acceptable) but falls back to raw Input.is_key_pressed(KEY_A/D/W/S) on lines 100-107"},
+    {"text": "No Godot 3.x syntax", "passed": true, "evidence": "Uses Godot 4.x syntax: CharacterBody2D, @export, create_tween(), callable connections"},
+    {"text": "Incoming damage uses BOTH area_entered AND overlap polling", "passed": false, "evidence": "No hurtbox for incoming enemy damage at all. take_damage() exists as public method but no Area2D detection for receiving enemy contact damage."},
+    {"text": "No await in _physics_process", "passed": true, "evidence": "await is in _try_attack and _die, not _physics_process"}
+  ]
+}

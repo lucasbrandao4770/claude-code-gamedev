@@ -1,0 +1,14 @@
+{
+  "eval_id": 0,
+  "eval_name": "mcp-workflow-sequence",
+  "prompt": "I want to create a new enemy scene for my 2D RPG using the Godot MCP tools. It's a skeleton that chases the player and deals contact damage. What MCP calls do I need to make, and in what order?",
+  "assertions": [
+    {"text": "Mentions headless import step before load_sprite", "type": "keyword"},
+    {"text": "Uses correct create_scene param: scenePath (not sceneName/scene_name)", "type": "accuracy"},
+    {"text": "Uses correct load_sprite param: nodePath (not nodeName/node_name)", "type": "accuracy"},
+    {"text": "Does not invent fictional load_sprite params (hframes/vframes)", "type": "accuracy"},
+    {"text": "Warns that Vector2/complex properties are silently dropped by add_node", "type": "keyword"},
+    {"text": "Shows stop_project and get_debug_output with no parameters", "type": "accuracy"},
+    {"text": "Explicitly lists what MCP cannot do (scripts, shapes, sub-scenes)", "type": "completeness"}
+  ]
+}
