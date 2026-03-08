@@ -1,0 +1,51 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/player/player.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/player/Swordsman_lvl1_Idle_with_shadow.png" id="2_idle"]
+
+[sub_resource type="RectangleShape2D" id="shape_body"]
+size = Vector2(10, 12)
+
+[sub_resource type="RectangleShape2D" id="shape_sword"]
+size = Vector2(20, 14)
+
+[sub_resource type="RectangleShape2D" id="shape_hurt"]
+size = Vector2(10, 12)
+
+[node name="Player" type="CharacterBody2D"]
+script = ExtResource("1_script")
+collision_layer = 2
+collision_mask = 5
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_idle")
+hframes = 12
+vframes = 4
+frame = 0
+
+[node name="BodyCollision" type="CollisionShape2D" parent="."]
+shape = SubResource("shape_body")
+
+[node name="SwordHitBox" type="Area2D" parent="."]
+collision_layer = 32
+collision_mask = 16
+monitoring = true
+monitorable = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SwordHitBox"]
+shape = SubResource("shape_sword")
+disabled = true
+
+[node name="HurtBox" type="Area2D" parent="."]
+collision_layer = 8
+collision_mask = 64
+monitoring = true
+monitorable = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HurtBox"]
+shape = SubResource("shape_hurt")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(1, 1)
+position_smoothing_enabled = true
+position_smoothing_speed = 8.0
