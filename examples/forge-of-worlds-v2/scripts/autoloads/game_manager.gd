@@ -6,6 +6,7 @@ signal player_died
 
 var player_hp: int = 6
 var player_max_hp: int = 6
+var dialog_active: bool = false
 
 func reset() -> void:
 	player_hp = player_max_hp

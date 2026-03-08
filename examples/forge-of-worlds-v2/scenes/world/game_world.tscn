@@ -1,9 +1,11 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="1_player"]
 [ext_resource type="AudioStream" path="res://assets/audio/music/xDeviruchi - Exploring The Unknown.wav" id="4_music"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/slime.tscn" id="2_slime"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="3_hud"]
+[ext_resource type="PackedScene" path="res://scenes/pickups/heart_pickup.tscn" id="5_heart"]
+[ext_resource type="PackedScene" path="res://scenes/npc/npc.tscn" id="6_npc"]
 
 [sub_resource type="RectangleShape2D" id="shape_top"]
 size = Vector2(1920, 10)
@@ -58,11 +60,28 @@ position = Vector2(-120, 60)
 [node name="Slime3" parent="Enemies" instance=ExtResource("2_slime")]
 position = Vector2(50, -100)
 
+[node name="Pickups" type="Node2D" parent="."]
+
+[node name="Heart1" parent="Pickups" instance=ExtResource("5_heart")]
+position = Vector2(-150, -80)
+
+[node name="Heart2" parent="Pickups" instance=ExtResource("5_heart")]
+position = Vector2(200, 120)
+
+[node name="Heart3" parent="Pickups" instance=ExtResource("5_heart")]
+position = Vector2(-80, 180)
+
+[node name="NPCs" type="Node2D" parent="."]
+
+[node name="Villager" parent="NPCs" instance=ExtResource("6_npc")]
+position = Vector2(-200, -150)
+
 [node name="Player" parent="." instance=ExtResource("1_player")]
 
 [node name="HUD" parent="." instance=ExtResource("3_hud")]
 
 [node name="Music" type="AudioStreamPlayer" parent="."]
+process_mode = 3
 stream = ExtResource("4_music")
 autoplay = true
 volume_db = -20.0

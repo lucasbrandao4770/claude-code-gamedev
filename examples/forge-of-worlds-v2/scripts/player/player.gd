@@ -74,6 +74,7 @@ func _ready() -> void:
 	sword_hitbox.add_to_group("player_hitbox")
 	sword_collision.set_deferred("disabled", true)
 	hurt_box.area_entered.connect(_on_hurt_box_area_entered)
+	GameManager.player_hp_changed.connect(_on_gm_hp_changed)
 	_switch_sprite_sheet(State.IDLE)
 	health_changed.emit(hp, max_hp)
 
@@ -112,7 +113,7 @@ func _process_idle(delta: float) -> void:
 		_change_state(State.WALK)
 		return
 
-	if Input.is_action_just_pressed("attack"):
+	if Input.is_action_just_pressed("attack") and not GameManager.dialog_active:
 		_change_state(State.ATTACK)
 		return
 
@@ -128,7 +129,7 @@ func _process_walk(delta: float) -> void:
 		_change_state(State.IDLE)
 		return
 
-	if Input.is_action_just_pressed("attack"):
+	if Input.is_action_just_pressed("attack") and not GameManager.dialog_active:
 		_change_state(State.ATTACK)
 		return
 
@@ -315,6 +316,12 @@ func _check_overlapping_damage() -> void:
 		if area.is_in_group("enemy_hitbox"):
 			take_damage(1, area.global_position)
 			return
+
+
+## Sincroniza o HP local quando o GameManager atualiza (ex.: pickup de coração).
+func _on_gm_hp_changed(current_hp: int, _max_hp: int) -> void:
+	hp = current_hp
+	health_changed.emit(hp, max_hp)
 
 
 ## Efeito de piscar durante invencibilidade — alterna opacidade do sprite.
