@@ -88,6 +88,7 @@ Assets before code. You cannot write animation code without knowing sprite sheet
    - Columns and rows per sheet (different sheets from the same pack may have different column counts)
    - Non-empty frames per row (some rows may have fewer frames — e.g., UP idle has 4 while others have 12)
    - Direction order (CraftPix top-down convention: DOWN=0, LEFT=1, RIGHT=2, UP=3)
+   **Warning:** CraftPix sprite packs don't all use the same direction order — the Player pack uses DOWN/LEFT/RIGHT/UP but the Slime pack uses DOWN/RIGHT/LEFT/UP. Always verify direction mapping visually after first import, even with sprite analyzer output.
 5. **Import assets** — `godot --headless --path <project> --import` (MCP load_sprite fails without this)
 
 **Animation approach:** Default to `AnimatedSprite2D` with `SpriteFrames` for simpler setup. Fall back to `Sprite2D` + manual `hframes/vframes` frame stepping only if you need fine-grained control or the MCP workflow requires it.
@@ -142,6 +143,7 @@ Polish transforms a prototype into something that feels like a game.
 - **Smoke test first** — When using MCP in a new environment, test every tool in a throwaway project before starting the real build. This caught 5 critical issues in the first session that would have derailed the demo.
 - **Audio transforms quality** — Add it in Phase 4, not "later." "Later" usually means "never."
 - **Name things** — Give the hero, the world, and the enemies names. Storytelling creates engagement and makes the process enjoyable.
+- **Viewport size > camera zoom** — For 64px sprites on a top-down RPG, 426x240 viewport with zoom 1x works well. 320x180 is too zoomed in. 640x360 is too distant. Character should occupy ~25-30% of screen height.
 
 ## Anti-Patterns
 
@@ -163,6 +165,7 @@ Mistakes from real game-building sessions that wasted significant time:
 | No post-respawn invincibility | Player takes damage instantly from nearby enemies on respawn | Set `damage_cooldown = 2.0` on respawn |
 | UI text in world space | Blurry at low resolution, inconsistent positioning | Use CanvasLayer for all UI (HUD, dialog boxes, damage numbers) |
 | No game pause during dialog | Enemies attack while player reads text | `get_tree().paused = true` + `PROCESS_MODE_ALWAYS` on dialog nodes |
+| Shared keybinds for different actions | Attack fires during dialogue, interact triggers combat | Use separate input actions + a `dialog_active` flag in GameManager to route input |
 
 ## Project Structure Convention
 
