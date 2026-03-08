@@ -5,6 +5,10 @@
 # Godot 3.x cache directory (backward compat)
 .import/
 
+# NOTE: *.import sidecar files SHOULD be committed!
+# They contain import metadata (filter, compression settings) needed by collaborators.
+# Only the .import/ DIRECTORY (Godot 3.x cache) is ignored above.
+
 # Export credentials (NEVER commit secrets)
 export_credentials.cfg
 

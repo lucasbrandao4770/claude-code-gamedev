@@ -1,0 +1,41 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/Slime1/With_shadow/Slime1_Idle_with_shadow.png" id="1_rldp6"]
+[ext_resource type="Script" path="res://scripts/enemies/slime.gd" id="2_script"]
+
+[sub_resource type="CircleShape2D" id="body_shape"]
+radius = 6.0
+
+[sub_resource type="CircleShape2D" id="hurt_shape"]
+radius = 7.0
+
+[sub_resource type="CircleShape2D" id="contact_shape"]
+radius = 7.0
+
+[sub_resource type="CircleShape2D" id="detect_shape"]
+radius = 48.0
+
+[node name="Slime" type="CharacterBody2D"]
+script = ExtResource("2_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_rldp6")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 4)
+shape = SubResource("body_shape")
+
+[node name="HurtBox" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HurtBox"]
+shape = SubResource("hurt_shape")
+
+[node name="ContactHitBox" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ContactHitBox"]
+shape = SubResource("contact_shape")
+
+[node name="DetectionZone" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DetectionZone"]
+shape = SubResource("detect_shape")
