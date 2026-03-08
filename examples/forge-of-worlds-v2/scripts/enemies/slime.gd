@@ -49,6 +49,7 @@ const PIXEL_FONT: FontFile = preload("res://assets/fonts/PressStart2P-Regular.tt
 @onready var hit_box: Area2D = $HitBox
 @onready var hurt_box: Area2D = $HurtBox
 @onready var detection_zone: Area2D = $DetectionZone
+@onready var hurt_sfx: AudioStreamPlayer2D = $HurtSFX
 
 # Estado interno
 var hp: int
@@ -264,6 +265,7 @@ func take_damage(amount: int, from_position: Vector2) -> void:
 		return
 
 	hp -= amount
+	hurt_sfx.play()
 	_update_health_bar()
 	_spawn_damage_number(amount)
 

@@ -1,7 +1,8 @@
-[gd_scene format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/enemies/slime.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/sprites/enemies/Slime1_Idle_with_shadow.png" id="2_idle"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/dropLeather.ogg" id="3_slime_hurt"]
 
 [sub_resource type="RectangleShape2D" id="shape_body"]
 size = Vector2(12, 10)
@@ -56,3 +57,7 @@ monitorable = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="DetectionZone"]
 shape = SubResource("shape_detect")
+
+[node name="HurtSFX" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("3_slime_hurt")
+volume_db = -3.0

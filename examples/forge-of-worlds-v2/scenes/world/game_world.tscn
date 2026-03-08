@@ -1,6 +1,7 @@
-[gd_scene format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="1_player"]
+[ext_resource type="AudioStream" path="res://assets/audio/music/xDeviruchi - Exploring The Unknown.wav" id="4_music"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/slime.tscn" id="2_slime"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="3_hud"]
 
@@ -60,3 +61,8 @@ position = Vector2(50, -100)
 [node name="Player" parent="." instance=ExtResource("1_player")]
 
 [node name="HUD" parent="." instance=ExtResource("3_hud")]
+
+[node name="Music" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("4_music")
+autoplay = true
+volume_db = -20.0

@@ -53,6 +53,8 @@ const IDLE_FRAMES_PER_ROW: Array[int] = [12, 12, 12, 4]
 @onready var sword_hitbox: Area2D = $SwordHitBox
 @onready var sword_collision: CollisionShape2D = $SwordHitBox/CollisionShape2D
 @onready var hurt_box: Area2D = $HurtBox
+@onready var sword_sfx: AudioStreamPlayer2D = $SwordSFX
+@onready var hurt_sfx: AudioStreamPlayer2D = $HurtSFX
 
 # Estado interno
 var hp: int
@@ -198,6 +200,7 @@ func _change_state(new_state: State) -> void:
 	match new_state:
 		State.ATTACK:
 			_position_sword_hitbox()
+			sword_sfx.play()
 			# Hitbox ativada em _process_attack no meio do swing (30-70%)
 		State.HURT:
 			sword_collision.set_deferred("disabled", true)
@@ -284,6 +287,7 @@ func take_damage(amount: int, from_position: Vector2) -> void:
 		return
 
 	hp -= amount
+	hurt_sfx.play()
 	GameManager.player_hp = hp
 	GameManager.player_hp_changed.emit(hp, max_hp)
 	health_changed.emit(hp, max_hp)

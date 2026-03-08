@@ -1,7 +1,9 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/player/player.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/sprites/player/Swordsman_lvl1_Idle_with_shadow.png" id="2_idle"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/knifeSlice.ogg" id="3_sword_sfx"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/cloth1.ogg" id="4_hurt_sfx"]
 
 [sub_resource type="RectangleShape2D" id="shape_body"]
 size = Vector2(10, 12)
@@ -44,6 +46,14 @@ monitorable = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HurtBox"]
 shape = SubResource("shape_hurt")
+
+[node name="SwordSFX" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("3_sword_sfx")
+volume_db = -5.0
+
+[node name="HurtSFX" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("4_hurt_sfx")
+volume_db = -3.0
 
 [node name="Camera2D" type="Camera2D" parent="."]
 zoom = Vector2(1, 1)
