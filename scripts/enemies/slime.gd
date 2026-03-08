@@ -6,18 +6,19 @@ extends CharacterBody2D
 enum State { IDLE, WANDER, CHASE, HURT, DEAD }
 
 @export_group("Movimento")
-@export var speed: float = 25.0
-@export var chase_speed: float = 35.0
+@export var speed: float = 20.0
+@export var chase_speed: float = 55.0
 
 @export_group("Combate")
 @export var max_hp: int = 3
 @export var contact_damage: int = 1
-@export var detection_radius: float = 48.0
+@export var detection_radius: float = 64.0
 
 # Sprite sheets: Idle=6col x 4row, Walk=8col x 4row (frames 64x64)
 # Linhas: 0=baixo, 1=esquerda, 2=direita, 3=cima (convencao CraftPix)
 const IDLE_SHEET = preload("res://assets/sprites/enemies/Slime1/With_shadow/Slime1_Idle_with_shadow.png")
 const WALK_SHEET = preload("res://assets/sprites/enemies/Slime1/With_shadow/Slime1_Walk_with_shadow.png")
+const PIXEL_FONT = preload("res://assets/fonts/PressStart2P-Regular.ttf")
 const IDLE_COLS := 6
 const WALK_COLS := 8
 
@@ -36,6 +37,9 @@ var anim_frame: int = 0
 var anim_timer: float = 0.0
 var facing_row: int = DIR_DOWN
 
+var hp_bar_bg: ColorRect
+var hp_bar_fill: ColorRect
+
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var detection_zone: Area2D = $DetectionZone
 @onready var contact_hitbox: Area2D = $ContactHitBox
@@ -48,6 +52,7 @@ func _ready() -> void:
 	_setup_sprite()
 	_setup_collision_shapes()
 	_setup_collision_layers()
+	_create_health_bar()
 	current_state = State.IDLE
 	idle_timer = randf_range(0.5, 2.0)
 
@@ -189,8 +194,63 @@ func _animate(delta: float) -> void:
 		sprite.frame = facing_row * cols + anim_frame
 
 
+func _create_health_bar() -> void:
+	# Fundo da barra (cinza escuro)
+	hp_bar_bg = ColorRect.new()
+	hp_bar_bg.size = Vector2(20, 3)
+	hp_bar_bg.position = Vector2(-10, -18)
+	hp_bar_bg.color = Color(0.2, 0.2, 0.2, 0.8)
+	hp_bar_bg.visible = false
+	add_child(hp_bar_bg)
+
+	# Preenchimento (verde)
+	hp_bar_fill = ColorRect.new()
+	hp_bar_fill.size = Vector2(20, 3)
+	hp_bar_fill.position = Vector2(-10, -18)
+	hp_bar_fill.color = Color(0.2, 0.8, 0.2, 0.9)
+	hp_bar_fill.visible = false
+	add_child(hp_bar_fill)
+
+
+func _update_health_bar() -> void:
+	hp_bar_bg.visible = true
+	hp_bar_fill.visible = true
+	var ratio := float(hp) / float(max_hp)
+	hp_bar_fill.size.x = 20.0 * ratio
+	# Muda de cor conforme HP diminui
+	if ratio > 0.5:
+		hp_bar_fill.color = Color(0.2, 0.8, 0.2, 0.9)
+	elif ratio > 0.25:
+		hp_bar_fill.color = Color(0.9, 0.7, 0.1, 0.9)
+	else:
+		hp_bar_fill.color = Color(0.9, 0.2, 0.1, 0.9)
+
+
+func _spawn_damage_number(amount: int) -> void:
+	var label := Label.new()
+	label.text = str(amount)
+	label.position = Vector2(-4, -26)
+	if PIXEL_FONT:
+		label.add_theme_font_override("font", PIXEL_FONT)
+	label.add_theme_font_size_override("font_size", 7)
+	label.add_theme_color_override("font_color", Color(1, 0.9, 0.2))
+	label.add_theme_color_override("font_outline_color", Color.BLACK)
+	label.add_theme_constant_override("outline_size", 2)
+	add_child(label)
+
+	# Flutua para cima e desaparece
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(label, "position:y", label.position.y - 20, 0.6)
+	tween.tween_property(label, "modulate:a", 0.0, 0.6).set_delay(0.2)
+	await tween.finished
+	label.queue_free()
+
+
 func take_damage(amount: int) -> void:
 	hp -= amount
+	_update_health_bar()
+	_spawn_damage_number(amount)
 	if hp <= 0:
 		_die()
 		return

@@ -6,13 +6,14 @@ extends CharacterBody2D
 # --- Configuracao ---
 @export_group("Movimento")
 @export var speed: float = 80.0
-@export var knockback_force: float = 150.0
+@export var knockback_force: float = 250.0
 
 @export_group("Combate")
 @export var max_hp: int = 6
 @export var attack_damage: int = 1
 @export var attack_duration: float = 0.2
-@export var hurt_duration: float = 0.4
+@export var hurt_duration: float = 0.3
+@export var invincibility_duration: float = 1.0
 
 # --- Sprite sheet config ---
 # Idle: 12 colunas x 4 linhas (768x256, frames 64x64)
@@ -38,6 +39,7 @@ const IDLE_CYCLE_TIME := 1.44  # duracao total do ciclo idle (segundos)
 const WALK_CYCLE_TIME := 0.72  # duracao total do ciclo walk
 const ATTACK_CYCLE_TIME := 0.2 # duracao total do ataque (rapido)
 var knockback_velocity: Vector2 = Vector2.ZERO
+var damage_cooldown: float = 0.0
 
 # --- Referencias ---
 @onready var sprite: Sprite2D = $Sprite2D
@@ -53,6 +55,7 @@ signal died
 func _ready() -> void:
 	hp = max_hp
 	add_to_group("player")
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	_setup_sprite()
 	_setup_collision_shapes()
 	_setup_collision_layers()
@@ -86,9 +89,10 @@ func _setup_collision_shapes() -> void:
 
 
 func _setup_collision_layers() -> void:
-	# Corpo: layer 2 (player), mask 1 (world) + 4 (enemies)
+	# Corpo: layer 2 (player), mask 1 (world)
+	# Nao colide com corpos de inimigos - dano via Area2D apenas
 	collision_layer = 2
-	collision_mask = 1 | 4
+	collision_mask = 1
 
 	# Espada: layer 8 (player_hitbox)
 	sword_hitbox.collision_layer = 8
@@ -105,10 +109,22 @@ func _setup_collision_layers() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	# Animacao idle roda sempre (inclusive durante dialogo)
+	if get_tree().paused:
+		_animate_idle(delta)
+		return
+
+	# Verifica dano periodico de areas sobrepostas
+	if damage_cooldown > 0:
+		damage_cooldown -= delta
+	else:
+		_check_overlapping_damage()
+
 	if is_hurt:
 		velocity = knockback_velocity
-		knockback_velocity = knockback_velocity.lerp(Vector2.ZERO, 0.2)
+		knockback_velocity = knockback_velocity.lerp(Vector2.ZERO, 0.15)
 		move_and_slide()
+		_animate_idle(delta)
 		return
 
 	if is_attacking:
@@ -131,10 +147,13 @@ func _physics_process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("attack") and not is_attacking and not is_hurt:
-		_attack()
+	# Interacao funciona mesmo com o jogo pausado (dialogo)
 	if event.is_action_pressed("interact"):
 		_try_interact()
+	if get_tree().paused:
+		return
+	if event.is_action_pressed("attack") and not is_attacking and not is_hurt:
+		_attack()
 
 
 func _update_facing(direction: Vector2) -> void:
@@ -221,24 +240,13 @@ func _attack() -> void:
 
 
 func _try_interact() -> void:
-	# Busca NPCs ou interagiveis na direcao que esta olhando
-	var dir_vector := Vector2.ZERO
-	match facing_row:
-		DIR_DOWN: dir_vector = Vector2.DOWN
-		DIR_UP: dir_vector = Vector2.UP
-		DIR_LEFT: dir_vector = Vector2.LEFT
-		DIR_RIGHT: dir_vector = Vector2.RIGHT
-
-	var space := get_world_2d().direct_space_state
-	var query := PhysicsPointQueryParameters2D.new()
-	query.position = global_position + dir_vector * 20
-	query.collide_with_areas = true
-	query.collide_with_bodies = false
-	var results := space.intersect_point(query, 1)
-	if results.size() > 0:
-		var collider = results[0].collider
-		if collider.has_method("interact"):
-			collider.interact()
+	# Busca NPCs proximos que tenham o metodo interact()
+	var interact_range := 30.0
+	for npc in get_tree().get_nodes_in_group("npc"):
+		if global_position.distance_to(npc.global_position) <= interact_range:
+			if npc.has_method("interact"):
+				npc.interact()
+				return
 
 
 func take_damage(amount: int, from_position: Vector2 = Vector2.ZERO) -> void:
@@ -252,15 +260,26 @@ func take_damage(amount: int, from_position: Vector2 = Vector2.ZERO) -> void:
 		_die()
 		return
 
-	# Knockback e invencibilidade temporaria
+	# Knockback curto + invencibilidade longa com efeito de piscar
 	is_hurt = true
+	damage_cooldown = invincibility_duration
 	if from_position != Vector2.ZERO:
 		knockback_velocity = (global_position - from_position).normalized() * knockback_force
 
+	# Flash vermelho durante o knockback
 	sprite.modulate = Color(1, 0.3, 0.3)
 	await get_tree().create_timer(hurt_duration).timeout
+	is_hurt = false  # libera movimento mas mantem invencibilidade
+
+	# Piscar durante o resto da invencibilidade
+	var blink_time := invincibility_duration - hurt_duration
+	var blink_end := Time.get_ticks_msec() + int(blink_time * 1000)
+	while Time.get_ticks_msec() < blink_end:
+		sprite.modulate.a = 0.3
+		await get_tree().create_timer(0.08).timeout
+		sprite.modulate.a = 1.0
+		await get_tree().create_timer(0.08).timeout
 	sprite.modulate = Color.WHITE
-	is_hurt = false
 
 
 func _die() -> void:
@@ -271,13 +290,28 @@ func _die() -> void:
 
 	await get_tree().create_timer(2.0).timeout
 
-	# Respawn
+	# Respawn com invencibilidade temporaria
 	hp = max_hp
+	is_hurt = false
+	is_attacking = false
+	damage_cooldown = 2.0
 	health_changed.emit(hp)
 	sprite.modulate = Color.WHITE
+	global_position = Vector2.ZERO
 	set_physics_process(true)
 	set_process_unhandled_input(true)
-	global_position = Vector2.ZERO
+
+
+func _check_overlapping_damage() -> void:
+	if is_hurt or hp <= 0:
+		return
+	for area in hurt_box.get_overlapping_areas():
+		if area.is_in_group("enemy_hitbox"):
+			var damage := 1
+			if area.has_method("get_damage"):
+				damage = area.get_damage()
+			take_damage(damage, area.global_position)
+			return
 
 
 func _on_hurtbox_area_entered(area: Area2D) -> void:

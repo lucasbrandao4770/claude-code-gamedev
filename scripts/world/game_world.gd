@@ -4,6 +4,8 @@ extends Node2D
 
 const PlayerScene := preload("res://scenes/player/player.tscn")
 const SlimeScene := preload("res://scenes/enemies/slime.tscn")
+const HudScene := preload("res://scenes/ui/hud.tscn")
+const NpcScene := preload("res://scenes/npc/npc.tscn")
 
 var player: CharacterBody2D
 
@@ -17,6 +19,16 @@ func _ready() -> void:
 	_spawn_player()
 	# Spawna os slimes
 	_spawn_slimes()
+	# Cria o HUD
+	add_child(HudScene.instantiate())
+	# Spawna o NPC perto da borda da clareira
+	_spawn_npc()
+
+
+func _spawn_npc() -> void:
+	var npc := NpcScene.instantiate()
+	npc.position = Vector2(-50, -40)
+	$NPCs.add_child(npc)
 
 
 func _setup_background() -> void:
