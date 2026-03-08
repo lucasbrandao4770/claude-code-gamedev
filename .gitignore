@@ -51,3 +51,6 @@ export/
 
 # Raw downloads (backup, not needed in repo)
 downloads/
+
+# Skill eval workspaces (temporary artifacts)
+*-workspace/
